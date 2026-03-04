@@ -25,6 +25,7 @@
     "globals": "^16.5.0",
     "vite": "^8.0.0-beta.13"
   },
+  "license": "MIT",
   "overrides": {
     "vite": "^8.0.0-beta.13"
   }

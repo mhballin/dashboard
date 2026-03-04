@@ -1,57 +1,53 @@
-# Job Search HQ
+# Job Search Dashboard
 
-A clean, modern job-search command center (Vite + React). Track weekly targets, daily tasks, job applications in a kanban board, and maintain a searchable reference of job boards and LinkedIn Boolean search strings.
+A personal job-search command center built with React + Vite. Tracks 
+weekly goals, manages applications on a kanban board, and stores 
+curated job board links and LinkedIn Boolean search strings — all 
+in the browser with no backend required.
 
 ## Getting Started
-
 ```bash
-cd "/Users/michaelballin/Documents/Projects/Job Dashboard"
 npm install
 npm run dev
 ```
 
-App opens at `http://localhost:5173`
-
-## Build
-
-```bash
-npm run build  
-npm run preview
-```
+Opens at `http://localhost:5173`.
 
 ## Features
 
-### Dashboard Tab
-- **Streak tracker** – Daily check-ins with cumulative metrics
-- **Today's Focus** – 3 pinned tasks + backlog
-- **This Week** – Track 5 key metrics (Conversations, Meetings, Outreach, Follow-ups, Applications)
-- **Pitch & Notes** – Collapsible section for your elevator pitch and scratch notes
+- **Dashboard** — daily streak, today's top 3 tasks, weekly metric 
+	counters (meetings, outreach, follow-ups, applications), pitch & 
+	scratch notes
+- **Activity Log** — timestamped log of outreach, meetings, and 
+	applications
+- **Applications** — drag-and-drop kanban board (Saved → Applied → 
+	Interviewing → Closed) with per-card notes and job descriptions
+- **Job Boards & Keywords** — curated job boards, keyword library, 
+	and copyable LinkedIn Boolean search strings
+- **Settings** — export and import all data as a JSON backup file
 
-### Applications Tab
-- **Kanban board** – 4 columns (Saved → Applied → Interviewing → Closed)
-- Drag-and-drop cards with company/role names and job URLs
+## Data & Privacy
 
-### Job Boards & Keywords Tab
-- **6 LinkedIn Boolean searches** – All copyable with one click
-- **7 keyword categories** – Primary titles, stretch roles, company types, sectors, skills
-- **25+ job boards** – Organized by startup focus, regional, general, newsletters, niche/specialty
-
-## Data Persistence
-
-All data persists in browser `localStorage`:
-- Data is namespaced by ISO week (e.g., `weekly-2026-W10`) so metrics reset each week
-- Cumulative totals, streak, pitch, notes, and kanban cards stay year-round
-- Falls back to `window.storage` if running in a Claude artifact environment
+All data lives in your browser's localStorage — nothing is sent to 
+any server. Use the Export button in Settings to download a backup 
+file. Import restores everything from that file.
 
 ## Project Structure
-
-```
 src/
-├── App.jsx                 (state management + routing)
-├── main.jsx                (React entry)
-├── components/             (9 reusable UI components)
-├── data/                   (jobBoards, keywords, kanban columns, defaults)
-└── utils/                  (storage, date helpers)
-```
+├── App.jsx              state management + tab routing
+├── components/          UI components
+├── data/                seed data (job boards, keywords, defaults)
+└── utils/
+├── storage.js       S.get / S.set / exportAll / importAll
+└── dates.js         todayStr / getWeekKey
+## Development Conventions
 
-No external CSS – all inline styles. Fonts load from Google Fonts (Plus Jakarta Sans, JetBrains Mono).
+- **Inline styles only** — no CSS files, no Tailwind
+- **No new dependencies** — native browser APIs only
+- **State in App.jsx** — all app state lives in the root component
+- **Font** — Plus Jakarta Sans throughout
+
+## License
+
+MIT
+---

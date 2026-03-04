@@ -33,13 +33,15 @@ any server. Use the Export button in Settings to download a backup
 file. Import restores everything from that file.
 
 ## Project Structure
+```
 src/
 ├── App.jsx              state management + tab routing
 ├── components/          UI components
 ├── data/                seed data (job boards, keywords, defaults)
 └── utils/
-├── storage.js       S.get / S.set / exportAll / importAll
-└── dates.js         todayStr / getWeekKey
+    ├── storage.js       S.get / S.set / exportAll / importAll
+    └── dates.js         todayStr / getWeekKey
+```
 ## Development Conventions
 
 - **Inline styles only** — no CSS files, no Tailwind
@@ -49,5 +51,4 @@ src/
 
 ## License
 
-MIT
----
+MIT 

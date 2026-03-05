@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Plus, X, Check } from "lucide-react";
-import { todayStr } from "../utils/dates";
 
 const lbl = {
   fontFamily: "'Plus Jakarta Sans',sans-serif",
@@ -11,7 +10,7 @@ const lbl = {
   color: "#9ca3af",
 };
 
-export function TopThree({ tasks, setTasks }) {
+export function Tasks({ tasks, setTasks, taskAddRef }) {
   const notDone = tasks.filter((t) => !t.done);
   const done = tasks.filter((t) => t.done);
   const [adding, setAdding] = useState(false);
@@ -22,6 +21,17 @@ export function TopThree({ tasks, setTasks }) {
   useEffect(() => {
     if (adding && inputRef.current) inputRef.current.focus();
   }, [adding]);
+
+  useEffect(() => {
+    if (!taskAddRef) return;
+    taskAddRef.current = () => {
+      setAdding(true);
+      setTimeout(() => inputRef.current?.focus(), 0);
+    };
+    return () => {
+      if (taskAddRef) taskAddRef.current = null;
+    };
+  }, [taskAddRef]);
 
   const addTask = () => {
     if (!text.trim()) return setAdding(false);
@@ -70,8 +80,9 @@ export function TopThree({ tasks, setTasks }) {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-        <span style={lbl}>Today's Focus</span>
+        <span style={lbl}>Tasks</span>
         <button
+          data-testid="tasks-add-open"
           onClick={() => setAdding(true)}
           style={{
             background: "none",
@@ -153,6 +164,7 @@ export function TopThree({ tasks, setTasks }) {
       {adding && (
         <div style={{ display: "flex", gap: 8, marginTop: 4, marginBottom: 8 }}>
           <input
+            data-testid="tasks-add-input"
             ref={inputRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -176,6 +188,7 @@ export function TopThree({ tasks, setTasks }) {
             }}
           />
           <button
+            data-testid="tasks-add-confirm"
             onClick={addTask}
             style={{
               background: "#16a34a",

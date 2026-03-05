@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { StreakBanner } from "./components/StreakBanner";
-import { TopThree } from "./components/TopThree";
+import { Tasks } from "./components/Tasks";
 import { WeekTargets } from "./components/WeekTargets";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { JobBoardsTab } from "./components/JobBoardsTab";
@@ -8,6 +8,7 @@ import { ActivityLog } from "./components/ActivityLog";
 import { CollapsiblePanel } from "./components/CollapsiblePanel";
 import { DayHeader } from "./components/DayHeader";
 import { SettingsTab } from "./components/SettingsTab";
+import { TodaysNotes } from "./components/TodaysNotes";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { S } from "./utils/storage";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
@@ -48,7 +49,7 @@ function App() {
   const [streak, setStreak] = useState(0);
   const [lastActive, setLastActive] = useState(null);
   const [pitch, setPitch] = useState(DEFAULT_PITCH);
-  const [notes, setNotes] = useState("");
+  const [notesByDate, setNotesByDate] = useState({});
   const [quickNote, setQuickNote] = useState("");
   const [activityLog, setActivityLog] = useState([]);
   const [userSettings, setUserSettings] = useState({
@@ -61,7 +62,7 @@ function App() {
   // Load from storage on mount
   useEffect(() => {
     (async () => {
-      const [t, w, c, k, st, la, p, n, a, u] = await Promise.all([
+      const [t, w, c, k, st, la, p, n, nb, a, u] = await Promise.all([
         S.get("tasks"),
         S.get(`weekly-${weekKey}`),
         S.get("cumulative"),
@@ -70,6 +71,7 @@ function App() {
         S.get("lastActive"),
         S.get("pitch"),
         S.get("notes"),
+        S.get("notesByDate"),
         S.get("activityLog"),
         S.get("user-settings"),
       ]);
@@ -89,9 +91,34 @@ function App() {
       if (st !== null) setStreak(st);
       if (la) setLastActive(la);
       if (p) setPitch(p);
-      if (n) setNotes(n);
+      // notesByDate migration: prefer new map, fallback to legacy notes string
+      if (nb) {
+        setNotesByDate(nb || {});
+      } else if (n) {
+        const today = todayStr();
+        const initial = n && n.trim() ? { [today]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: today }] } : {};
+        setNotesByDate(initial);
+      }
       if (a) setActivityLog(a);
       if (u) setUserSettings((prev) => ({ ...prev, ...u }));
+      // After initial load, migrate any notes older than 24 hours into activityLog
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      const migratedLogs = [];
+      const kept = {};
+      const source = nb || (n && n.trim() ? { [todayStr()]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: todayStr() }] } : {});
+      for (const [dateKey, arr] of Object.entries(source || {})) {
+        const keep = [];
+        for (const note of arr) {
+          if (note && note.createdAt && note.createdAt < cutoff) {
+            migratedLogs.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: "note", note: note.text });
+          } else if (note) {
+            keep.push(note);
+          }
+        }
+        if (keep.length) kept[dateKey] = keep;
+      }
+      if (Object.keys(kept).length) setNotesByDate(kept);
+      if (migratedLogs.length) setActivityLog((prev) => [...migratedLogs, ...prev]);
       setLoaded(true);
     })();
   }, []);
@@ -126,8 +153,8 @@ function App() {
   }, [pitch, loaded]);
 
   useEffect(() => {
-    if (loaded) S.set("notes", notes);
-  }, [notes, loaded]);
+    if (loaded) S.set("notesByDate", notesByDate);
+  }, [notesByDate, loaded]);
 
   useEffect(() => {
     if (loaded) S.set("activityLog", activityLog);
@@ -182,8 +209,9 @@ function App() {
     setLastActive(todayStr());
   };
 
-  const notesRef = useRef(null);
   const pitchRef = useRef(null);
+  const tasksAddRef = useRef(null);
+  const notesAddRef = useRef(null);
 
   const adjustHeight = (el) => {
     if (!el) return;
@@ -191,18 +219,50 @@ function App() {
     el.style.height = el.scrollHeight + "px";
   };
 
-  const adjustNotesHeight = () => adjustHeight(notesRef.current);
   const adjustPitchHeight = () => adjustHeight(pitchRef.current);
 
   useEffect(() => {
-    adjustNotesHeight();
     adjustPitchHeight();
     const onResize = () => {
-      adjustNotesHeight();
       adjustPitchHeight();
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Global keyboard shortcuts: plain `t` / `n` when not typing, Alt fallback
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.defaultPrevented) return;
+      try {
+        const active = document.activeElement;
+        if (active) {
+          const tag = (active.tagName || "").toLowerCase();
+          const isEditable = active.isContentEditable || tag === "input" || tag === "textarea" || tag === "select";
+          if (isEditable) return;
+        }
+      } catch (err) {
+        // ignore DOM access errors
+      }
+
+      const k = (e.key || "").toLowerCase();
+      // Allow plain keypresses (no ctrl/meta/alt) — shift is permitted —
+      // or Alt/Option as a fallback for systems where plain keys conflict.
+      const hasModifier = e.altKey || e.metaKey || e.ctrlKey;
+      const accept = !hasModifier || e.altKey;
+
+      if (!accept) return;
+
+      if (k === "t") {
+        e.preventDefault();
+        tasksAddRef.current?.();
+      } else if (k === "n") {
+        e.preventDefault();
+        notesAddRef.current?.();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, []);
 
   // Compute weekly applications from kanban cards
@@ -333,7 +393,7 @@ function App() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
                 <div style={{ ...cardStyle, padding: "22px 24px" }}>
-                  <TopThree tasks={tasks} setTasks={setTasks} />
+                  <Tasks tasks={tasks} setTasks={setTasks} taskAddRef={tasksAddRef} />
                 </div>
                 <div style={{ ...cardStyle, padding: "22px 24px" }}>
                   <WeekTargets
@@ -374,30 +434,21 @@ function App() {
                   />
                 </div>
                 <div>
-                  <div style={{ ...lbl, marginBottom: 8 }}>Scratch Notes</div>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    ref={notesRef}
-                    onInput={adjustNotesHeight}
-                    placeholder="Ideas, reminders, thoughts…"
-                    style={{
-                      width: "100%",
-                      minHeight: 100,
-                      background: "#fafaf8",
-                      border: "1px solid #ede9e3",
-                      borderRadius: 12,
-                      padding: 14,
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
-                      fontSize: 13,
-                      lineHeight: 1.7,
-                      color: "#374151",
-                      outline: "none",
-                      resize: "none",
-                      overflow: "hidden",
-                      boxSizing: "border-box",
-                    }}
-                  />
+                  <div style={{ ...lbl, marginBottom: 8 }}>
+                    <TodaysNotes
+                      notes={(notesByDate[todayStr()] || []).slice().reverse()}
+                      noteAddRef={notesAddRef}
+                      onAdd={(text) => {
+                        const today = todayStr();
+                        const note = { id: Date.now(), text, createdAt: Date.now(), date: today };
+                        setNotesByDate((prev) => ({ ...prev, [today]: [...(prev[today] || []), note] }));
+                      }}
+                      onDelete={(id) => {
+                        const today = todayStr();
+                        setNotesByDate((prev) => ({ ...prev, [today]: (prev[today] || []).filter((n) => n.id !== id) }));
+                      }}
+                    />
+                  </div>
                 </div>
               </CollapsiblePanel>
             </>

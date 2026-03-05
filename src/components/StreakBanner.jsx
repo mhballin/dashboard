@@ -1,6 +1,7 @@
+import { todayStr } from "../utils/dates";
+
 export function StreakBanner({ streak, lastActive, cumulative, onCheckIn }) {
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const checkedIn = lastActive === todayStr;
+  const checkedIn = lastActive === todayStr();
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>

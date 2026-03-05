@@ -163,7 +163,9 @@ function App() {
     while (lastDay.getDay() === 0 || lastDay.getDay() === 6) {
       lastDay.setDate(lastDay.getDate() - 1);
     }
-    return lastDay.toISOString().slice(0, 10);
+    return `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, "0")}-${String(
+      lastDay.getDate()
+    ).padStart(2, "0")}`;
   };
 
   const checkIn = () => {
@@ -173,12 +175,11 @@ function App() {
     // Skip on weekends (Saturday = 6, Sunday = 0)
     if (dayOfWeek === 0 || dayOfWeek === 6) return;
     
-    const todayStr = today.toISOString().slice(0, 10);
-    if (lastActive === todayStr) return;
+    if (lastActive === todayStr()) return;
     
     const lastValidWeekday = getLastValidWeekday();
     setStreak(lastActive === lastValidWeekday ? streak + 1 : 1);
-    setLastActive(todayStr);
+    setLastActive(todayStr());
   };
 
   const notesRef = useRef(null);

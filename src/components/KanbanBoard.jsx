@@ -280,7 +280,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
     const trackedCols = ["applied", "interviewing", "closed"];
     if (sourceCol !== targetCol && trackedCols.includes(targetCol)) {
       onLog?.({
-        date: new Date().toISOString().slice(0, 10),
+        date: todayStr(),
         type: targetCol,
         note: `${card.company || card.title} — ${card.title}`,
       });
@@ -328,7 +328,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
       <div style={{ ...lbl, marginBottom: 20 }}>Applications Tracker</div>
 
       {/* Kanban Columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,260px)", gap: 14, justifyContent: "start" }}>
         {KANBAN_COLS.map((col) => {
           let colCards = cards.filter((c) => c.col === col.id);
           
@@ -341,7 +341,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
           }
           
           const isOver = dragOver === col.id;
-          return (
+            return (
             <div
               key={col.id}
               onDragOver={(e) => {
@@ -363,6 +363,11 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                 minHeight: 200,
                 border: `1.5px solid ${isOver ? col.color + "50" : "#ede9e3"}`,
                 transition: "all 0.15s",
+                minWidth: 260,
+                width: 260,
+                boxSizing: "border-box",
+                overflowY: col.id === "saved" ? "auto" : "visible",
+                maxHeight: col.id === "saved" ? "60vh" : "none",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -474,7 +479,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                         style={{
                           background: "#ffffff",
                           borderRadius: 12,
-                          padding: "11px 13px",
+                          padding: "8px 12px",
                           marginBottom: 8,
                           border: "1px solid #ede9e3",
                           borderLeft: "3.5px solid #c96b5a",
@@ -487,43 +492,19 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           position: "relative",
                         }}
                       >
-                        {/* Star Toggle */}
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCards((p) =>
-                              p.map((card) =>
-                                card.id === c.id
-                                  ? { ...card, isStarred: !card.isStarred }
-                                  : card
-                              )
-                            );
-                          }}
-                          style={{
-                            position: "absolute",
-                            top: 10,
-                            right: 10,
-                            fontSize: 16,
-                            color: c.isStarred ? "#d4a537" : "#c5c0b8",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {c.isStarred ? "★" : "☆"}
-                        </div>
-
-                        {/* Top Section: Icon + Company Name + Job Title */}
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-                          {/* Company Icon */}
-                          <div style={{ flexShrink: 0 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                            {/* Company Icon */}
+                            <div style={{ flexShrink: 0 }}>
                             {c.company ? (
                               <>
                                 <img
                                   src={getCompanyLogo(c.company, c.url)}
                                   alt={`${c.company} logo`}
                                   style={{
-                                    width: 16,
-                                    height: 16,
-                                    borderRadius: 6,
+                                    width: 18,
+                                    height: 18,
+                                    borderRadius: 4,
                                     objectFit: "contain",
                                     border: "1px solid #e5e7eb",
                                     background: "white",
@@ -568,97 +549,64 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                             )}
                           </div>
                           
-                          {/* Company Name and Job Title Stack */}
-                          <div style={{ flex: 1, minWidth: 0, paddingRight: 20 }}>
-                            <div style={{
-                              ...cardFont,
-                              fontSize: 13,
-                              fontWeight: 700,
-                              color: "#1f2937",
-                              lineHeight: 1.3,
-                              marginBottom: 3,
-                            }}>
-                              {c.company || "Company"}
-                            </div>
-                            <div style={{
-                              ...cardFont,
-                              fontSize: 13,
-                              fontWeight: 500,
-                              color: "#6b7280",
-                              lineHeight: 1.4,
-                            }}>
-                              {c.title}
+                            {/* Company Name and Job Title Stack */}
+                            <div style={{ flex: 1, minWidth: 0, marginLeft: 8 }}>
+                              <div style={{
+                                ...cardFont,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: "#6b7280",
+                                lineHeight: 1.3,
+                                marginBottom: 2,
+                              }}>
+                                {c.company || "Company"}
+                              </div>
+                              <div style={{
+                                ...cardFont,
+                                fontSize: 13,
+                                fontWeight: 500,
+                                color: "#6b7280",
+                                lineHeight: 1.3,
+                                marginBottom: 0,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}>
+                                {c.title}
+                              </div>
+                              {c.location ? (
+                                <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2, marginBottom: 0 }}>
+                                  {c.location}
+                                </div>
+                              ) : null}
                             </div>
                           </div>
-                        </div>
 
-                        {/* Bottom Section: Date + External Link */}
-                        <div style={{ 
-                          display: "flex", 
-                          alignItems: "center", 
-                          justifyContent: "space-between",
-                          gap: 8,
-                          paddingTop: 8,
-                          borderTop: "1px solid #f3f4f6",
-                        }}>
-                          {/* Date - Click to Edit */}
-                          <div 
-                            style={{ 
-                              ...cardFont, 
-                              fontSize: 10, 
-                              color: "#9ca3af", 
-                              cursor: "pointer",
-                            }} 
+                          <div
                             onClick={(e) => {
                               e.stopPropagation();
-                              const newDate = prompt(`Update saved date:`, displayDate);
-                              if (newDate) {
-                                setCards((p) =>
-                                  p.map((x) => {
-                                    if (x.id === c.id) {
-                                      return {
-                                        ...x,
-                                        dates: {
-                                          ...(x.dates || {
-                                            saved: x.added,
-                                            applied: null,
-                                            interviewing: null,
-                                            closed: null,
-                                          }),
-                                          [colDateKey]: newDate,
-                                        },
-                                      };
-                                    }
-                                    return x;
-                                  })
-                                );
-                              }
+                              setCards((p) =>
+                                p.map((card) =>
+                                  card.id === c.id
+                                    ? { ...card, isStarred: !card.isStarred }
+                                    : card
+                                )
+                              );
                             }}
-                            title="Click to edit date"
+                            style={{
+                              flexShrink: 0,
+                              width: 20,
+                              height: 20,
+                              display: "flex",
+                              alignItems: "flex-start",
+                              justifyContent: "center",
+                              fontSize: 16,
+                              color: c.isStarred ? "#d4a537" : "#c5c0b8",
+                              cursor: "pointer",
+                            }}
                           >
-                            Added {displayDate}
+                            {c.isStarred ? "★" : "☆"}
                           </div>
-
-                          {/* External Link Icon */}
-                          {c.url && (
-                            <a
-                              href={c.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ 
-                                color: "#9ca3af", 
-                                display: "flex",
-                                alignItems: "center",
-                                transition: "color 0.15s",
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              onMouseEnter={(e) => e.currentTarget.style.color = "#374151"}
-                              onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}
-                              title="Open job posting"
-                            >
-                              <ExternalLink size={12} />
-                            </a>
-                          )}
                         </div>
                       </div>
                     );
@@ -756,7 +704,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                         style={{
                           background: "#ffffff",
                           borderRadius: 12,
-                          padding: "11px 13px",
+                          padding: "8px 12px",
                           marginBottom: 8,
                           border: "1px solid #ede9e3",
                           borderLeft: "3.5px solid #d5d0c8",
@@ -769,32 +717,8 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           position: "relative",
                         }}
                       >
-                        {/* Star Toggle */}
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCards((p) =>
-                              p.map((card) =>
-                                card.id === c.id
-                                  ? { ...card, isStarred: !card.isStarred }
-                                  : card
-                              )
-                            );
-                          }}
-                          style={{
-                            position: "absolute",
-                            top: 10,
-                            right: 10,
-                            fontSize: 16,
-                            color: c.isStarred ? "#d4a537" : "#c5c0b8",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {c.isStarred ? "★" : "☆"}
-                        </div>
-
-                        {/* Top Section: Icon + Company Name + Job Title */}
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 2 }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           {/* Company Icon */}
                           <div style={{ flexShrink: 0 }}>
                             {c.company ? (
@@ -803,9 +727,9 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                   src={getCompanyLogo(c.company, c.url)}
                                   alt={`${c.company} logo`}
                                   style={{
-                                    width: 16,
-                                    height: 16,
-                                    borderRadius: 6,
+                                    width: 18,
+                                    height: 18,
+                                    borderRadius: 4,
                                     objectFit: "contain",
                                     border: "1px solid #e5e7eb",
                                     background: "white",
@@ -850,98 +774,68 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                             )}
                           </div>
                           
-                          {/* Company Name and Job Title Stack */}
-                          <div style={{ flex: 1, minWidth: 0, paddingRight: 20 }}>
-                            <div style={{
-                              ...cardFont,
-                              fontSize: 13,
-                              fontWeight: 700,
-                              color: "#1f2937",
-                              lineHeight: 1.3,
-                              marginBottom: 3,
-                            }}>
-                              {c.company || "Company"}
+                            {/* Company Name and Job Title Stack */}
+                            <div style={{ flex: 1, minWidth: 0, marginLeft: 8, paddingRight: 20 }}>
+                              <div style={{
+                                ...cardFont,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: "#6b7280",
+                                lineHeight: 1.3,
+                                marginBottom: 2,
+                              }}>
+                                {c.company || "Company"}
+                              </div>
+                              <div style={{
+                                ...cardFont,
+                                fontSize: 13,
+                                fontWeight: 500,
+                                color: "#6b7280",
+                                lineHeight: 1.3,
+                                marginBottom: 0,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}>
+                                {c.title}
+                              </div>
+                              {c.location ? (
+                                <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2, marginBottom: 0 }}>
+                                  {c.location}
+                                </div>
+                              ) : null}
                             </div>
-                            <div style={{
-                              ...cardFont,
-                              fontSize: 13,
-                              fontWeight: 500,
-                              color: "#6b7280",
-                              lineHeight: 1.4,
-                            }}>
-                              {c.title}
-                            </div>
+                          </div>
+
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCards((p) =>
+                                p.map((card) =>
+                                  card.id === c.id
+                                    ? { ...card, isStarred: !card.isStarred }
+                                    : card
+                                )
+                              );
+                            }}
+                            style={{
+                              flexShrink: 0,
+                              width: 20,
+                              height: 20,
+                              display: "flex",
+                              alignItems: "flex-start",
+                              justifyContent: "center",
+                              fontSize: 16,
+                              color: c.isStarred ? "#d4a537" : "#c5c0b8",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {c.isStarred ? "★" : "☆"}
                           </div>
                         </div>
 
                         {/* Bottom Section: Date + External Link */}
-                        <div style={{ 
-                          display: "flex", 
-                          alignItems: "center", 
-                          justifyContent: "space-between",
-                          gap: 8,
-                          paddingTop: 8,
-                          borderTop: "1px solid #f3f4f6",
-                        }}>
-                          {/* Date - Click to Edit */}
-                          <div 
-                            style={{ 
-                              ...cardFont, 
-                              fontSize: 10, 
-                              color: "#9ca3af", 
-                              cursor: "pointer",
-                            }} 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const newDate = prompt(`Update saved date:`, displayDate);
-                              if (newDate) {
-                                setCards((p) =>
-                                  p.map((x) => {
-                                    if (x.id === c.id) {
-                                      return {
-                                        ...x,
-                                        dates: {
-                                          ...(x.dates || {
-                                            saved: x.added,
-                                            applied: null,
-                                            interviewing: null,
-                                            closed: null,
-                                          }),
-                                          [colDateKey]: newDate,
-                                        },
-                                      };
-                                    }
-                                    return x;
-                                  })
-                                );
-                              }
-                            }}
-                            title="Click to edit date"
-                          >
-                            Added {displayDate}
-                          </div>
-
-                          {/* External Link Icon */}
-                          {c.url && (
-                            <a
-                              href={c.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ 
-                                color: "#9ca3af", 
-                                display: "flex",
-                                alignItems: "center",
-                                transition: "color 0.15s",
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              onMouseEnter={(e) => e.currentTarget.style.color = "#374151"}
-                              onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}
-                              title="Open job posting"
-                            >
-                              <ExternalLink size={12} />
-                            </a>
-                          )}
-                        </div>
+                        {/* Minimal card face: only company + title (+ optional location) */}
                       </div>
                     );
                   })}
@@ -967,7 +861,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                     style={{
                       background: "#ffffff",
                       borderRadius: 12,
-                      padding: "11px 13px",
+                      padding: "8px 12px",
                       marginBottom: 8,
                       border: "1px solid #ede9e3",
                       borderLeft: `4px solid ${col.color}`,
@@ -980,7 +874,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                     }}
                   >
                     {/* Top Section: Icon + Company Name + Job Title */}
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 2 }}>
                       {/* Company Icon */}
                       <div style={{ flexShrink: 0 }}>
                         {c.company ? (
@@ -989,8 +883,8 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                               src={getCompanyLogo(c.company, c.url)}
                               alt={`${c.company} logo`}
                               style={{
-                                width: 16,
-                                height: 16,
+                                width: 20,
+                                height: 20,
                                 borderRadius: 6,
                                 objectFit: "contain",
                                 border: "1px solid #e5e7eb",
@@ -1040,11 +934,11 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
                           ...cardFont,
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: 700,
-                          color: "#1f2937",
-                          lineHeight: 1.3,
-                          marginBottom: 3,
+                          color: "#6b7280",
+                          lineHeight: 1.2,
+                          marginBottom: 4,
                         }}>
                           {c.company || "Company"}
                         </div>
@@ -1053,10 +947,15 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           fontSize: 13,
                           fontWeight: 500,
                           color: "#6b7280",
-                          lineHeight: 1.4,
+                          lineHeight: 1.3,
                         }}>
                           {c.title}
                         </div>
+                        {c.location ? (
+                          <div style={{ ...cardFont, fontSize: 12, color: "#9ca3af", marginTop: 6 }}>
+                            {c.location}
+                          </div>
+                        ) : null}
                       </div>
 
                       {/* Delete Button - Top Right */}
@@ -1083,74 +982,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                       </button>
                     </div>
 
-                    {/* Bottom Section: Date + External Link */}
-                    <div style={{ 
-                      display: "flex", 
-                      alignItems: "center", 
-                      justifyContent: "space-between",
-                      gap: 8,
-                      paddingTop: 8,
-                      borderTop: "1px solid #f3f4f6",
-                    }}>
-                      {/* Date - Click to Edit */}
-                      <div 
-                        style={{ 
-                          ...cardFont, 
-                          fontSize: 10, 
-                          color: "#9ca3af", 
-                          cursor: "pointer",
-                        }} 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newDate = prompt(`Update ${col.id} date:`, displayDate);
-                          if (newDate) {
-                            setCards((p) =>
-                              p.map((x) => {
-                                if (x.id === c.id) {
-                                  return {
-                                    ...x,
-                                    dates: {
-                                      ...(x.dates || {
-                                        saved: x.added,
-                                        applied: null,
-                                        interviewing: null,
-                                        closed: null,
-                                      }),
-                                      [colDateKey]: newDate,
-                                    },
-                                  };
-                                }
-                                return x;
-                              })
-                            );
-                          }
-                        }}
-                        title="Click to edit date"
-                      >
-                        {col.id === "saved" ? "Added" : col.id} {displayDate}
-                      </div>
-
-                      {/* External Link Icon */}
-                      {c.url && (
-                        <a
-                          href={c.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ 
-                            color: "#9ca3af", 
-                            display: "flex",
-                            alignItems: "center",
-                            transition: "color 0.15s",
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          onMouseEnter={(e) => e.currentTarget.style.color = "#374151"}
-                          onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}
-                          title="Open job posting"
-                        >
-                          <ExternalLink size={12} />
-                        </a>
-                      )}
-                    </div>
+                    {/* Minimal card face: only company + title (+ optional location) */}
                   </div>
                 );
               }))}
@@ -1209,10 +1041,10 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                 
                 // Define all stages in order
                 const allStages = [
-                  { key: 'saved', label: 'Added' },
-                  { key: 'applied', label: 'Applied' },
-                  { key: 'interviewing', label: 'Interviewing' },
-                  { key: 'closed', label: 'Closed' },
+                  { key: 'saved', label: 'added' },
+                  { key: 'applied', label: 'applied' },
+                  { key: 'interviewing', label: 'interviewing' },
+                  { key: 'closed', label: 'closed' },
                 ];
                 
                 // Find which stage the card is currently in
@@ -1459,14 +1291,29 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                   }}>
                                     {entry.label}
                                   </div>
-                                  <div style={{ 
-                                    fontSize: 13, 
-                                    fontWeight: 500, 
-                                    color: "#374151", 
-                                    fontFamily: "Plus Jakarta Sans" 
-                                  }}>
-                                    {formatDisplayDate(entry.date)}
-                                  </div>
+                                  <input
+                                    type="date"
+                                    value={entry.date}
+                                    onChange={(e) =>
+                                      setCards((p) =>
+                                        p.map((c) =>
+                                          c.id === editingId
+                                            ? { ...c, dates: { ...c.dates, [entry.key]: e.target.value } }
+                                            : c
+                                        )
+                                      )
+                                    }
+                                    style={{
+                                      border: "none",
+                                      background: "transparent",
+                                      fontSize: 13,
+                                      fontWeight: 500,
+                                      color: "#374151",
+                                      fontFamily: "Plus Jakarta Sans",
+                                      cursor: "pointer",
+                                      outline: "none",
+                                    }}
+                                  />
                                 </div>
                               ))}
                             </div>

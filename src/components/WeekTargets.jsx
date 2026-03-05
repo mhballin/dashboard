@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { WEEKLY_TARGETS } from "../data/keywords";
+import { todayStr } from "../utils/dates";
 
 const lbl = {
   fontFamily: "'Plus Jakarta Sans',sans-serif",
@@ -35,7 +36,7 @@ export function WeekTargets({ weekly, targets, onInc, onDec, onLog, quickNote, s
   const savePrompt = (key) => {
     onInc(key);
     onLog({
-      date: new Date().toISOString().slice(0, 10),
+      date: todayStr(),
       type: key,
       note: promptText.trim() || "No note added",
     });
@@ -262,7 +263,7 @@ function AutoResizeQuickNote({ quickNote, setQuickNote, onLog }) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (quickNote.trim()) {
-        onLog({ date: new Date().toISOString().slice(0, 10), type: "note", note: quickNote.trim() });
+        onLog({ date: todayStr(), type: "note", note: quickNote.trim() });
         setQuickNote("");
       }
     }

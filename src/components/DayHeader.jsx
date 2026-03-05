@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { todayStr } from "../utils/dates";
 
 const WMO = {
   0: "☀️ Sunny",
@@ -62,7 +63,7 @@ export function DayHeader({ streak, lastActive, tempUnit = "F", locationOverride
     day: "numeric",
   });
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  
 
   return (
     <div
@@ -131,7 +132,7 @@ export function DayHeader({ streak, lastActive, tempUnit = "F", locationOverride
               day streak
             </span>
           </div>
-          {lastActive === todayStr && (
+          {lastActive === todayStr() && (
             <div
               style={{
                 fontSize: 12,

@@ -328,7 +328,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
       <div style={{ ...lbl, marginBottom: 20 }}>Applications Tracker</div>
 
       {/* Kanban Columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,260px)", gap: 14, justifyContent: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,260px)", gap: 14, justifyContent: "center" }}>
         {KANBAN_COLS.map((col) => {
           let colCards = cards.filter((c) => c.col === col.id);
           
@@ -366,8 +366,6 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                 minWidth: 260,
                 width: 260,
                 boxSizing: "border-box",
-                overflowY: col.id === "saved" ? "auto" : "visible",
-                maxHeight: col.id === "saved" ? "60vh" : "none",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -442,11 +440,12 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                         onDrop={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          if (dragging !== null && dragging !== c.id) {
+                          if (dragging !== null) {
                             const draggedCard = cards.find((card) => card.id === dragging);
-                            if (draggedCard && draggedCard.col === "saved") {
+                            if (draggedCard && draggedCard.col !== "saved") {
+                              move(dragging, "saved");
+                            } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
                               if (draggedCard.isHighPriority === true) {
-                                // Swap order within high section
                                 setCards((p) =>
                                   p.map((card) => {
                                     if (card.id === dragging) {
@@ -459,7 +458,6 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                   })
                                 );
                               } else {
-                                // Move from others into priority section
                                 setCards((p) =>
                                   p.map((card) =>
                                     card.id === dragging
@@ -472,6 +470,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           }
                           setDragging(null);
                           setDragOver(null);
+                          setIsDragging(false);
                         }}
                         onClick={() => handleCardClick(c)}
                         onMouseEnter={() => setHoveredCardId(c.id)}
@@ -490,10 +489,11 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           transform: hoveredCardId === c.id ? "translateY(-2px)" : "translateY(0)",
                           transition: "all 0.2s ease",
                           position: "relative",
+                          overflow: "hidden",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flex: 1, minWidth: 0 }}>
                             {/* Company Icon */}
                             <div style={{ flexShrink: 0 }}>
                             {c.company ? (
@@ -550,7 +550,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           </div>
                           
                             {/* Company Name and Job Title Stack */}
-                            <div style={{ flex: 1, minWidth: 0, marginLeft: 8 }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{
                                 ...cardFont,
                                 fontSize: 11,
@@ -565,17 +565,13 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                 ...cardFont,
                                 fontSize: 13,
                                 fontWeight: 500,
-                                color: "#6b7280",
+                                color: "#374151",
                                 lineHeight: 1.3,
-                                marginBottom: 0,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
                               }}>
                                 {c.title}
                               </div>
                               {c.location ? (
-                                <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2, marginBottom: 0 }}>
+                                <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
                                   {c.location}
                                 </div>
                               ) : null}
@@ -667,11 +663,12 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                         onDrop={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          if (dragging !== null && dragging !== c.id) {
+                          if (dragging !== null) {
                             const draggedCard = cards.find((card) => card.id === dragging);
-                            if (draggedCard && draggedCard.col === "saved") {
+                            if (draggedCard && draggedCard.col !== "saved") {
+                              move(dragging, "saved");
+                            } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
                               if (draggedCard.isHighPriority !== true) {
-                                // Swap order within others section
                                 setCards((p) =>
                                   p.map((card) => {
                                     if (card.id === dragging) {
@@ -684,7 +681,6 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                   })
                                 );
                               } else {
-                                // Move from priority into others section
                                 setCards((p) =>
                                   p.map((card) =>
                                     card.id === dragging
@@ -697,6 +693,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           }
                           setDragging(null);
                           setDragOver(null);
+                          setIsDragging(false);
                         }}
                         onClick={() => handleCardClick(c)}
                         onMouseEnter={() => setHoveredCardId(c.id)}
@@ -715,10 +712,11 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           transform: hoveredCardId === c.id ? "translateY(-2px)" : "translateY(0)",
                           transition: "all 0.2s ease",
                           position: "relative",
+                          overflow: "hidden",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 2 }}>
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flex: 1, minWidth: 0 }}>
                           {/* Company Icon */}
                           <div style={{ flexShrink: 0 }}>
                             {c.company ? (
@@ -775,7 +773,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           </div>
                           
                             {/* Company Name and Job Title Stack */}
-                            <div style={{ flex: 1, minWidth: 0, marginLeft: 8, paddingRight: 20 }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{
                                 ...cardFont,
                                 fontSize: 11,
@@ -790,17 +788,13 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                 ...cardFont,
                                 fontSize: 13,
                                 fontWeight: 500,
-                                color: "#6b7280",
+                                color: "#374151",
                                 lineHeight: 1.3,
-                                marginBottom: 0,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
                               }}>
                                 {c.title}
                               </div>
                               {c.location ? (
-                                <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2, marginBottom: 0 }}>
+                                <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
                                   {c.location}
                                 </div>
                               ) : null}
@@ -871,10 +865,12 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                       opacity: dragging === c.id ? 0.5 : 1,
                       transform: hoveredCardId === c.id ? "translateY(-2px)" : "translateY(0)",
                       transition: "all 0.2s ease",
+                          overflow: "hidden",
                     }}
                   >
                     {/* Top Section: Icon + Company Name + Job Title */}
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 2 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flex: 1, minWidth: 0 }}>
                       {/* Company Icon */}
                       <div style={{ flexShrink: 0 }}>
                         {c.company ? (
@@ -934,11 +930,11 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
                           ...cardFont,
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: 700,
                           color: "#6b7280",
-                          lineHeight: 1.2,
-                          marginBottom: 4,
+                          lineHeight: 1.3,
+                          marginBottom: 2,
                         }}>
                           {c.company || "Company"}
                         </div>
@@ -946,16 +942,17 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                           ...cardFont,
                           fontSize: 13,
                           fontWeight: 500,
-                          color: "#6b7280",
+                          color: "#374151",
                           lineHeight: 1.3,
                         }}>
                           {c.title}
                         </div>
                         {c.location ? (
-                          <div style={{ ...cardFont, fontSize: 12, color: "#9ca3af", marginTop: 6 }}>
+                          <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
                             {c.location}
                           </div>
                         ) : null}
+                      </div>
                       </div>
 
                       {/* Delete Button - Top Right */}

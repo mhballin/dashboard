@@ -16,10 +16,24 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
   const inputRef = useRef();
+  const adjust = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    const singleLinePx = 28; // baseline one-line height (fixed single-line)
+    if (!el.value) {
+      el.style.height = `${singleLinePx}px`;
+      return;
+    }
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
   const dragId = useRef(null);
 
   useEffect(() => {
-    if (adding && inputRef.current) inputRef.current.focus();
+    if (adding && inputRef.current) {
+      inputRef.current.focus();
+      adjust();
+    }
   }, [adding]);
 
   useEffect(() => {
@@ -32,6 +46,16 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
       if (taskAddRef) taskAddRef.current = null;
     };
   }, [taskAddRef]);
+
+  useEffect(() => {
+    adjust();
+  }, [text]);
+
+  useEffect(() => {
+    const onResize = () => adjust();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const addTask = () => {
     if (!text.trim()) return setAdding(false);
@@ -163,28 +187,38 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
 
       {adding && (
         <div style={{ display: "flex", gap: 8, marginTop: 4, marginBottom: 8 }}>
-          <input
+          <textarea
             data-testid="tasks-add-input"
             ref={inputRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
+            
             onKeyDown={(e) => {
-              if (e.key === "Enter") addTask();
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                addTask();
+              }
               if (e.key === "Escape") {
                 setAdding(false);
                 setText("");
               }
             }}
             placeholder="Task… (Enter to save)"
+            rows={1}
             style={{
               flex: 1,
-              padding: "9px 13px",
-              borderRadius: 10,
+              padding: "5px 12px",
+              lineHeight: "26px",
+              borderRadius: 13,
               border: "1.5px solid #d1fae5",
               outline: "none",
               fontFamily: "'Plus Jakarta Sans',sans-serif",
               fontSize: 13,
               background: "#f0fdf4",
+              resize: "none",
+              overflow: "hidden",
+              height: "28px",
+              minHeight: 0,
             }}
           />
           <button
@@ -193,8 +227,8 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
             style={{
               background: "#16a34a",
               border: "none",
-              borderRadius: 10,
-              padding: "9px 14px",
+              borderRadius: 8,
+              padding: "5px 12px",
               color: "white",
               cursor: "pointer",
               display: "flex",

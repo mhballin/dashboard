@@ -1,3 +1,5 @@
+import { parseDateToLocalMidnight, dateToMillis } from "../utils/dates";
+
 const TYPE_META = {
   meetings: {
     label: "Meeting",
@@ -49,8 +51,8 @@ const dateLabelStyle = {
 
 export function ActivityLog({ entries = [], onDelete }) {
   const sortedEntries = [...entries].sort((a, b) => {
-    const aTime = new Date(`${a.date || "1970-01-01"}T12:00:00`).getTime();
-    const bTime = new Date(`${b.date || "1970-01-01"}T12:00:00`).getTime();
+    const aTime = dateToMillis(a.date || "1970-01-01");
+    const bTime = dateToMillis(b.date || "1970-01-01");
     if (aTime !== bTime) return bTime - aTime;
     return (b.id || 0) - (a.id || 0);
   });
@@ -63,8 +65,8 @@ export function ActivityLog({ entries = [], onDelete }) {
   }, {});
 
   const dateKeys = Object.keys(grouped).sort((a, b) => {
-    const aTime = new Date(`${a}T12:00:00`).getTime();
-    const bTime = new Date(`${b}T12:00:00`).getTime();
+    const aTime = dateToMillis(a);
+    const bTime = dateToMillis(b);
     return bTime - aTime;
   });
 
@@ -101,7 +103,7 @@ export function ActivityLog({ entries = [], onDelete }) {
       )}
 
       {dateKeys.map((dateKey) => {
-        const formattedDate = new Date(`${dateKey}T12:00:00`).toLocaleDateString("en-US", {
+        const formattedDate = parseDateToLocalMidnight(dateKey).toLocaleDateString("en-US", {
           weekday: "long",
           month: "long",
           day: "numeric",

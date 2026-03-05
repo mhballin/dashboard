@@ -10,7 +10,7 @@ import { DayHeader } from "./components/DayHeader";
 import { SettingsTab } from "./components/SettingsTab";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { S } from "./utils/storage";
-import { getWeekKey, todayStr } from "./utils/dates";
+import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
 import { DEFAULT_TASKS, DEFAULT_PITCH } from "./data/defaultContent";
 
 const cardStyle = {
@@ -216,8 +216,8 @@ function App() {
     monday.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (week - 1) * 7);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
-    const applied = new Date(card.dates.applied + "T12:00:00");
-    return applied >= monday && applied <= sunday;
+    const applied = parseDateToLocalMidnight(card.dates.applied);
+    return applied && applied.getTime() >= monday.getTime() && applied.getTime() <= sunday.getTime();
   }).length;
 
   if (!loaded) {

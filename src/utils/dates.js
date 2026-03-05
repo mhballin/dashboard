@@ -25,3 +25,19 @@ export function nowTimestamp() {
   const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   return `${date} ${time}`;
 }
+
+// Parse a YYYY-MM-DD date string into a local-midnight Date object.
+// This avoids relying on `new Date('YYYY-MM-DD')` which can be parsed as UTC
+// in some environments and lead to off-by-one-day bugs across timezones.
+export function parseDateToLocalMidnight(dateStr) {
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+}
+
+// Return milliseconds for the local-midnight of a YYYY-MM-DD date string.
+export function dateToMillis(dateStr) {
+  const d = parseDateToLocalMidnight(dateStr);
+  return d ? d.getTime() : 0;
+}

@@ -11,7 +11,7 @@ const lbl = {
   color: "#9ca3af",
 };
 
-export function WeekTargets({ weekly, targets, onInc, onDec, onLog, quickNote, setQuickNote }) {
+export function WeekTargets({ weekly, targets, onInc, onDec, onLog, quickNote, setQuickNote, onQuickNoteAdd, quickNoteAddRef }) {
   const [promptKey, setPromptKey] = useState(null);
   const [promptText, setPromptText] = useState("");
   const METRIC_COLORS = {
@@ -232,17 +232,19 @@ export function WeekTargets({ weekly, targets, onInc, onDec, onLog, quickNote, s
       <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #f3f4f6" }}>
         <div style={{ ...lbl, marginBottom: 8 }}>Today's Note</div>
         {/* Auto-resizing textarea: Enter saves, Shift+Enter inserts newline */}
-        <AutoResizeQuickNote
-          quickNote={quickNote}
-          setQuickNote={setQuickNote}
-          onLog={onLog}
-        />
+            <AutoResizeQuickNote
+              quickNote={quickNote}
+              setQuickNote={setQuickNote}
+              onLog={onLog}
+              onQuickNoteAdd={onQuickNoteAdd}
+              quickNoteAddRef={quickNoteAddRef}
+            />
       </div>
     </div>
   );
 }
 
-function AutoResizeQuickNote({ quickNote, setQuickNote, onLog }) {
+    function AutoResizeQuickNote({ quickNote, setQuickNote, onLog, onQuickNoteAdd, quickNoteAddRef }) {
   const ref = useRef(null);
 
   const adjust = () => {
@@ -259,11 +261,26 @@ function AutoResizeQuickNote({ quickNote, setQuickNote, onLog }) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  useEffect(() => {
+    if (quickNoteAddRef) {
+      quickNoteAddRef.current = () => {
+        ref.current?.focus();
+      };
+      return () => {
+        if (quickNoteAddRef) quickNoteAddRef.current = null;
+      };
+    }
+  }, [quickNoteAddRef]);
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (quickNote.trim()) {
-        onLog({ date: todayStr(), type: "note", note: quickNote.trim() });
+        if (onQuickNoteAdd) {
+          onQuickNoteAdd(quickNote.trim());
+        } else {
+          onLog({ date: todayStr(), type: "note", note: quickNote.trim() });
+        }
         setQuickNote("");
       }
     }

@@ -85,7 +85,14 @@ export function TodaysNotes({ notes = [], onAdd, onDelete, noteAddRef }) {
         {notes.length === 0 && <div style={{ color: "#9ca3af", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>No notes for today</div>}
         {notes.map((n) => (
           <div key={n.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: "white", borderRadius: 8, border: "1px solid #ede9e3", marginBottom: 8 }}>
-            <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans',sans-serif", color: "#374151" }}>{n.text}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", color: "#374151" }}>{n.text}</div>
+              {(n.copiedToActivity || n.migratedAt) && (
+                <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 11, color: "#9ca3af", marginTop: 6 }}>
+                  Copied to activity
+                </div>
+              )}
+            </div>
             <button onClick={() => onDelete(n.id)} style={{ background: "none", border: "none", color: "#d1d5db", cursor: "pointer" }}>✕</button>
           </div>
         ))}

@@ -5,10 +5,8 @@ import { WeekTargets } from "./components/WeekTargets";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { JobBoardsTab } from "./components/JobBoardsTab";
 import { ActivityLog } from "./components/ActivityLog";
-import { CollapsiblePanel } from "./components/CollapsiblePanel";
 import { DayHeader } from "./components/DayHeader";
 import { SettingsTab } from "./components/SettingsTab";
-import { TodaysNotes } from "./components/TodaysNotes";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { S } from "./utils/storage";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
@@ -35,6 +33,7 @@ const TABS = [
   { id: "activity", label: "Activity" },
   { id: "applications", label: "Applications" },
   { id: "jobboards", label: "Job Boards & Keywords" },
+  { id: "profile", label: "Profile" },
   { id: "settings", label: "Settings" },
 ];
 
@@ -52,6 +51,7 @@ function App() {
   const [notesByDate, setNotesByDate] = useState({});
   const [quickNote, setQuickNote] = useState("");
   const [activityLog, setActivityLog] = useState([]);
+  const [notesTtlHours, setNotesTtlHours] = useState(24);
   const [userSettings, setUserSettings] = useState({
     userName: "Mike Ballin",
     tempUnit: "F",
@@ -101,16 +101,25 @@ function App() {
       }
       if (a) setActivityLog(a);
       if (u) setUserSettings((prev) => ({ ...prev, ...u }));
-      // After initial load, migrate any notes older than 24 hours into activityLog
-      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      // Load TTL setting (hours)
+      const ttl = await S.get("notes-ttl-hours");
+      if (ttl) setNotesTtlHours(ttl);
+
+      // After initial load, migrate any notes older than TTL into activityLog
       const migratedLogs = [];
       const kept = {};
       const source = nb || (n && n.trim() ? { [todayStr()]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: todayStr() }] } : {});
+      const now = Date.now();
+      const ttlMs = (ttl || 24) * 60 * 60 * 1000;
       for (const [dateKey, arr] of Object.entries(source || {})) {
         const keep = [];
         for (const note of arr) {
-          if (note && note.createdAt && note.createdAt < cutoff) {
-            migratedLogs.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: "note", note: note.text });
+          if (note && note.createdAt && note.createdAt + ttlMs <= now) {
+            // If the note hasn't been copied to activity yet, create an activity entry.
+            if (!note.copiedToActivity) {
+              migratedLogs.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: "note", note: note.text });
+            }
+            // do not keep the note (TTL expired)
           } else if (note) {
             keep.push(note);
           }
@@ -122,6 +131,41 @@ function App() {
       setLoaded(true);
     })();
   }, []);
+
+  // Persist TTL setting when changed
+  useEffect(() => {
+    if (loaded) S.set("notes-ttl-hours", notesTtlHours);
+  }, [notesTtlHours, loaded]);
+
+  // Periodic migration: run every 30 minutes to move expired notes to activity
+  useEffect(() => {
+    if (!loaded) return;
+    const migrate = () => {
+      const ttlMs = notesTtlHours * 60 * 60 * 1000;
+      setNotesByDate((prev) => {
+        const now = Date.now();
+        const newNotes = {};
+        const newActivities = [];
+        for (const [dateKey, arr] of Object.entries(prev || {})) {
+          for (const note of arr) {
+            if (note && note.createdAt && note.createdAt + ttlMs <= now) {
+              if (!note.copiedToActivity) {
+                newActivities.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: "note", note: note.text });
+              }
+              // drop note (expired)
+            } else {
+              newNotes[dateKey] = newNotes[dateKey] || [];
+              newNotes[dateKey].push(note);
+            }
+          }
+        }
+        if (newActivities.length) setActivityLog((prevA) => [...newActivities, ...prevA]);
+        return newNotes;
+      });
+    };
+    const id = setInterval(migrate, 30 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [loaded, notesTtlHours]);
 
   // Persist state changes
   useEffect(() => {
@@ -181,6 +225,14 @@ function App() {
 
   const addLog = (entry) => {
     setActivityLog((prev) => [{ ...entry, id: Date.now(), date: entry.date || todayStr() }, ...prev]);
+  };
+
+  // Handler for quick-note adds from WeekTargets: create dashboard note and copy to Activity immediately
+  const handleQuickNoteAdd = (text) => {
+    const today = todayStr();
+    const note = { id: Date.now(), text, createdAt: Date.now(), date: today, copiedToActivity: true };
+    setNotesByDate((prev) => ({ ...prev, [today]: [...(prev[today] || []), note] }));
+    addLog({ date: today, type: "note", note: text });
   };
 
   // Find the last valid weekday (Mon-Fri) before today
@@ -404,53 +456,12 @@ function App() {
                     onLog={addLog}
                     quickNote={quickNote}
                     setQuickNote={setQuickNote}
+                    onQuickNoteAdd={handleQuickNoteAdd}
+                    quickNoteAddRef={notesAddRef}
                   />
                 </div>
               </div>
-              <CollapsiblePanel title="🎯 Pitch & Notes">
-                <div style={{ marginBottom: 14 }}>
-                  <div style={{ ...lbl, marginBottom: 8 }}>Your Pitch</div>
-                  <textarea
-                    value={pitch}
-                    onChange={(e) => setPitch(e.target.value)}
-                    ref={pitchRef}
-                    onInput={adjustPitchHeight}
-                    style={{
-                      width: "100%",
-                      minHeight: 150,
-                      background: "#fafaf8",
-                      border: "1px solid #ede9e3",
-                      borderRadius: 12,
-                      padding: 14,
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
-                      fontSize: 13,
-                      lineHeight: 1.7,
-                      color: "#374151",
-                      outline: "none",
-                      resize: "none",
-                      overflow: "hidden",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-                <div>
-                  <div style={{ ...lbl, marginBottom: 8 }}>
-                    <TodaysNotes
-                      notes={(notesByDate[todayStr()] || []).slice().reverse()}
-                      noteAddRef={notesAddRef}
-                      onAdd={(text) => {
-                        const today = todayStr();
-                        const note = { id: Date.now(), text, createdAt: Date.now(), date: today };
-                        setNotesByDate((prev) => ({ ...prev, [today]: [...(prev[today] || []), note] }));
-                      }}
-                      onDelete={(id) => {
-                        const today = todayStr();
-                        setNotesByDate((prev) => ({ ...prev, [today]: (prev[today] || []).filter((n) => n.id !== id) }));
-                      }}
-                    />
-                  </div>
-                </div>
-              </CollapsiblePanel>
+              {/* Pitch & Notes moved to Profile tab; WeekTargets is now source-of-truth for quick notes */}
             </>
           )}
 
@@ -471,6 +482,38 @@ function App() {
 
           {/* ── JOB BOARDS TAB ── */}
           {tab === "jobboards" && <JobBoardsTab />}
+
+          {/* ── PROFILE TAB ── */}
+          {tab === "profile" && (
+            <div style={{ ...cardStyle, padding: "24px 26px" }}>
+              <div style={{ ...lbl, marginBottom: 8 }}>Profile</div>
+              <div>
+                <div style={{ ...lbl, marginBottom: 8 }}>Your Pitch</div>
+                <textarea
+                  value={pitch}
+                  onChange={(e) => setPitch(e.target.value)}
+                  ref={pitchRef}
+                  onInput={adjustPitchHeight}
+                  style={{
+                    width: "100%",
+                    minHeight: 150,
+                    background: "#fafaf8",
+                    border: "1px solid #ede9e3",
+                    borderRadius: 12,
+                    padding: 14,
+                    fontFamily: "'Plus Jakarta Sans',sans-serif",
+                    fontSize: 13,
+                    lineHeight: 1.7,
+                    color: "#374151",
+                    outline: "none",
+                    resize: "none",
+                    overflow: "hidden",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* ── SETTINGS TAB ── */}
           {tab === "settings" && (

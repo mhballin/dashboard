@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { CopyButton } from "./CopyButton";
 import { KEYWORDS } from "../data/keywords";
+import { S } from "../utils/storage";
 
 const cardStyle = {
   background: "#ffffff",
@@ -33,24 +34,31 @@ export function KeywordSection({ section, keywords }) {
     };
   }, [searchQuery]);
 
-  let sourceKeywords = Array.isArray(keywords) ? keywords : [];
-  try {
-    const raw = localStorage.getItem("job-dashboard-keywords");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        sourceKeywords = parsed;
-      } else if (parsed && Array.isArray(parsed[section])) {
-        sourceKeywords = parsed[section];
-      }
-    }
-  } catch {
-    // Fall back to provided/seed keywords when storage is unavailable or malformed.
-  }
+  const [sourceKeywords, setSourceKeywords] = useState(
+    Array.isArray(keywords) ? keywords :
+    Array.isArray(KEYWORDS[section]) ? KEYWORDS[section] : []
+  );
 
-  if (!Array.isArray(sourceKeywords) || sourceKeywords.length === 0) {
-    sourceKeywords = Array.isArray(KEYWORDS[section]) ? KEYWORDS[section] : [];
-  }
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await S.get("job-dashboard-keywords");
+        if (!mounted) return;
+        if (Array.isArray(res) && res.length > 0) {
+          setSourceKeywords(res);
+        } else if (res && Array.isArray(res[section]) && res[section].length > 0) {
+          setSourceKeywords(res[section]);
+        }
+      } catch {
+        // ignore and keep seed/default
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const normalizedQuery = debouncedQuery.trim().toLowerCase();
   const filteredKeywords = sourceKeywords.filter((kw) => kw.toLowerCase().includes(normalizedQuery));

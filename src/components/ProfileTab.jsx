@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { S } from "../utils/storage";
 
 function Section({ title, helper, valueProp, initial, onSave }) {
   const isControlled = valueProp !== undefined;
@@ -189,6 +190,28 @@ export default function ProfileTab({ pitch, setPitch }) {
   const [lookingFor, setLookingFor] = useState(defaultLooking);
   const [proofPoints, setProofPoints] = useState(defaultProof);
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [storedAsk, storedLooking, storedProof] = await Promise.all([
+          S.get("profile-ask"),
+          S.get("profile-looking"),
+          S.get("profile-proof"),
+        ]);
+
+        if (!mounted) return;
+        if (storedAsk != null) setAsk(storedAsk);
+        if (storedLooking != null) setLookingFor(storedLooking);
+        if (storedProof != null) setProofPoints(storedProof);
+      } catch (e) {}
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div style={{ padding: "8px 0" }}>
       <Section
@@ -202,21 +225,30 @@ export default function ProfileTab({ pitch, setPitch }) {
         title="THE ASK"
         helper="Use this at the end of every networking meeting"
         initial={ask}
-        onSave={(v) => setAsk(v)}
+        onSave={(v) => {
+          setAsk(v);
+          S.set("profile-ask", v);
+        }}
       />
 
       <Section
         title="WHAT I'M LOOKING FOR"
         helper="Quick reference for calls and coffee chats"
         initial={lookingFor}
-        onSave={(v) => setLookingFor(v)}
+        onSave={(v) => {
+          setLookingFor(v);
+          S.set("profile-looking", v);
+        }}
       />
 
       <Section
         title="KEY PROOF POINTS"
         helper="Highlights to work into conversation"
         initial={proofPoints}
-        onSave={(v) => setProofPoints(v)}
+        onSave={(v) => {
+          setProofPoints(v);
+          S.set("profile-proof", v);
+        }}
       />
     </div>
   );

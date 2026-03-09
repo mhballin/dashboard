@@ -40,6 +40,12 @@ export const S = {
         'notes',
         'activityLog',
         'kanban',
+        'notesByDate',
+        'user-settings',
+        'notes-ttl-hours',
+        'profile-ask',
+        'profile-looking',
+        'profile-proof',
       ]);
 
       const data = {};

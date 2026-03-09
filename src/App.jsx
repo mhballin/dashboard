@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { StreakBanner } from "./components/StreakBanner";
 import { Tasks } from "./components/Tasks";
 import { WeekTargets } from "./components/WeekTargets";
 import { KanbanBoard } from "./components/KanbanBoard";

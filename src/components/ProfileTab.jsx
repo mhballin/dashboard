@@ -224,7 +224,7 @@ export default function ProfileTab({ pitch, setPitch }) {
       <Section
         title="THE ASK"
         helper="Use this at the end of every networking meeting"
-        initial={ask}
+        valueProp={ask}
         onSave={(v) => {
           setAsk(v);
           S.set("profile-ask", v);
@@ -234,7 +234,7 @@ export default function ProfileTab({ pitch, setPitch }) {
       <Section
         title="WHAT I'M LOOKING FOR"
         helper="Quick reference for calls and coffee chats"
-        initial={lookingFor}
+        valueProp={lookingFor}
         onSave={(v) => {
           setLookingFor(v);
           S.set("profile-looking", v);
@@ -244,7 +244,7 @@ export default function ProfileTab({ pitch, setPitch }) {
       <Section
         title="KEY PROOF POINTS"
         helper="Highlights to work into conversation"
-        initial={proofPoints}
+        valueProp={proofPoints}
         onSave={(v) => {
           setProofPoints(v);
           S.set("profile-proof", v);

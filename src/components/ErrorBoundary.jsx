@@ -18,12 +18,34 @@ class ErrorBoundary extends React.Component {
   }
 
   handleResetApp = () => {
-    const prefix = "job-dashboard-";
+    const keysToRemove = [
+      "tasks",
+      "cumulative",
+      "streak",
+      "lastActive",
+      "pitch",
+      "kanban",
+      "activityLog",
+      "notes",
+      "notesByDate",
+      "user-settings",
+      "notes-ttl-hours",
+      "profile-ask",
+      "profile-looking",
+      "profile-proof",
+    ];
 
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
+
+    const prefixes = ["job-dashboard-", "weekly-"];
     for (let i = localStorage.length - 1; i >= 0; i -= 1) {
       const key = localStorage.key(i);
-      if (key && key.startsWith(prefix)) {
-        localStorage.removeItem(key);
+      if (!key) continue;
+      for (const p of prefixes) {
+        if (key.startsWith(p)) {
+          localStorage.removeItem(key);
+          break;
+        }
       }
     }
 

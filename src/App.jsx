@@ -4,7 +4,6 @@ import { WeekTargets } from "./components/WeekTargets";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { JobBoardsTab } from "./components/JobBoardsTab";
 import { ActivityLog } from "./components/ActivityLog";
-import { DayHeader } from "./components/DayHeader";
 import DashboardTab from "./components/DashboardTab";
 import { SettingsTab } from "./components/SettingsTab";
 import ErrorBoundary from "./components/ErrorBoundary";

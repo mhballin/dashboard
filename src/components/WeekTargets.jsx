@@ -183,9 +183,14 @@ export function WeekTargets({
                 }}
               >
                 <div style={{ ...lbl, marginBottom: 8 }}>Add a note</div>
-                <input
+                <textarea
+                  rows={1}
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
+                  onInput={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = e.target.scrollHeight + "px";
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") savePrompt(key);
                     if (e.key === "Escape") cancelPrompt();
@@ -201,6 +206,10 @@ export function WeekTargets({
                     fontSize: 13,
                     background: "white",
                     boxSizing: "border-box",
+                    resize: "none",
+                    overflow: "hidden",
+                    minHeight: 40,
+                    display: "block",
                   }}
                 />
                 <div style={{ display: "flex", gap: 8, marginTop: 8 }}>

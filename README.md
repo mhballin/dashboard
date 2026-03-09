@@ -1,54 +1,40 @@
-# Job Search Dashboard
+# Job Search HQ
 
-A personal job-search command center built with React + Vite. Tracks 
-weekly goals, manages applications on a kanban board, and stores 
-curated job board links and LinkedIn Boolean search strings — all 
-in the browser with no backend required.
+A compact, single-page job-search command center I built to keep applications, outreach, and search strings in one place — no backend required. Built by Michael Ballin.
 
-## Getting Started
+(screenshot)
+
+## Features
+
+- **Dashboard** — Quick view of today: the top tasks (drag to reorder), a streak banner, weekly target counters (meetings, outreach, follow-ups, applications), and a quick-note area for pitch or scratch notes.
+- **Applications (Kanban)** — Four-column board (Saved → Applied → Interviewing → Closed). Create, edit, and drag job cards; cards store company, title, URL, description and notes. Moving cards to Applied/Interviewing/Closed stamps dates and adds an entry to the activity log.
+- **Job Boards & Search Strings** — Curated grid of saved job boards and editable LinkedIn/Boolean search strings you can copy. Add, edit, or remove boards and search queries from the UI.
+- **Activity Log** — Chronological log that groups meetings, outreach, follow-ups and applications by date. Each entry is editable and removable.
+- **Profile** — Lightweight place to keep a short pitch you reuse for outreach.
+- **Settings / Backups** — Export and import a single JSON file to back up or restore all data; change weekly targets, name, and quick-note retention.
+
+All data is persisted locally in your browser's `localStorage` — nothing is sent to a server. Use Settings → Export to download a backup.
+
+## Stack
+
+- React (JSX) + Vite
+- Persistence: browser `localStorage` (no backend)
+- UI: inline styles, Plus Jakarta Sans font
+- No external UI libraries or CSS frameworks
+- Drag-and-drop: native HTML5 drag-and-drop (no DnD library)
+
+## Getting started
+
+1. Install dependencies and run the dev server:
+
 ```bash
 npm install
 npm run dev
 ```
 
-Opens at `http://localhost:5173`.
+2. Open http://localhost:5173
 
-## Features
+## Why I built this
 
-- **Dashboard** — daily streak, today's top 3 tasks, weekly metric 
-	counters (meetings, outreach, follow-ups, applications), pitch & 
-	scratch notes
-- **Activity Log** — timestamped log of outreach, meetings, and 
-	applications
-- **Applications** — drag-and-drop kanban board (Saved → Applied → 
-	Interviewing → Closed) with per-card notes and job descriptions
-- **Job Boards & Keywords** — curated job boards, keyword library, 
-	and copyable LinkedIn Boolean search strings
-- **Settings** — export and import all data as a JSON backup file
+I made this as a practical, private workspace to stop scattering job leads across tabs, notes, and browser bookmarks. It collects the tiny pieces that matter — a place to store search strings, a kanban for applications, quick outreach notes, and simple weekly targets — and keeps them local and offline-first. It helps me stay focused without forcing a complicated workflow.
 
-## Data & Privacy
-
-All data lives in your browser's localStorage — nothing is sent to 
-any server. Use the Export button in Settings to download a backup 
-file. Import restores everything from that file.
-
-## Project Structure
-```
-src/
-├── App.jsx              state management + tab routing
-├── components/          UI components
-├── data/                seed data (job boards, keywords, defaults)
-└── utils/
-    ├── storage.js       S.get / S.set / exportAll / importAll
-    └── dates.js         todayStr / getWeekKey
-```
-## Development Conventions
-
-- **Inline styles only** — no CSS files, no Tailwind
-- **No new dependencies** — native browser APIs only
-- **State in App.jsx** — all app state lives in the root component
-- **Font** — Plus Jakarta Sans throughout
-
-## License
-
-MIT 

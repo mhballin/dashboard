@@ -13,6 +13,7 @@ const lbl = {
 export function Tasks({ tasks, setTasks, taskAddRef }) {
   const notDone = tasks.filter((t) => !t.done);
   const done = tasks.filter((t) => t.done);
+  const [showDone, setShowDone] = useState(false);
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
   const inputRef = useRef();
@@ -242,44 +243,65 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
 
       {done.length > 0 && (
         <div style={{ marginTop: 14 }}>
-          <div style={{ ...lbl, marginBottom: 8 }}>Done ({done.length})</div>
-          {done.map((t) => (
-            <div key={t.id} draggable="false" style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 4px", opacity: 0.5 }}>
-              <div
-                style={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: 5,
-                  background: "#16a34a",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  boxSizing: "border-box",
-                }}
-              >
-                <Check size={10} color="white" />
+          <button
+            onClick={() => setShowDone((s) => !s)}
+            aria-expanded={showDone}
+            style={{
+              ...lbl,
+              marginBottom: 8,
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+              textAlign: "left",
+              gap: 8,
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+            }}
+          >
+            <span>Done ({done.length})</span>
+            <span style={{ marginLeft: "auto", fontSize: 12 }}>{showDone ? "▾" : "▸"}</span>
+          </button>
+          {showDone &&
+            done.map((t) => (
+              <div key={t.id} draggable="false" style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 4px", opacity: 0.5 }}>
+                <div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: 5,
+                    background: "#16a34a",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <Check size={10} color="white" />
+                </div>
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: "#6b7280",
+                    flex: 1,
+                    fontFamily: "'Plus Jakarta Sans',sans-serif",
+                    textDecoration: "line-through",
+                  }}
+                >
+                  {t.text}
+                </span>
+                <button
+                  onClick={() => uncheck(t.id)}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex", alignItems: "center", gap: 4, padding: 0, fontSize: 12, fontFamily: "'Plus Jakarta Sans',sans-serif" }}
+                >
+                  <span>↩</span>
+                  <span style={{ fontSize: 10, fontWeight: 600 }}>undo</span>
+                </button>
               </div>
-              <span
-                style={{
-                  fontSize: 13,
-                  color: "#6b7280",
-                  flex: 1,
-                  fontFamily: "'Plus Jakarta Sans',sans-serif",
-                  textDecoration: "line-through",
-                }}
-              >
-                {t.text}
-              </span>
-              <button
-                onClick={() => uncheck(t.id)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex", alignItems: "center", gap: 4, padding: 0, fontSize: 12, fontFamily: "'Plus Jakarta Sans',sans-serif" }}
-              >
-                <span>↩</span>
-                <span style={{ fontSize: 10, fontWeight: 600 }}>undo</span>
-              </button>
-            </div>
-          ))}
+            ))}
         </div>
       )}
     </div>

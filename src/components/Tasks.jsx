@@ -13,6 +13,7 @@ const lbl = {
 export function Tasks({ tasks, setTasks, taskAddRef }) {
   const notDone = tasks.filter((t) => !t.done);
   const done = tasks.filter((t) => t.done);
+  const doneSorted = [...done].sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
   const [showDone, setShowDone] = useState(false);
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
@@ -62,15 +63,18 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
     if (!text.trim()) return setAdding(false);
     setTasks((p) => [
       ...p,
-      { id: Date.now(), text: text.trim(), done: false, pinned: false },
+      { id: Date.now(), text: text.trim(), done: false, pinned: false, doneAt: null },
     ]);
     setText("");
     setAdding(false);
   };
 
-  const complete = (id) => setTasks((p) => p.map((t) => (t.id === id ? { ...t, done: true, pinned: false } : t)));
+  const complete = (id) =>
+    setTasks((p) =>
+      p.map((t) => (t.id === id ? { ...t, done: true, pinned: false, doneAt: Date.now() } : t))
+    );
   const remove = (id) => setTasks((p) => p.filter((t) => t.id !== id));
-  const uncheck = (id) => setTasks((p) => p.map((t) => (t.id === id ? { ...t, done: false } : t)));
+  const uncheck = (id) => setTasks((p) => p.map((t) => (t.id === id ? { ...t, done: false, doneAt: null } : t)));
 
   const handleDragStart = (taskId) => {
     dragId.current = taskId;
@@ -265,7 +269,7 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
             <span style={{ marginLeft: "auto", fontSize: 12 }}>{showDone ? "▾" : "▸"}</span>
           </button>
           {showDone &&
-            done.map((t) => (
+            doneSorted.map((t) => (
               <div key={t.id} draggable="false" style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 4px", opacity: 0.5 }}>
                 <div
                   style={{

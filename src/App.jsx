@@ -6,8 +6,11 @@ import { KanbanBoard } from "./components/KanbanBoard";
 import { JobBoardsTab } from "./components/JobBoardsTab";
 import { ActivityLog } from "./components/ActivityLog";
 import { DayHeader } from "./components/DayHeader";
+import DashboardTab from "./components/DashboardTab";
 import { SettingsTab } from "./components/SettingsTab";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ProfileTab from "./components/ProfileTab";
+import { useStreak } from "./utils/useStreak";
 import { S } from "./utils/storage";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
 import { DEFAULT_TASKS, DEFAULT_PITCH } from "./data/defaultContent";
@@ -45,8 +48,7 @@ function App() {
   const [weekly, setWeekly] = useState({ meetings: 0, outreach: 0, followups: 0, applications: 0 });
   const [cumulative, setCumulative] = useState({ meetings: 15, outreach: 0, followups: 0, applications: 0 });
   const [kanban, setKanban] = useState([]);
-  const [streak, setStreak] = useState(0);
-  const [lastActive, setLastActive] = useState(null);
+  const { streak, lastActive, setStreak, setLastActive, checkIn } = useStreak();
   const [pitch, setPitch] = useState(DEFAULT_PITCH);
   const [notesByDate, setNotesByDate] = useState({});
   const [quickNote, setQuickNote] = useState("");
@@ -272,52 +274,10 @@ function App() {
     })
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-  // Find the last valid weekday (Mon-Fri) before today
-  const getLastValidWeekday = () => {
-    const lastDay = new Date();
-    lastDay.setDate(lastDay.getDate() - 1);
-    while (lastDay.getDay() === 0 || lastDay.getDay() === 6) {
-      lastDay.setDate(lastDay.getDate() - 1);
-    }
-    return `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, "0")}-${String(
-      lastDay.getDate()
-    ).padStart(2, "0")}`;
-  };
+  
 
-  const checkIn = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    
-    // Skip on weekends (Saturday = 6, Sunday = 0)
-    if (dayOfWeek === 0 || dayOfWeek === 6) return;
-    
-    if (lastActive === todayStr()) return;
-    
-    const lastValidWeekday = getLastValidWeekday();
-    setStreak(lastActive === lastValidWeekday ? streak + 1 : 1);
-    setLastActive(todayStr());
-  };
-
-  const pitchRef = useRef(null);
   const tasksAddRef = useRef(null);
   const notesAddRef = useRef(null);
-
-  const adjustHeight = (el) => {
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
-  };
-
-  const adjustPitchHeight = () => adjustHeight(pitchRef.current);
-
-  useEffect(() => {
-    adjustPitchHeight();
-    const onResize = () => {
-      adjustPitchHeight();
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
 
   // Global keyboard shortcuts: plain `t` / `n` when not typing, Alt fallback
   useEffect(() => {
@@ -476,32 +436,27 @@ function App() {
         <div style={{ padding: "24px 28px", maxWidth: 1100, margin: "0 auto" }}>
           {/* ── DASHBOARD TAB ── */}
           {tab === "dashboard" && (
-            <>
-              <div style={{ marginBottom: 20 }}>
-                <DayHeader streak={streak} lastActive={lastActive} tempUnit={userSettings.tempUnit} locationOverride={userSettings.locationOverride} />
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
-                <div style={{ ...cardStyle, padding: "22px 24px" }}>
-                  <Tasks tasks={tasks} setTasks={setTasks} taskAddRef={tasksAddRef} />
-                </div>
-                <div style={{ ...cardStyle, padding: "22px 24px" }}>
-                  <WeekTargets
-                    weekly={{ ...weekly, applications: weeklyApplications }}
-                    targets={userSettings.weeklyTargets}
-                    onInc={inc}
-                    onDec={dec}
-                    onLog={addLog}
-                    quickNote={quickNote}
-                    setQuickNote={setQuickNote}
-                    onQuickNoteAdd={handleQuickNoteAdd}
-                    quickNoteAddRef={notesAddRef}
-                    activeNotes={activeQuickNotes}
-                    onQuickNoteDelete={handleQuickNoteDelete}
-                  />
-                </div>
-              </div>
-              {/* Pitch & Notes moved to Profile tab; WeekTargets is now source-of-truth for quick notes */}
-            </>
+            <DashboardTab
+              streak={streak}
+              lastActive={lastActive}
+              tempUnit={userSettings.tempUnit}
+              locationOverride={userSettings.locationOverride}
+              tasks={tasks}
+              setTasks={setTasks}
+              tasksAddRef={tasksAddRef}
+              weekly={weekly}
+              weeklyApplications={weeklyApplications}
+              targets={userSettings.weeklyTargets}
+              onInc={inc}
+              onDec={dec}
+              onLog={addLog}
+              quickNote={quickNote}
+              setQuickNote={setQuickNote}
+              onQuickNoteAdd={handleQuickNoteAdd}
+              quickNoteAddRef={notesAddRef}
+              activeNotes={activeQuickNotes}
+              onQuickNoteDelete={handleQuickNoteDelete}
+            />
           )}
 
           {/* ── ACTIVITY TAB ── */}
@@ -524,34 +479,7 @@ function App() {
 
           {/* ── PROFILE TAB ── */}
           {tab === "profile" && (
-            <div style={{ ...cardStyle, padding: "24px 26px" }}>
-              <div style={{ ...lbl, marginBottom: 8 }}>Profile</div>
-              <div>
-                <div style={{ ...lbl, marginBottom: 8 }}>Your Pitch</div>
-                <textarea
-                  value={pitch}
-                  onChange={(e) => setPitch(e.target.value)}
-                  ref={pitchRef}
-                  onInput={adjustPitchHeight}
-                  style={{
-                    width: "100%",
-                    minHeight: 150,
-                    background: "#fafaf8",
-                    border: "1px solid #ede9e3",
-                    borderRadius: 12,
-                    padding: 14,
-                    fontFamily: "'Plus Jakarta Sans',sans-serif",
-                    fontSize: 13,
-                    lineHeight: 1.7,
-                    color: "#374151",
-                    outline: "none",
-                    resize: "none",
-                    overflow: "hidden",
-                    boxSizing: "border-box",
-                  }}
-                />
-              </div>
-            </div>
+            <ProfileTab pitch={pitch} setPitch={setPitch} />
           )}
 
           {/* ── SETTINGS TAB ── */}

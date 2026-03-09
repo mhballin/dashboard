@@ -114,12 +114,15 @@ function App() {
       for (const [dateKey, arr] of Object.entries(source || {})) {
         const keep = [];
         for (const note of arr) {
-          if (note && note.createdAt && note.createdAt + ttlMs <= now) {
+          const expiresAt = note && note.expiresAt ? Number(note.expiresAt) : null;
+          const legacyExpired = note && note.createdAt ? note.createdAt + ttlMs <= now : false;
+          const isExpired = expiresAt ? expiresAt <= now : legacyExpired;
+          if (note && isExpired) {
             // If the note hasn't been copied to activity yet, create an activity entry.
             if (!note.copiedToActivity) {
               migratedLogs.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: "note", note: note.text });
             }
-            // do not keep the note (TTL expired)
+            // do not keep the note (expired)
           } else if (note) {
             keep.push(note);
           }
@@ -148,7 +151,10 @@ function App() {
         const newActivities = [];
         for (const [dateKey, arr] of Object.entries(prev || {})) {
           for (const note of arr) {
-            if (note && note.createdAt && note.createdAt + ttlMs <= now) {
+            const expiresAt = note && note.expiresAt ? Number(note.expiresAt) : null;
+            const legacyExpired = note && note.createdAt ? note.createdAt + ttlMs <= now : false;
+            const isExpired = expiresAt ? expiresAt <= now : legacyExpired;
+            if (note && isExpired) {
               if (!note.copiedToActivity) {
                 newActivities.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: "note", note: note.text });
               }
@@ -230,10 +236,41 @@ function App() {
   // Handler for quick-note adds from WeekTargets: create dashboard note and copy to Activity immediately
   const handleQuickNoteAdd = (text) => {
     const today = todayStr();
-    const note = { id: Date.now(), text, createdAt: Date.now(), date: today, copiedToActivity: true };
+    const now = Date.now();
+    const note = {
+      id: Date.now(),
+      text,
+      createdAt: now,
+      date: today,
+      copiedToActivity: true,
+      expiresAt: now + notesTtlHours * 60 * 60 * 1000,
+    };
     setNotesByDate((prev) => ({ ...prev, [today]: [...(prev[today] || []), note] }));
     addLog({ date: today, type: "note", note: text });
   };
+
+  const handleQuickNoteDelete = (noteToDelete) => {
+    if (!noteToDelete || !noteToDelete.id) return;
+    setNotesByDate((prev) => {
+      const next = {};
+      for (const [dateKey, arr] of Object.entries(prev || {})) {
+        const kept = (arr || []).filter((note) => !(note && note.id === noteToDelete.id));
+        if (kept.length) next[dateKey] = kept;
+      }
+      return next;
+    });
+  };
+
+  const activeQuickNotes = Object.entries(notesByDate || {})
+    .flatMap(([dateKey, arr]) =>
+      (arr || []).filter(Boolean).map((note) => ({ ...note, date: note.date || dateKey }))
+    )
+    .filter((note) => {
+      if (note.expiresAt) return Number(note.expiresAt) > Date.now();
+      if (!note.createdAt) return true;
+      return note.createdAt + notesTtlHours * 60 * 60 * 1000 > Date.now();
+    })
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
   // Find the last valid weekday (Mon-Fri) before today
   const getLastValidWeekday = () => {
@@ -458,6 +495,8 @@ function App() {
                     setQuickNote={setQuickNote}
                     onQuickNoteAdd={handleQuickNoteAdd}
                     quickNoteAddRef={notesAddRef}
+                    activeNotes={activeQuickNotes}
+                    onQuickNoteDelete={handleQuickNoteDelete}
                   />
                 </div>
               </div>
@@ -521,6 +560,8 @@ function App() {
               <SettingsTab
                 userSettings={userSettings}
                 setUserSettings={setUserSettings}
+                notesTtlHours={notesTtlHours}
+                setNotesTtlHours={setNotesTtlHours}
               />
             </div>
           )}

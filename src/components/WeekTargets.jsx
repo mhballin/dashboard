@@ -11,7 +11,19 @@ const lbl = {
   color: "#9ca3af",
 };
 
-export function WeekTargets({ weekly, targets, onInc, onDec, onLog, quickNote, setQuickNote, onQuickNoteAdd, quickNoteAddRef }) {
+export function WeekTargets({
+  weekly,
+  targets,
+  onInc,
+  onDec,
+  onLog,
+  quickNote,
+  setQuickNote,
+  onQuickNoteAdd,
+  quickNoteAddRef,
+  activeNotes = [],
+  onQuickNoteDelete,
+}) {
   const [promptKey, setPromptKey] = useState(null);
   const [promptText, setPromptText] = useState("");
   const METRIC_COLORS = {
@@ -239,6 +251,84 @@ export function WeekTargets({ weekly, targets, onInc, onDec, onLog, quickNote, s
               onQuickNoteAdd={onQuickNoteAdd}
               quickNoteAddRef={quickNoteAddRef}
             />
+            <div style={{ marginTop: 10 }}>
+              {activeNotes.length === 0 ? (
+                <div
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans',sans-serif",
+                    fontSize: 12,
+                    color: "#9ca3af",
+                  }}
+                >
+                  No active notes yet.
+                </div>
+              ) : (
+                activeNotes.map((note) => {
+                  const created = note.createdAt ? new Date(note.createdAt) : null;
+                  const stamp = created
+                    ? `${created.toLocaleDateString([], { month: "short", day: "numeric" })} · ${created.toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}`
+                    : "Saved";
+                  return (
+                    <div
+                      key={note.id}
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #ede9e3",
+                        borderRadius: 10,
+                        padding: "9px 11px",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                        <div
+                          style={{
+                            fontFamily: "'Plus Jakarta Sans',sans-serif",
+                            fontSize: 13,
+                            color: "#374151",
+                            lineHeight: 1.45,
+                            whiteSpace: "pre-wrap",
+                            wordBreak: "break-word",
+                            flex: 1,
+                          }}
+                        >
+                          {note.text}
+                        </div>
+                        <button
+                          onClick={() => onQuickNoteDelete && onQuickNoteDelete(note)}
+                          aria-label="Delete note"
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#d1d5db",
+                            cursor: "pointer",
+                            fontFamily: "'Plus Jakarta Sans',sans-serif",
+                            fontSize: 12,
+                            lineHeight: 1,
+                            padding: 0,
+                            marginTop: 1,
+                          }}
+                        >
+                          X
+                        </button>
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "'Plus Jakarta Sans',sans-serif",
+                          fontSize: 11,
+                          color: "#9ca3af",
+                          marginTop: 6,
+                        }}
+                      >
+                        {stamp}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
       </div>
     </div>
   );
@@ -272,22 +362,27 @@ export function WeekTargets({ weekly, targets, onInc, onDec, onLog, quickNote, s
     }
   }, [quickNoteAddRef]);
 
+  const saveQuickNote = () => {
+    const v = quickNote.trim();
+    if (!v) return;
+    if (onQuickNoteAdd) {
+      onQuickNoteAdd(v);
+    } else {
+      onLog({ date: todayStr(), type: "note", note: v });
+    }
+    setQuickNote("");
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (quickNote.trim()) {
-        if (onQuickNoteAdd) {
-          onQuickNoteAdd(quickNote.trim());
-        } else {
-          onLog({ date: todayStr(), type: "note", note: quickNote.trim() });
-        }
-        setQuickNote("");
-      }
+      saveQuickNote();
     }
   };
 
   return (
-    <textarea
+    <div>
+      <textarea
       ref={ref}
       placeholder="Jot something down... press Enter to save (Shift+Enter for newline)"
       value={quickNote}
@@ -309,5 +404,7 @@ export function WeekTargets({ weekly, targets, onInc, onDec, onLog, quickNote, s
         overflow: "hidden",
       }}
     />
+      <div style={{ height: 8 }} />
+    </div>
   );
 }

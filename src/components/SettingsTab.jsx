@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { S } from '../utils/storage';
 
-export function SettingsTab({ userSettings, setUserSettings }) {
+export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours }) {
   const [importMsg, setImportMsg] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -80,6 +80,12 @@ export function SettingsTab({ userSettings, setUserSettings }) {
       ...prev,
       weeklyTargets: { ...prev.weeklyTargets, [key]: numValue },
     }));
+  };
+
+  const handleNotesTtlChange = (e) => {
+    const next = Number(e.target.value);
+    if (!Number.isFinite(next) || next <= 0) return;
+    setNotesTtlHours(next);
   };
 
   return (
@@ -223,6 +229,34 @@ export function SettingsTab({ userSettings, setUserSettings }) {
             />
           </div>
         )}
+      </div>
+
+      {/* Preferences Section */}
+      <div style={sectionStyle}>
+        <div style={{ ...lbl, marginBottom: 16 }}>Notes</div>
+        <div>
+          <label style={{ display: "block", ...lbl, marginBottom: 8 }}>Quick Note Retention</label>
+          <select
+            value={notesTtlHours}
+            onChange={handleNotesTtlChange}
+            style={inputStyle}
+          >
+            <option value={24}>24 hours</option>
+            <option value={48}>48 hours</option>
+            <option value={72}>72 hours</option>
+            <option value={168}>7 days</option>
+          </select>
+          <div
+            style={{
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontSize: 12,
+              color: "#9ca3af",
+              marginTop: 8,
+            }}
+          >
+            New notes stay in Today&apos;s Note quick reference for this long.
+          </div>
+        </div>
       </div>
 
       {/* Preferences Section */}

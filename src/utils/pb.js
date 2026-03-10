@@ -15,7 +15,23 @@ export async function login(email, password) {
   try { data = text ? JSON.parse(text) : null; } catch { data = text; }
 
   if (!res.ok) {
-    const msg = (data && data.message) || text || `${res.status} ${res.statusText}`;
+    let msg = (data && data.message) || text || `${res.status} ${res.statusText}`;
+    if (data && data.data && typeof data.data === 'object') {
+      for (const val of Object.values(data.data)) {
+        if (!val) continue;
+        if (typeof val === 'string') { msg = val; break; }
+        if (Array.isArray(val) && val.length) {
+          if (typeof val[0] === 'string') { msg = val[0]; break; }
+          if (val[0] && val[0].message) { msg = val[0].message; break; }
+        }
+        if (val.message) { msg = val.message; break; }
+        if (typeof val === 'object') {
+          const inner = Object.values(val)[0];
+          if (typeof inner === 'string') { msg = inner; break; }
+          if (inner && inner.message) { msg = inner.message; break; }
+        }
+      }
+    }
     throw new Error(msg);
   }
 
@@ -31,6 +47,45 @@ export async function login(email, password) {
   localStorage.setItem("pb_userId", userId);
 
   return { token, userId, email: emailOut };
+}
+
+export async function register(email, password, name) {
+  const res = await fetch(`${API}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, passwordConfirm: password, name }),
+  });
+
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+
+  if (!res.ok) {
+    let msg = (data && data.message) || text || `${res.status} ${res.statusText}`;
+    if (data && data.data && typeof data.data === 'object' && Object.keys(data.data).length) {
+      const parts = Object.values(data.data).map((err) => {
+        if (!err) return "";
+        if (typeof err === 'string') return err;
+        if (Array.isArray(err) && err.length) {
+          if (typeof err[0] === 'string') return err[0];
+          if (err[0] && err[0].message) return err[0].message;
+        }
+        if (err.message) return err.message;
+        // fallback: try to read nested first value
+        if (typeof err === 'object') {
+          const inner = Object.values(err)[0];
+          if (typeof inner === 'string') return inner;
+          if (inner && inner.message) return inner.message;
+        }
+        return "";
+      }).filter(Boolean);
+      if (parts.length) msg = parts.join('. ');
+    }
+    throw new Error(msg);
+  }
+
+  // Registration successful — sign the user in using existing login flow
+  return await login(email, password);
 }
 
 export function logout() {

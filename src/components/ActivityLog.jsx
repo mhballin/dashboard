@@ -11,11 +11,6 @@ const TYPE_META = {
     background: "#fce7f3",
     color: "#be185d",
   },
-  followups: {
-    label: "Follow-up",
-    background: "#f3e8ff",
-    color: "#7c3aed",
-  },
   applied: {
     label: "Applied",
     background: "#dbeafe",

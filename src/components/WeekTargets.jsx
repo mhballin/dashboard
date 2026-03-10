@@ -33,13 +33,13 @@ export function WeekTargets({
     followups: "#7c3aed",
     applications: "#3b82f6",
   };
-  const LOGGED_KEYS = ["meetings", "outreach", "followups"];
+  const LOGGED_KEYS = ["meetings", "outreach"];
   
   // Use provided targets or fall back to WEEKLY_TARGETS
   const targetArray = targets ? 
     Object.entries(targets).map(([key, target]) => {
-      const iconMap = { meetings: "🤝", outreach: "📞", followups: "✉️", applications: "📋" };
-      const labelMap = { meetings: "Meetings", outreach: "Outreach", followups: "Follow-ups", applications: "Applications" };
+      const iconMap = { meetings: "🤝", outreach: "📞", applications: "📋" };
+      const labelMap = { meetings: "Meetings", outreach: "Outreach", applications: "Applications" };
       return { key, target, icon: iconMap[key], label: labelMap[key] };
     }) 
     : WEEKLY_TARGETS;

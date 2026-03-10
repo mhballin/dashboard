@@ -43,8 +43,8 @@ function App() {
   const [tab, setTab] = useState("dashboard");
   const [weekKey] = useState(getWeekKey());
   const [tasks, setTasks] = useState(DEFAULT_TASKS);
-  const [weekly, setWeekly] = useState({ meetings: 0, outreach: 0, followups: 0, applications: 0 });
-  const [cumulative, setCumulative] = useState({ meetings: 15, outreach: 0, followups: 0, applications: 0 });
+  const [weekly, setWeekly] = useState({ meetings: 0, outreach: 0, applications: 0 });
+  const [cumulative, setCumulative] = useState({ meetings: 15, outreach: 0, applications: 0 });
   const [kanban, setKanban] = useState([]);
   const { streak, lastActive, setStreak, setLastActive, checkIn } = useStreak();
   const [pitch, setPitch] = useState(DEFAULT_PITCH);
@@ -56,7 +56,7 @@ function App() {
     userName: "Mike Ballin",
     tempUnit: "F",
     locationOverride: null,
-    weeklyTargets: { meetings: 1, outreach: 4, followups: 2, applications: 2 },
+    weeklyTargets: { meetings: 1, outreach: 4, applications: 2 },
   });
 
   // Load from storage on mount

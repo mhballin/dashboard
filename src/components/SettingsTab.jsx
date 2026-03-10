@@ -183,7 +183,6 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
           {[
             { key: "meetings", label: "🤝 Meetings" },
             { key: "outreach", label: "📞 Outreach" },
-            { key: "followups", label: "✉️ Follow-ups" },
             { key: "applications", label: "📋 Applications" },
           ].map(({ key, label }) => (
             <div key={key}>

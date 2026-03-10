@@ -129,4 +129,99 @@ export async function updateCards(cards) {
   return Promise.all(cards.map((c) => updateCard(c.id, c)));
 }
 
+// ── Tasks ──
+
+export async function getTasks() {
+  const filter = `(user="${getUserId()}")`;
+  const q = `?filter=${encodeURIComponent(filter)}&perPage=500&sort=order`;
+  const res = await pbFetch('GET', `/collections/tasks/records${q}`);
+  return (res && (res.records || res.items)) || [];
+}
+
+export async function createTask(task) {
+  const { id, ...rest } = task;
+  const body = { ...rest, user: getUserId() };
+  return await pbFetch('POST', `/collections/tasks/records`, body);
+}
+
+export async function updateTask(id, changes) {
+  return await pbFetch('PATCH', `/collections/tasks/records/${id}`, changes);
+}
+
+export async function deleteTask(id) {
+  return await pbFetch('DELETE', `/collections/tasks/records/${id}`);
+}
+
+// ── Activity Log ──
+
+export async function getActivityLog() {
+  const filter = `(user="${getUserId()}")`;
+  const q = `?filter=${encodeURIComponent(filter)}&perPage=500&sort=-date,-created`;
+  const res = await pbFetch('GET', `/collections/activity_log/records${q}`);
+  return (res && (res.records || res.items)) || [];
+}
+
+export async function createActivityEntry(entry) {
+  const { id, ...rest } = entry;
+  const body = { ...rest, user: getUserId() };
+  return await pbFetch('POST', `/collections/activity_log/records`, body);
+}
+
+export async function updateActivityEntry(id, changes) {
+  return await pbFetch('PATCH', `/collections/activity_log/records/${id}`, changes);
+}
+
+export async function deleteActivityEntry(id) {
+  return await pbFetch('DELETE', `/collections/activity_log/records/${id}`);
+}
+
+// ── Notes ──
+
+export async function getNotes() {
+  const filter = `(user="${getUserId()}")`;
+  const q = `?filter=${encodeURIComponent(filter)}&perPage=500&sort=-date,-created`;
+  const res = await pbFetch('GET', `/collections/notes/records${q}`);
+  return (res && (res.records || res.items)) || [];
+}
+
+export async function createNote(note) {
+  const { id, ...rest } = note;
+  const body = { ...rest, user: getUserId() };
+  return await pbFetch('POST', `/collections/notes/records`, body);
+}
+
+export async function updateNote(id, changes) {
+  return await pbFetch('PATCH', `/collections/notes/records/${id}`, changes);
+}
+
+export async function deleteNote(id) {
+  return await pbFetch('DELETE', `/collections/notes/records/${id}`);
+}
+
+// ── Weekly Stats ──
+
+export async function getWeeklyStats(weekKey) {
+  const filter = weekKey
+    ? `(user="${getUserId()}"&&weekKey="${weekKey}")`
+    : `(user="${getUserId()}")`;
+  const q = `?filter=${encodeURIComponent(filter)}&perPage=200&sort=-weekKey`;
+  const res = await pbFetch('GET', `/collections/weekly_stats/records${q}`);
+  return (res && (res.records || res.items)) || [];
+}
+
+export async function upsertWeeklyStats(weekKey, data) {
+  const filter = `(user="${getUserId()}"&&weekKey="${weekKey}")`;
+  const q = `?filter=${encodeURIComponent(filter)}&perPage=1`;
+  const existing = await pbFetch('GET', `/collections/weekly_stats/records${q}`);
+  const records = (existing && (existing.records || existing.items)) || [];
+
+  if (records.length) {
+    return await pbFetch('PATCH', `/collections/weekly_stats/records/${records[0].id}`, data);
+  }
+
+  return await pbFetch('POST', `/collections/weekly_stats/records`, {
+    weekKey, ...data, user: getUserId()
+  });
+}
+
 // End of file

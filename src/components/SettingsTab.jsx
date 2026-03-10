@@ -1,12 +1,50 @@
 import { useState } from 'react';
-import { S } from '../utils/storage';
+import { getAllSettings, setSetting, getCards, createCard, deleteCard } from '../utils/pb';
 
 export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours }) {
   const [importMsg, setImportMsg] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
 
-  const handleExport = () => {
-    S.exportAll();
+  const handleExport = async () => {
+    try {
+      const settings = await getAllSettings();
+      const cards = await getCards();
+      const stripped = (cards || []).map((c) => ({
+        col: c.col,
+        company: c.company,
+        title: c.title,
+        location: c.location,
+        description: c.description,
+        url: c.url,
+        notes: c.notes,
+        added: c.added,
+        dates: c.dates,
+        isHighPriority: c.isHighPriority,
+        priorityOrder: c.priorityOrder,
+        isStarred: c.isStarred,
+      }));
+
+      const exportObj = {
+        exportedAt: new Date().toISOString(),
+        settings: settings || {},
+        cards: stripped,
+      };
+
+      const json = JSON.stringify(exportObj, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const ymd = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `dashboard-backup-${ymd}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      // eslint-disable-next-line no-alert
+      alert('Export failed: ' + (err && err.message ? err.message : err));
+    }
   };
 
   const handleImportClick = () => {
@@ -18,15 +56,43 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     setIsImporting(true);
-    const res = await S.importAll(f);
-    if (res.ok) {
+    setImportMsg(null);
+    try {
+      const text = await f.text();
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object' || !parsed.settings || !Array.isArray(parsed.cards)) {
+        setImportMsg('✗ Invalid file format');
+        return;
+      }
+
+      // SETTINGS
+      for (const [key, value] of Object.entries(parsed.settings)) {
+        // setSetting is expected to persist each setting in PocketBase
+        // wait for each to complete to ensure consistency
+        // eslint-disable-next-line no-await-in-loop
+        await setSetting(key, value);
+      }
+
+      // CARDS: remove existing, then recreate from import
+      const existing = await getCards();
+      for (const ex of existing || []) {
+        // eslint-disable-next-line no-await-in-loop
+        await deleteCard(ex.id);
+      }
+
+      for (const card of parsed.cards || []) {
+        // eslint-disable-next-line no-await-in-loop
+        await createCard(card);
+      }
+
       setImportMsg('✓ Imported — reloading...');
       setTimeout(() => window.location.reload(), 1000);
-    } else {
-      setImportMsg('✗ ' + res.reason);
+    } catch (err) {
+      setImportMsg('✗ ' + (err && err.message ? err.message : String(err)));
+    } finally {
       setIsImporting(false);
+      if (e && e.target) e.target.value = '';
     }
-    e.target.value = '';
   };
 
   const lbl = {

@@ -9,7 +9,6 @@ import { SettingsTab } from "./components/SettingsTab";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import { useStreak } from "./utils/useStreak";
-import { S } from "./utils/storage";
 import { isLoggedIn, login, logout, getCards, createCard, updateCard, deleteCard, getAllSettings, setSetting } from "./utils/pb";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
 import { DEFAULT_TASKS, DEFAULT_PITCH } from "./data/defaultContent";

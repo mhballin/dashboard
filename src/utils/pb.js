@@ -1,10 +1,10 @@
-const API = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const BASE_URL = window.location.hostname === 'localhost' ? '' : 'https://api.dashboard.michaelballin.com';
 
 const getToken = () => localStorage.getItem("pb_token");
 const getUserId = () => localStorage.getItem("pb_userId");
 
 export async function login(email, password) {
-  const res = await fetch(`${API}/auth/login`, {
+  const res = await fetch(`${BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -50,7 +50,7 @@ export async function login(email, password) {
 }
 
 export async function register(email, password, name) {
-  const res = await fetch(`${API}/auth/register`, {
+  const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, passwordConfirm: password, name }),
@@ -99,7 +99,7 @@ export function isLoggedIn() {
 
 async function pbFetch(method, path, body) {
   const p = path.startsWith("/") ? path : `/${path}`;
-  const url = `${API}/api${p}`;
+  const url = `${BASE_URL}/api${p}`;
 
   const headers = { "Content-Type": "application/json", "Authorization": "Bearer " + getToken() };
 

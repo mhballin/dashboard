@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { CopyButton } from "./CopyButton";
 import { KEYWORDS } from "../data/keywords";
-import { S } from "../utils/storage";
+import { getSetting } from "../utils/pb";
 
 const cardStyle = {
   background: "#ffffff",
@@ -43,7 +43,7 @@ export function KeywordSection({ section, keywords }) {
     let mounted = true;
     (async () => {
       try {
-        const res = await S.get("job-dashboard-keywords");
+        const res = await getSetting("job-dashboard-keywords");
         if (!mounted) return;
         if (Array.isArray(res) && res.length > 0) {
           setSourceKeywords(res);

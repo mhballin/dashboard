@@ -66,13 +66,16 @@ app.all('/api/*', async (req, res) => {
     const headers = { ...req.headers }
     delete headers.host
     delete headers['content-length']
+    if (req.method === 'DELETE' || req.method === 'HEAD') {
+      delete headers['content-type']
+    }
 
     const options = {
       method: req.method,
       headers,
     }
 
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
+    if (req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'DELETE') {
       // If JSON, stringify the parsed body; otherwise attempt to forward the parsed body.
       if (req.is('application/json')) {
         options.body = JSON.stringify(req.body)

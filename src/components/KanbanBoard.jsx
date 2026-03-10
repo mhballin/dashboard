@@ -50,7 +50,7 @@ const formatDisplayDate = (dateStr) => {
     { month: "short", day: "numeric", year: "numeric" });
 };
 
-export function KanbanBoard({ cards, setCards, onLog }) {
+export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate, onCardDelete }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalCol, setModalCol] = useState(null);
   const [modalMode, setModalMode] = useState('create'); // 'create', 'view', 'edit'
@@ -170,6 +170,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
             : c
         )
       );
+      onCardUpdate?.(editingId, { notes: formData.notes.trim() });
     }
   };
 
@@ -205,6 +206,15 @@ export function KanbanBoard({ cards, setCards, onLog }) {
             : c
         )
       );
+      onCardUpdate?.(editingId, {
+        col: modalCol,
+        company: formData.company.trim(),
+        title: formData.title.trim(),
+        location: formData.location.trim(),
+        description: formData.description.trim(),
+        url: formData.url.trim(),
+        notes: formData.notes.trim(),
+      });
       // If in edit mode, switch back to view mode instead of closing
       if (modalMode === 'edit') {
         setModalMode('view');
@@ -221,24 +231,26 @@ export function KanbanBoard({ cards, setCards, onLog }) {
         interviewing: null,
         closed: null,
       };
+      const newCard = {
+        id: Date.now(),
+        col: modalCol,
+        company: formData.company.trim(),
+        title: formData.title.trim(),
+        location: formData.location.trim(),
+        description: formData.description.trim(),
+        url: formData.url.trim(),
+        notes: formData.notes.trim(),
+        added: todayStr(),
+        dates,
+        isHighPriority: false,
+        priorityOrder: Date.now(),
+        isStarred: false,
+      };
       setCards((p) => [
         ...p,
-        {
-          id: Date.now(),
-          col: modalCol,
-          company: formData.company.trim(),
-          title: formData.title.trim(),
-          location: formData.location.trim(),
-          description: formData.description.trim(),
-          url: formData.url.trim(),
-          notes: formData.notes.trim(),
-          added: todayStr(),
-          dates,
-          isHighPriority: false,
-          priorityOrder: Date.now(),
-          isStarred: false,
-        },
+        newCard,
       ]);
+      onCardCreate?.(newCard);
       setModalOpen(false);
       setEditingId(null);
       setModalCol(null);
@@ -251,30 +263,18 @@ export function KanbanBoard({ cards, setCards, onLog }) {
     const targetCol = col;
     const sourceCol = card.col;
 
+    // Compute updated dates for the moved card
+    const updatedDates = { ...(card.dates || { saved: card.added || todayStr(), applied: null, interviewing: null, closed: null }) };
+    if (col === "applied" && !updatedDates.applied) {
+      updatedDates.applied = todayStr();
+    } else if (col === "interviewing" && !updatedDates.interviewing) {
+      updatedDates.interviewing = todayStr();
+    } else if (col === "closed" && !updatedDates.closed) {
+      updatedDates.closed = todayStr();
+    }
+
     setCards((p) =>
-      p.map((c) => {
-        if (c.id === id) {
-          const newCard = { ...c, col };
-          // Track the date moved to this column
-          if (!newCard.dates) {
-            newCard.dates = {
-              saved: newCard.added || todayStr(),
-              applied: null,
-              interviewing: null,
-              closed: null,
-            };
-          }
-          if (col === "applied" && !newCard.dates.applied) {
-            newCard.dates.applied = todayStr();
-          } else if (col === "interviewing" && !newCard.dates.interviewing) {
-            newCard.dates.interviewing = todayStr();
-          } else if (col === "closed" && !newCard.dates.closed) {
-            newCard.dates.closed = todayStr();
-          }
-          return newCard;
-        }
-        return c;
-      })
+      p.map((c) => (c.id === id ? { ...c, col, dates: updatedDates } : c))
     );
 
     const trackedCols = ["applied", "interviewing", "closed"];
@@ -285,8 +285,13 @@ export function KanbanBoard({ cards, setCards, onLog }) {
         note: `${card.company || card.title} — ${card.title}`,
       });
     }
+
+    onCardUpdate?.(id, { col, dates: updatedDates });
   };
-  const remove = (id) => setCards((p) => p.filter((c) => c.id !== id));
+  const remove = (id) => {
+    setCards((p) => p.filter((c) => c.id !== id));
+    onCardDelete?.(id);
+  };
 
   const handleDragStart = (e, cardId) => {
     setDragging(cardId);
@@ -407,13 +412,15 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                       if (dragging !== null) {
                         const draggedCard = cards.find((card) => card.id === dragging);
                         if (draggedCard && draggedCard.col === "saved" && draggedCard.isHighPriority !== true) {
+                          const po = Date.now();
                           setCards((p) =>
                             p.map((card) =>
                               card.id === dragging
-                                ? { ...card, isHighPriority: true, priorityOrder: Date.now() }
+                                ? { ...card, isHighPriority: true, priorityOrder: po }
                                 : card
                             )
                           );
+                          onCardUpdate?.(dragging, { isHighPriority: true, priorityOrder: po });
                         }
                       }
                       setDragging(null);
@@ -446,25 +453,31 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                               move(dragging, "saved");
                             } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
                               if (draggedCard.isHighPriority === true) {
+                                const draggedOrder = draggedCard.priorityOrder;
+                                const targetOrder = c.priorityOrder;
                                 setCards((p) =>
                                   p.map((card) => {
                                     if (card.id === dragging) {
-                                      return { ...card, priorityOrder: c.priorityOrder };
+                                      return { ...card, priorityOrder: targetOrder };
                                     }
                                     if (card.id === c.id) {
-                                      return { ...card, priorityOrder: draggedCard.priorityOrder };
+                                      return { ...card, priorityOrder: draggedOrder };
                                     }
                                     return card;
                                   })
                                 );
+                                onCardUpdate?.(dragging, { priorityOrder: targetOrder });
+                                onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
                               } else {
+                                const po = Date.now();
                                 setCards((p) =>
                                   p.map((card) =>
                                     card.id === dragging
-                                      ? { ...card, isHighPriority: true, priorityOrder: Date.now() }
+                                      ? { ...card, isHighPriority: true, priorityOrder: po }
                                       : card
                                   )
                                 );
+                                onCardUpdate?.(dragging, { isHighPriority: true, priorityOrder: po });
                               }
                             }
                           }
@@ -588,6 +601,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                     : card
                                 )
                               );
+                              onCardUpdate?.(c.id, { isStarred: !c.isStarred });
                             }}
                             style={{
                               flexShrink: 0,
@@ -630,13 +644,15 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                       if (dragging !== null) {
                         const draggedCard = cards.find((card) => card.id === dragging);
                         if (draggedCard && draggedCard.col === "saved" && draggedCard.isHighPriority === true) {
+                          const po = Date.now();
                           setCards((p) =>
                             p.map((card) =>
                               card.id === dragging
-                                ? { ...card, isHighPriority: false, priorityOrder: Date.now() }
+                                ? { ...card, isHighPriority: false, priorityOrder: po }
                                 : card
                             )
                           );
+                          onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
                         }
                       }
                       setDragging(null);
@@ -669,25 +685,31 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                               move(dragging, "saved");
                             } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
                               if (draggedCard.isHighPriority !== true) {
+                                const draggedOrder = draggedCard.priorityOrder;
+                                const targetOrder = c.priorityOrder;
                                 setCards((p) =>
                                   p.map((card) => {
                                     if (card.id === dragging) {
-                                      return { ...card, priorityOrder: c.priorityOrder };
+                                      return { ...card, priorityOrder: targetOrder };
                                     }
                                     if (card.id === c.id) {
-                                      return { ...card, priorityOrder: draggedCard.priorityOrder };
+                                      return { ...card, priorityOrder: draggedOrder };
                                     }
                                     return card;
                                   })
                                 );
+                                onCardUpdate?.(dragging, { priorityOrder: targetOrder });
+                                onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
                               } else {
+                                const po = Date.now();
                                 setCards((p) =>
                                   p.map((card) =>
                                     card.id === dragging
-                                      ? { ...card, isHighPriority: false, priorityOrder: Date.now() }
+                                      ? { ...card, isHighPriority: false, priorityOrder: po }
                                       : card
                                   )
                                 );
+                                onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
                               }
                             }
                           }
@@ -811,6 +833,7 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                     : card
                                 )
                               );
+                              onCardUpdate?.(c.id, { isStarred: !c.isStarred });
                             }}
                             style={{
                               flexShrink: 0,
@@ -1291,15 +1314,19 @@ export function KanbanBoard({ cards, setCards, onLog }) {
                                   <input
                                     type="date"
                                     value={entry.date}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      const currentCard = cards.find(c => c.id === editingId);
+                                      const updatedDates = { ...(currentCard?.dates || {}), [entry.key]: val };
                                       setCards((p) =>
                                         p.map((c) =>
                                           c.id === editingId
-                                            ? { ...c, dates: { ...c.dates, [entry.key]: e.target.value } }
+                                            ? { ...c, dates: updatedDates }
                                             : c
                                         )
-                                      )
-                                    }
+                                      );
+                                      onCardUpdate?.(editingId, { dates: updatedDates });
+                                    }}
                                     style={{
                                       border: "none",
                                       background: "transparent",

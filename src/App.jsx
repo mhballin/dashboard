@@ -10,7 +10,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import { useStreak } from "./utils/useStreak";
 import { S } from "./utils/storage";
-import { isLoggedIn, login, logout } from "./utils/pb";
+import { isLoggedIn, login, logout, getCards, createCard, updateCard, deleteCard, getAllSettings, setSetting } from "./utils/pb";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
 import { DEFAULT_TASKS, DEFAULT_PITCH } from "./data/defaultContent";
 
@@ -66,27 +66,38 @@ function App() {
     weeklyTargets: { meetings: 1, outreach: 4, applications: 2 },
   });
 
-  // Load from storage on mount
+  // Load from PocketBase on mount
   useEffect(() => {
     (async () => {
-      const [t, w, c, k, st, la, p, n, nb, a, u] = await Promise.all([
-        S.get("tasks"),
-        S.get(`weekly-${weekKey}`),
-        S.get("cumulative"),
-        S.get("kanban"),
-        S.get("streak"),
-        S.get("lastActive"),
-        S.get("pitch"),
-        S.get("notes"),
-        S.get("notesByDate"),
-        S.get("activityLog"),
-        S.get("user-settings"),
-      ]);
-      if (t) setTasks(t);
-      if (w) setWeekly(w);
-      if (c) setCumulative(c);
-      if (k) {
-        // Migrate existing cards to add priority and star fields
+      // Load all settings in one request
+      const all = await getAllSettings();
+
+      if (all.tasks) setTasks(all.tasks);
+      if (all[`weekly-${weekKey}`]) setWeekly(all[`weekly-${weekKey}`]);
+      if (all.cumulative) setCumulative(all.cumulative);
+      if (all.streak !== null && all.streak !== undefined) setStreak(all.streak);
+      if (all.lastActive) setLastActive(all.lastActive);
+      if (all.pitch) setPitch(all.pitch);
+      if (all.activityLog) setActivityLog(all.activityLog);
+      if (all['user-settings']) setUserSettings((prev) => ({ ...prev, ...all['user-settings'] }));
+      if (all['notes-ttl-hours']) setNotesTtlHours(all['notes-ttl-hours']);
+
+      // notesByDate migration: prefer new map, fallback to legacy notes string
+      const nb = all.notesByDate;
+      const n = all.notes;
+      if (nb) {
+        setNotesByDate(nb || {});
+      } else if (n) {
+        const today = todayStr();
+        const initial = n && n.trim()
+          ? { [today]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: today }] }
+          : {};
+        setNotesByDate(initial);
+      }
+
+      // Load cards from cards collection (individual records)
+      const k = await getCards();
+      if (k && k.length) {
         const migratedKanban = k.map((card) => ({
           ...card,
           isHighPriority: card.isHighPriority !== undefined ? card.isHighPriority : false,
@@ -95,29 +106,16 @@ function App() {
         }));
         setKanban(migratedKanban);
       }
-      if (st !== null) setStreak(st);
-      if (la) setLastActive(la);
-      if (p) setPitch(p);
-      // notesByDate migration: prefer new map, fallback to legacy notes string
-      if (nb) {
-        setNotesByDate(nb || {});
-      } else if (n) {
-        const today = todayStr();
-        const initial = n && n.trim() ? { [today]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: today }] } : {};
-        setNotesByDate(initial);
-      }
-      if (a) setActivityLog(a);
-      if (u) setUserSettings((prev) => ({ ...prev, ...u }));
-      // Load TTL setting (hours)
-      const ttl = await S.get("notes-ttl-hours");
-      if (ttl) setNotesTtlHours(ttl);
 
-      // After initial load, migrate any notes older than TTL into activityLog
+      // Migrate expired notes to activity log (keep existing logic, just use local vars)
+      const ttl = all['notes-ttl-hours'] || 24;
+      const source = nb || (n && n.trim()
+        ? { [todayStr()]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: todayStr() }] }
+        : {});
+      const now = Date.now();
+      const ttlMs = ttl * 60 * 60 * 1000;
       const migratedLogs = [];
       const kept = {};
-      const source = nb || (n && n.trim() ? { [todayStr()]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: todayStr() }] } : {});
-      const now = Date.now();
-      const ttlMs = (ttl || 24) * 60 * 60 * 1000;
       for (const [dateKey, arr] of Object.entries(source || {})) {
         const keep = [];
         for (const note of arr) {
@@ -125,11 +123,9 @@ function App() {
           const legacyExpired = note && note.createdAt ? note.createdAt + ttlMs <= now : false;
           const isExpired = expiresAt ? expiresAt <= now : legacyExpired;
           if (note && isExpired) {
-            // If the note hasn't been copied to activity yet, create an activity entry.
             if (!note.copiedToActivity) {
-              migratedLogs.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: "note", note: note.text });
+              migratedLogs.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: 'note', note: note.text });
             }
-            // do not keep the note (expired)
           } else if (note) {
             keep.push(note);
           }
@@ -138,14 +134,16 @@ function App() {
       }
       if (Object.keys(kept).length) setNotesByDate(kept);
       if (migratedLogs.length) setActivityLog((prev) => [...migratedLogs, ...prev]);
+
       setLoaded(true);
     })();
   }, []);
 
   // Persist TTL setting when changed
   useEffect(() => {
-    if (loaded) S.set("notes-ttl-hours", notesTtlHours);
+    if (loaded) setSetting("notes-ttl-hours", notesTtlHours);
   }, [notesTtlHours, loaded]);
+
 
   // Periodic migration: run every 30 minutes to move expired notes to activity
   useEffect(() => {
@@ -182,43 +180,41 @@ function App() {
 
   // Persist state changes
   useEffect(() => {
-    if (loaded) S.set("tasks", tasks);
+    if (loaded) setSetting("tasks", tasks);
   }, [tasks, loaded]);
 
   useEffect(() => {
-    if (loaded) S.set(`weekly-${weekKey}`, weekly);
+    if (loaded) setSetting(`weekly-${weekKey}`, weekly);
   }, [weekly, loaded]);
 
   useEffect(() => {
-    if (loaded) S.set("cumulative", cumulative);
+    if (loaded) setSetting("cumulative", cumulative);
   }, [cumulative, loaded]);
 
-  useEffect(() => {
-    if (loaded) S.set("kanban", kanban);
-  }, [kanban, loaded]);
+  // NOTE: kanban is persisted via individual card handlers; no bulk sync here
 
   useEffect(() => {
-    if (loaded) S.set("streak", streak);
+    if (loaded) setSetting("streak", streak);
   }, [streak, loaded]);
 
   useEffect(() => {
-    if (loaded) S.set("lastActive", lastActive);
+    if (loaded) setSetting("lastActive", lastActive);
   }, [lastActive, loaded]);
 
   useEffect(() => {
-    if (loaded) S.set("pitch", pitch);
+    if (loaded) setSetting("pitch", pitch);
   }, [pitch, loaded]);
 
   useEffect(() => {
-    if (loaded) S.set("notesByDate", notesByDate);
+    if (loaded) setSetting("notesByDate", notesByDate);
   }, [notesByDate, loaded]);
 
   useEffect(() => {
-    if (loaded) S.set("activityLog", activityLog);
+    if (loaded) setSetting("activityLog", activityLog);
   }, [activityLog, loaded]);
 
   useEffect(() => {
-    if (loaded) S.set("user-settings", userSettings);
+    if (loaded) setSetting("user-settings", userSettings);
   }, [userSettings, loaded]);
 
   // Auto check-in when navigating to dashboard tab
@@ -238,6 +234,35 @@ function App() {
 
   const addLog = (entry) => {
     setActivityLog((prev) => [{ ...entry, id: Date.now(), date: entry.date || todayStr() }, ...prev]);
+  };
+
+  const handleCardCreate = async (card) => {
+    try {
+      const created = await createCard(card);
+      if (created && created.id) {
+        setKanban((prev) => prev.map((c) => c.id === card.id ? { ...card, ...created } : c));
+      }
+    } catch (err) {
+      console.error("Failed to create card:", err);
+    }
+  };
+
+  const handleCardUpdate = async (id, changes) => {
+    try {
+      await updateCard(id, changes);
+    } catch (err) {
+      console.error("Failed to update card:", err);
+    }
+  };
+
+  const handleCardDelete = async (id) => {
+    try {
+      if (typeof id === 'string' && id.length === 15) {
+        await deleteCard(id);
+      }
+    } catch (err) {
+      console.error("Failed to delete card:", err);
+    }
   };
 
   // Handler for quick-note adds from WeekTargets: create dashboard note and copy to Activity immediately
@@ -595,7 +620,14 @@ function App() {
           {/* ── APPLICATIONS TAB ── */}
           {tab === "applications" && (
             <div style={{ ...cardStyle, padding: "24px 26px" }}>
-              <KanbanBoard cards={kanban} setCards={setKanban} onLog={addLog} />
+              <KanbanBoard
+                cards={kanban}
+                setCards={setKanban}
+                onLog={addLog}
+                onCardCreate={handleCardCreate}
+                onCardUpdate={handleCardUpdate}
+                onCardDelete={handleCardDelete}
+              />
             </div>
           )}
 

@@ -63,6 +63,7 @@ async function pbFetch(method, path, body) {
   if (!text) return null;
 
   try { return JSON.parse(text); } catch { return text; }
+
 }
 
 export async function getSetting(key) {
@@ -111,7 +112,8 @@ export async function getCards() {
 }
 
 export async function createCard(card) {
-  const body = { ...card, user: getUserId() };
+  const { id, ...rest } = card;
+  const body = { ...rest, user: getUserId() };
   return await pbFetch('POST', `/collections/cards/records`, body);
 }
 

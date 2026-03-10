@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { SearchStringCard } from "./SearchStringCard";
 import { SEARCH_STRINGS, JOB_BOARDS } from "../data/jobBoards";
 import { KEYWORDS } from "../data/keywords";
+import { getSetting, setSetting } from "../utils/pb";
 
 const lbl = {
   fontFamily: "'Plus Jakarta Sans',sans-serif",
@@ -13,50 +14,48 @@ const lbl = {
 };
 
 export function JobBoardsTab() {
-  const [boards, setBoards] = useState(() => {
-    try {
-      const raw = localStorage.getItem("job-dashboard-boards");
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return JOB_BOARDS;
-  });
+  const [boards, setBoards] = useState(JOB_BOARDS);
   const [editingBoards, setEditingBoards] = useState(false);
-  const [searchStrings, setSearchStrings] = useState(() => {
-    try {
-      const raw = localStorage.getItem("job-dashboard-search-strings");
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return SEARCH_STRINGS;
-  });
+  const [searchStrings, setSearchStrings] = useState(SEARCH_STRINGS);
   const [editingStrings, setEditingStrings] = useState(false);
-  const [keywords, setKeywords] = useState(() => {
-    try {
-      const raw = localStorage.getItem("job-dashboard-keywords");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        // Check if it's the new format (array of objects with section and keywords)
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].section && parsed[0].keywords) {
-          return parsed;
-        }
-        // Old format (flat array) - ignore it and use default
-      }
-    } catch {}
-    return Object.entries(KEYWORDS).map(([section, words]) => ({ section, keywords: words }));
-  });
+  const [keywords, setKeywords] = useState(
+    Object.entries(KEYWORDS).map(([section, words]) => ({ section, keywords: words }))
+  );
   const [editingKeywords, setEditingKeywords] = useState(false);
   const [newKeyword, setNewKeyword] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("job-dashboard-boards", JSON.stringify(boards));
+    setSetting("job-dashboard-boards", boards);
   }, [boards]);
 
   useEffect(() => {
-    localStorage.setItem("job-dashboard-search-strings", JSON.stringify(searchStrings));
+    setSetting("job-dashboard-search-strings", searchStrings);
   }, [searchStrings]);
 
   useEffect(() => {
-    localStorage.setItem("job-dashboard-keywords", JSON.stringify(keywords));
+    setSetting("job-dashboard-keywords", keywords);
   }, [keywords]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [b, ss, kw] = await Promise.all([
+          getSetting("job-dashboard-boards"),
+          getSetting("job-dashboard-search-strings"),
+          getSetting("job-dashboard-keywords"),
+        ]);
+        if (!mounted) return;
+        if (b) setBoards(b);
+        if (ss) setSearchStrings(ss);
+        if (kw) setKeywords(kw);
+      } catch {}
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box", padding: "0 24px" }}>

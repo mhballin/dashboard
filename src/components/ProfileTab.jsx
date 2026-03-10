@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { S } from "../utils/storage";
+import { getSetting, setSetting } from "../utils/pb";
 
 function Section({ title, helper, valueProp, initial, onSave }) {
   const isControlled = valueProp !== undefined;
@@ -195,9 +195,9 @@ export default function ProfileTab({ pitch, setPitch }) {
     (async () => {
       try {
         const [storedAsk, storedLooking, storedProof] = await Promise.all([
-          S.get("profile-ask"),
-          S.get("profile-looking"),
-          S.get("profile-proof"),
+          getSetting("profile-ask"),
+          getSetting("profile-looking"),
+          getSetting("profile-proof"),
         ]);
 
         if (!mounted) return;
@@ -227,7 +227,7 @@ export default function ProfileTab({ pitch, setPitch }) {
         valueProp={ask}
         onSave={(v) => {
           setAsk(v);
-          S.set("profile-ask", v);
+          setSetting("profile-ask", v);
         }}
       />
 
@@ -237,7 +237,7 @@ export default function ProfileTab({ pitch, setPitch }) {
         valueProp={lookingFor}
         onSave={(v) => {
           setLookingFor(v);
-          S.set("profile-looking", v);
+          setSetting("profile-looking", v);
         }}
       />
 
@@ -247,7 +247,7 @@ export default function ProfileTab({ pitch, setPitch }) {
         valueProp={proofPoints}
         onSave={(v) => {
           setProofPoints(v);
-          S.set("profile-proof", v);
+          setSetting("profile-proof", v);
         }}
       />
     </div>

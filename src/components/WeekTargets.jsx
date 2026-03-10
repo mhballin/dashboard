@@ -304,7 +304,7 @@ export function WeekTargets({
                             flex: 1,
                           }}
                         >
-                          {note.text}
+                          {note.text || note.content}
                         </div>
                         <button
                           onClick={() => onQuickNoteDelete && onQuickNoteDelete(note)}

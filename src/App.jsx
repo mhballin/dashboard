@@ -8,8 +8,10 @@ import DashboardTab from "./components/DashboardTab";
 import { SettingsTab } from "./components/SettingsTab";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
+import LoginScreen from "./components/LoginScreen";
+import AppHeader from "./components/AppHeader";
 import { useStreak } from "./utils/useStreak";
-import { isLoggedIn, login, logout, getCards, createCard, updateCard, deleteCard, getAllSettings, setSetting, getTasks, createTask, updateTask, deleteTask, getActivityLog, createActivityEntry, deleteActivityEntry, getWeeklyStats, upsertWeeklyStats } from "./utils/pb";
+import { isLoggedIn, login, logout, getCards, createCard, updateCard, deleteCard, getAllSettings, setSetting, getTasks, createTask, updateTask, deleteTask, getActivityLog, createActivityEntry, deleteActivityEntry, getWeeklyStats, upsertWeeklyStats, getNotes, createNote, updateNote, deleteNote } from "./utils/pb";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
 import { DEFAULT_TASKS, DEFAULT_PITCH } from "./data/defaultContent";
 
@@ -29,21 +31,8 @@ const lbl = {
   color: "#9ca3af",
 };
 
-const TABS = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "activity", label: "Activity" },
-  { id: "applications", label: "Applications" },
-  { id: "jobboards", label: "Job Boards & Keywords" },
-  { id: "profile", label: "Profile" },
-  { id: "settings", label: "Settings" },
-];
-
 function App() {
   const [authed, setAuthed] = useState(isLoggedIn());
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
   const weeklyPersistChainRef = useRef(Promise.resolve());
 
   const [loaded, setLoaded] = useState(false);
@@ -55,7 +44,7 @@ function App() {
   const [kanban, setKanban] = useState([]);
   const { streak, lastActive, setStreak, setLastActive, checkIn } = useStreak();
   const [pitch, setPitch] = useState(DEFAULT_PITCH);
-  const [notesByDate, setNotesByDate] = useState({});
+  const [notes, setNotes] = useState([]);
   const [quickNote, setQuickNote] = useState("");
   const [activityLog, setActivityLog] = useState([]);
   const [notesTtlHours, setNotesTtlHours] = useState(24);
@@ -81,17 +70,52 @@ function App() {
       if (all['user-settings']) setUserSettings((prev) => ({ ...prev, ...all['user-settings'] }));
       if (all['notes-ttl-hours']) setNotesTtlHours(all['notes-ttl-hours']);
 
-      // notesByDate migration: prefer new map, fallback to legacy notes string
-      const nb = all.notesByDate;
-      const n = all.notes;
-      if (nb) {
-        setNotesByDate(nb || {});
-      } else if (n) {
-        const today = todayStr();
-        const initial = n && n.trim()
-          ? { [today]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: today }] }
-          : {};
-        setNotesByDate(initial);
+      // Load notes from PocketBase first, fallback to legacy settings blob
+      let pbNotes = [];
+      try {
+        pbNotes = await getNotes();
+      } catch (err) {
+        console.error("Failed to load notes from PB:", err);
+      }
+
+      const mapPbRecord = (r) => {
+        const createdAt = r.created ? Date.parse(r.created) : (r.createdAt || Date.now());
+        const expiresAt = r.expiresAt ? Number(r.expiresAt) : (r.expires_at ? Number(r.expires_at) : null);
+        return {
+          id: r.id,
+          content: r.content || r.text || "",
+          text: r.content || r.text || "",
+          date: r.date || todayStr(),
+          createdAt,
+          expiresAt,
+          copiedToActivity: !!r.copiedToActivity || !!r.copied_to_activity,
+        };
+      };
+
+      if (pbNotes && pbNotes.length) {
+        setNotes(pbNotes.map(mapPbRecord));
+      } else {
+        // Fallback to legacy settings-based notes
+        const nb = all.notesByDate;
+        const n = all.notes;
+        if (nb) {
+          const flat = Object.entries(nb || {}).flatMap(([dateKey, arr]) => (arr || []).map((note) => ({
+            id: note.id || Date.now() + Math.random(),
+            text: note.text,
+            content: note.text,
+            date: note.date || dateKey,
+            createdAt: note.createdAt || Date.now(),
+            expiresAt: note.expiresAt || null,
+            copiedToActivity: !!note.copiedToActivity,
+          })));
+          setNotes(flat);
+        } else if (n) {
+          const today = todayStr();
+          const initial = n && n.trim()
+            ? [{ id: Date.now(), text: n, content: n, createdAt: Date.now(), date: today }]
+            : [];
+          setNotes(initial);
+        }
       }
       // Load tasks from tasks collection
       const pbTasks = await getTasks();
@@ -144,33 +168,40 @@ function App() {
         setKanban(migratedKanban);
       }
 
-      // Migrate expired notes to activity log (keep existing logic, just use local vars)
+      // Migrate expired notes from PB (or legacy) into activity log and delete PB records
       const ttl = all['notes-ttl-hours'] || 24;
-      const source = nb || (n && n.trim()
-        ? { [todayStr()]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: todayStr() }] }
-        : {});
       const now = Date.now();
       const ttlMs = ttl * 60 * 60 * 1000;
-      const migratedLogs = [];
-      const kept = {};
-      for (const [dateKey, arr] of Object.entries(source || {})) {
-        const keep = [];
+
+      const processExpired = async (arr) => {
         for (const note of arr) {
           const expiresAt = note && note.expiresAt ? Number(note.expiresAt) : null;
           const legacyExpired = note && note.createdAt ? note.createdAt + ttlMs <= now : false;
           const isExpired = expiresAt ? expiresAt <= now : legacyExpired;
           if (note && isExpired) {
             if (!note.copiedToActivity) {
-              migratedLogs.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: 'note', note: note.text });
+              try {
+                const newEntry = { date: note.date || todayStr(), type: 'note', note: note.text || note.content };
+                const created = await createActivityEntry(newEntry);
+                setActivityLog((prev) => [{ id: created.id, ...newEntry }, ...prev]);
+              } catch (err) {
+                console.error('Failed to log expired note:', err);
+                setActivityLog((prev) => [{ id: Date.now() + Math.random(), date: note.date || todayStr(), type: 'note', note: note.text || note.content }, ...prev]);
+              }
             }
-          } else if (note) {
-            keep.push(note);
+            // delete PB record if it exists (string id)
+            if (note.id && typeof note.id === 'string') {
+              try { await deleteNote(note.id); } catch (err) { console.error('Failed to delete expired note:', err); }
+            }
           }
         }
-        if (keep.length) kept[dateKey] = keep;
+      };
+
+      // Run migration for PB-loaded notes (or the fallback flat list)
+      const toProcess = pbNotes && pbNotes.length ? (pbNotes.map(mapPbRecord)) : (all.notesByDate ? Object.entries(all.notesByDate).flatMap(([dateKey, arr]) => (arr || []).map((note) => ({ id: note.id, text: note.text, content: note.text, date: note.date || dateKey, createdAt: note.createdAt, expiresAt: note.expiresAt, copiedToActivity: !!note.copiedToActivity }))) : (all.notes ? [{ id: Date.now(), text: all.notes, content: all.notes, date: todayStr(), createdAt: Date.now() }] : []));
+      if (toProcess.length) {
+        processExpired(toProcess).catch((err) => console.error('Expired notes migration failed:', err));
       }
-      if (Object.keys(kept).length) setNotesByDate(kept);
-      if (migratedLogs.length) setActivityLog((prev) => [...migratedLogs, ...prev]);
 
       setLoaded(true);
     })();
@@ -185,30 +216,40 @@ function App() {
   // Periodic migration: run every 30 minutes to move expired notes to activity
   useEffect(() => {
     if (!loaded) return;
-    const migrate = () => {
+    const migrate = async () => {
       const ttlMs = notesTtlHours * 60 * 60 * 1000;
-      setNotesByDate((prev) => {
-        const now = Date.now();
-        const newNotes = {};
-        const newActivities = [];
-        for (const [dateKey, arr] of Object.entries(prev || {})) {
-          for (const note of arr) {
-            const expiresAt = note && note.expiresAt ? Number(note.expiresAt) : null;
-            const legacyExpired = note && note.createdAt ? note.createdAt + ttlMs <= now : false;
-            const isExpired = expiresAt ? expiresAt <= now : legacyExpired;
-            if (note && isExpired) {
-              if (!note.copiedToActivity) {
-                newActivities.push({ id: Date.now() + Math.random(), date: note.date || dateKey, type: "note", note: note.text });
-              }
-              // drop note (expired)
-            } else {
-              newNotes[dateKey] = newNotes[dateKey] || [];
-              newNotes[dateKey].push(note);
-            }
-          }
+      const now = Date.now();
+      setNotes((prev) => {
+        const keep = [];
+        const expired = [];
+        for (const note of prev || []) {
+          const expiresAt = note && note.expiresAt ? Number(note.expiresAt) : null;
+          const legacyExpired = note && note.createdAt ? note.createdAt + ttlMs <= now : false;
+          const isExpired = expiresAt ? expiresAt <= now : legacyExpired;
+          if (note && isExpired) expired.push(note);
+          else keep.push(note);
         }
-        if (newActivities.length) setActivityLog((prevA) => [...newActivities, ...prevA]);
-        return newNotes;
+        if (expired.length) {
+          // handle expired notes async (log + delete PB records)
+          (async () => {
+            for (const n of expired) {
+              try {
+                if (!n.copiedToActivity) {
+                  const newEntry = { date: n.date || todayStr(), type: "note", note: n.text || n.content };
+                  const created = await createActivityEntry(newEntry);
+                  setActivityLog((prev) => [{ id: created.id, ...newEntry }, ...prev]);
+                }
+              } catch (err) {
+                console.error("Failed to add activity for expired note:", err);
+                setActivityLog((prev) => [{ id: Date.now() + Math.random(), date: n.date || todayStr(), type: "note", note: n.text || n.content }, ...prev]);
+              }
+              if (n.id && typeof n.id === "string") {
+                try { await deleteNote(n.id); } catch (err) { console.error("Failed to delete expired note:", err); }
+              }
+            }
+          })();
+        }
+        return keep;
       });
     };
     const id = setInterval(migrate, 30 * 60 * 1000);
@@ -234,9 +275,7 @@ function App() {
     if (loaded) setSetting("pitch", pitch);
   }, [pitch, loaded]);
 
-  useEffect(() => {
-    if (loaded) setSetting("notesByDate", notesByDate);
-  }, [notesByDate, loaded]);
+  // notesByDate persisted to settings removed — notes now live in PocketBase
 
 
   useEffect(() => {
@@ -349,38 +388,48 @@ function App() {
     }
   };
 
-  // Handler for quick-note adds from WeekTargets: create dashboard note and copy to Activity immediately
-  const handleQuickNoteAdd = (text) => {
+  // Handler for quick-note adds from WeekTargets: create PB note and copy to Activity immediately
+  const handleQuickNoteAdd = async (text) => {
     const today = todayStr();
     const now = Date.now();
-    const note = {
-      id: Date.now(),
-      text,
-      createdAt: now,
+    const body = {
+      content: text,
       date: today,
       copiedToActivity: true,
       expiresAt: now + notesTtlHours * 60 * 60 * 1000,
     };
-    setNotesByDate((prev) => ({ ...prev, [today]: [...(prev[today] || []), note] }));
+    try {
+      const created = await createNote(body);
+      const mapped = {
+        id: created.id,
+        content: created.content || body.content,
+        text: created.content || body.content,
+        date: created.date || body.date,
+        createdAt: created.created ? Date.parse(created.created) : now,
+        expiresAt: created.expiresAt ? Number(created.expiresAt) : body.expiresAt,
+        copiedToActivity: !!created.copiedToActivity,
+      };
+      setNotes((prev) => [mapped, ...(prev || [])]);
+    } catch (err) {
+      console.error("Failed to create PB note, falling back to local:", err);
+      const fallback = { id: Date.now(), text, content: text, date: today, createdAt: now, expiresAt: now + notesTtlHours * 60 * 60 * 1000, copiedToActivity: true };
+      setNotes((prev) => [fallback, ...(prev || [])]);
+    }
+    // Always create activity entry
     addLog({ date: today, type: "note", note: text });
   };
 
-  const handleQuickNoteDelete = (noteToDelete) => {
+  const handleQuickNoteDelete = async (noteToDelete) => {
     if (!noteToDelete || !noteToDelete.id) return;
-    setNotesByDate((prev) => {
-      const next = {};
-      for (const [dateKey, arr] of Object.entries(prev || {})) {
-        const kept = (arr || []).filter((note) => !(note && note.id === noteToDelete.id));
-        if (kept.length) next[dateKey] = kept;
-      }
-      return next;
-    });
+    if (noteToDelete.id && typeof noteToDelete.id === "string") {
+      try { await deleteNote(noteToDelete.id); } catch (err) { console.error("Failed to delete PB note:", err); }
+    }
+    setNotes((prev) => (prev || []).filter((n) => !(n && n.id === noteToDelete.id)));
   };
 
-  const activeQuickNotes = Object.entries(notesByDate || {})
-    .flatMap(([dateKey, arr]) =>
-      (arr || []).filter(Boolean).map((note) => ({ ...note, date: note.date || dateKey }))
-    )
+  const activeQuickNotes = (notes || [])
+    .filter(Boolean)
+    .map((note) => ({ ...note, text: note.text || note.content }))
     .filter((note) => {
       if (note.expiresAt) return Number(note.expiresAt) > Date.now();
       if (!note.createdAt) return true;
@@ -444,19 +493,7 @@ function App() {
     return applied && applied.getTime() >= monday.getTime() && applied.getTime() <= sunday.getTime();
   }).length;
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setLoginLoading(true);
-    setLoginError("");
-    try {
-      await login(loginEmail, loginPassword);
-      setAuthed(true);
-    } catch (err) {
-      setLoginError(err.message || "Login failed");
-    } finally {
-      setLoginLoading(false);
-    }
-  }
+  
 
   function handleLogout() {
     logout();
@@ -464,88 +501,7 @@ function App() {
   }
 
   if (!authed) {
-    return (
-      <ErrorBoundary>
-        <div style={{
-          minHeight: "100vh",
-          background: "#f7f5f0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-        }}>
-          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-          <div style={{
-            background: "#ffffff",
-            borderRadius: 20,
-            border: "1px solid #ede9e3",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
-            padding: "40px 36px",
-            width: "100%",
-            maxWidth: 380,
-          }}>
-            <div style={{ fontWeight: 800, fontSize: 22, color: "#1a1a1a", marginBottom: 4 }}>
-              Job Search HQ
-            </div>
-            <div style={{ fontSize: 13, color: "#9ca3af", marginBottom: 28 }}>
-              Sign in to continue
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <input
-                type="email"
-                placeholder="Email"
-                value={loginEmail}
-                onChange={e => setLoginEmail(e.target.value)}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  border: "1px solid #e5e7eb",
-                  fontSize: 14,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  outline: "none",
-                }}
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={loginPassword}
-                onChange={e => setLoginPassword(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleLogin(e)}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  border: "1px solid #e5e7eb",
-                  fontSize: 14,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  outline: "none",
-                }}
-              />
-              {loginError && (
-                <div style={{ fontSize: 13, color: "#dc2626" }}>{loginError}</div>
-              )}
-              <button
-                onClick={handleLogin}
-                disabled={loginLoading}
-                style={{
-                  padding: "11px 0",
-                  borderRadius: 8,
-                  border: "none",
-                  background: loginLoading ? "#9ca3af" : "#16a34a",
-                  color: "#ffffff",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  cursor: loginLoading ? "not-allowed" : "pointer",
-                  marginTop: 4,
-                }}
-              >
-                {loginLoading ? "Signing in…" : "Sign in"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </ErrorBoundary>
-    );
+    return <LoginScreen onLogin={async (email, password) => { await login(email, password); setAuthed(true); }} />;
   }
 
   if (!loaded) {
@@ -577,96 +533,7 @@ function App() {
         />
 
         {/* Header */}
-        <div style={{ background: "white", borderBottom: "1px solid #ede9e3", padding: "0 28px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingTop: 18,
-              paddingBottom: 14,
-            }}
-          >
-            <div>
-              <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 20, color: "#1a1a1a" }}>
-                Job Search HQ
-              </div>
-              <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 12, color: "#9ca3af", marginTop: 2 }}>
-                {userSettings.userName} · {weekKey}
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              {[
-                { icon: "🤝", val: cumulative.meetings || 0, l: "Meetings" },
-                { icon: "📋", val: cumulative.applications || 0, l: "Applied" },
-              ].map(({ icon, val, l }) => (
-                <div key={l} style={{ textAlign: "center", padding: "6px 14px", background: "#f7f5f0", borderRadius: 10 }}>
-                  <div
-                    style={{
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
-                      fontSize: 16,
-                      fontWeight: 800,
-                      color: "#1a1a1a",
-                    }}
-                  >
-                    {icon} {val}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
-                      fontSize: 10,
-                      color: "#9ca3af",
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    {l}
-                  </div>
-                </div>
-              ))}
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: "6px 14px",
-                  borderRadius: 8,
-                  border: "1px solid #e5e7eb",
-                  background: "transparent",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 600,
-                  fontSize: 12,
-                  color: "#9ca3af",
-                  cursor: "pointer",
-                }}
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 2 }}>
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: "10px 18px",
-                  fontFamily: "'Plus Jakarta Sans',sans-serif",
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: tab === t.id ? "#1a1a1a" : "#9ca3af",
-                  cursor: "pointer",
-                  borderBottom: `2.5px solid ${tab === t.id ? "#16a34a" : "transparent"}`,
-                  transition: "all 0.15s",
-                  marginBottom: -1,
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <AppHeader userName={userSettings.userName} weekKey={weekKey} cumulative={cumulative} tab={tab} setTab={setTab} onLogout={handleLogout} />
 
         <div style={{ padding: "24px 28px", maxWidth: 1100, margin: "0 auto" }}>
           {/* ── DASHBOARD TAB ── */}

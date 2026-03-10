@@ -10,6 +10,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import { useStreak } from "./utils/useStreak";
 import { S } from "./utils/storage";
+import { isLoggedIn, login, logout } from "./utils/pb";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
 import { DEFAULT_TASKS, DEFAULT_PITCH } from "./data/defaultContent";
 
@@ -39,6 +40,12 @@ const TABS = [
 ];
 
 function App() {
+  const [authed, setAuthed] = useState(isLoggedIn());
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
   const [loaded, setLoaded] = useState(false);
   const [tab, setTab] = useState("dashboard");
   const [weekKey] = useState(getWeekKey());
@@ -327,6 +334,110 @@ function App() {
     return applied && applied.getTime() >= monday.getTime() && applied.getTime() <= sunday.getTime();
   }).length;
 
+  async function handleLogin(e) {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      await login(loginEmail, loginPassword);
+      setAuthed(true);
+    } catch (err) {
+      setLoginError(err.message || "Login failed");
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
+  function handleLogout() {
+    logout();
+    setAuthed(false);
+  }
+
+  if (!authed) {
+    return (
+      <ErrorBoundary>
+        <div style={{
+          minHeight: "100vh",
+          background: "#f7f5f0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+        }}>
+          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+          <div style={{
+            background: "#ffffff",
+            borderRadius: 20,
+            border: "1px solid #ede9e3",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
+            padding: "40px 36px",
+            width: "100%",
+            maxWidth: 380,
+          }}>
+            <div style={{ fontWeight: 800, fontSize: 22, color: "#1a1a1a", marginBottom: 4 }}>
+              Job Search HQ
+            </div>
+            <div style={{ fontSize: 13, color: "#9ca3af", marginBottom: 28 }}>
+              Sign in to continue
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={loginEmail}
+                onChange={e => setLoginEmail(e.target.value)}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #e5e7eb",
+                  fontSize: 14,
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  outline: "none",
+                }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginPassword}
+                onChange={e => setLoginPassword(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleLogin(e)}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #e5e7eb",
+                  fontSize: 14,
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  outline: "none",
+                }}
+              />
+              {loginError && (
+                <div style={{ fontSize: 13, color: "#dc2626" }}>{loginError}</div>
+              )}
+              <button
+                onClick={handleLogin}
+                disabled={loginLoading}
+                style={{
+                  padding: "11px 0",
+                  borderRadius: 8,
+                  border: "none",
+                  background: loginLoading ? "#9ca3af" : "#16a34a",
+                  color: "#ffffff",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  cursor: loginLoading ? "not-allowed" : "pointer",
+                  marginTop: 4,
+                }}
+              >
+                {loginLoading ? "Signing in…" : "Sign in"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
   if (!loaded) {
     return (
       <ErrorBoundary>
@@ -404,6 +515,22 @@ function App() {
                   </div>
                 </div>
               ))}
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #e5e7eb",
+                  background: "transparent",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 600,
+                  fontSize: 12,
+                  color: "#9ca3af",
+                  cursor: "pointer",
+                }}
+              >
+                Sign out
+              </button>
             </div>
           </div>
           <div style={{ display: "flex", gap: 2 }}>

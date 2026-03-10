@@ -10,7 +10,7 @@ const lbl = {
   color: "#9ca3af",
 };
 
-export function Tasks({ tasks, setTasks, taskAddRef }) {
+export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate, onTaskDelete }) {
   const notDone = tasks.filter((t) => !t.done);
   const done = tasks.filter((t) => t.done);
   const doneSorted = [...done].sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
@@ -61,20 +61,27 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
 
   const addTask = () => {
     if (!text.trim()) return setAdding(false);
-    setTasks((p) => [
-      ...p,
-      { id: Date.now(), text: text.trim(), done: false, pinned: false, doneAt: null },
-    ]);
+    const newTask = { id: Date.now(), text: text.trim(), done: false, pinned: false, order: notDone.length };
+    setTasks((p) => [...p, newTask]);
+    if (onTaskCreate) onTaskCreate(newTask);
     setText("");
     setAdding(false);
   };
 
-  const complete = (id) =>
+  const complete = (id) => {
     setTasks((p) =>
       p.map((t) => (t.id === id ? { ...t, done: true, pinned: false, doneAt: Date.now() } : t))
     );
-  const remove = (id) => setTasks((p) => p.filter((t) => t.id !== id));
-  const uncheck = (id) => setTasks((p) => p.map((t) => (t.id === id ? { ...t, done: false, doneAt: null } : t)));
+    if (onTaskUpdate) onTaskUpdate(id, { done: true, pinned: false });
+  };
+  const remove = (id) => {
+    setTasks((p) => p.filter((t) => t.id !== id));
+    if (onTaskDelete) onTaskDelete(id);
+  };
+  const uncheck = (id) => {
+    setTasks((p) => p.map((t) => (t.id === id ? { ...t, done: false, doneAt: null } : t)));
+    if (onTaskUpdate) onTaskUpdate(id, { done: false });
+  };
 
   const handleDragStart = (taskId) => {
     dragId.current = taskId;
@@ -104,6 +111,12 @@ export function Tasks({ tasks, setTasks, taskAddRef }) {
     
     setTasks(reordered);
     dragId.current = null;
+    // Persist new order to PB
+    if (onTaskUpdate) {
+      newOrder.forEach((t, i) => {
+        if (t.order !== i) onTaskUpdate(t.id, { order: i });
+      });
+    }
   };
 
   return (

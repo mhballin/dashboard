@@ -209,7 +209,11 @@ export async function getWeeklyStats(weekKey) {
   return (res && (res.records || res.items)) || [];
 }
 
-export async function upsertWeeklyStats(weekKey, data) {
+export async function upsertWeeklyStats(weekKey, data, existingId) {
+  if (existingId) {
+    return await pbFetch('PATCH', `/collections/weekly_stats/records/${existingId}`, data);
+  }
+
   const filter = `(user="${getUserId()}"&&weekKey="${weekKey}")`;
   const q = `?filter=${encodeURIComponent(filter)}&perPage=1`;
   const existing = await pbFetch('GET', `/collections/weekly_stats/records${q}`);

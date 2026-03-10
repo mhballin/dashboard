@@ -9,6 +9,9 @@ export default function DashboardTab({
   locationOverride,
   tasks,
   setTasks,
+  onTaskCreate,
+  onTaskUpdate,
+  onTaskDelete,
   tasksAddRef,
   weekly,
   weeklyApplications,
@@ -42,7 +45,7 @@ export default function DashboardTab({
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
         <div style={{ ...cardStyle, padding: "22px 24px" }}>
-          <Tasks tasks={tasks} setTasks={setTasks} taskAddRef={tasksAddRef} />
+          <Tasks tasks={tasks} setTasks={setTasks} taskAddRef={tasksAddRef} onTaskCreate={onTaskCreate} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} />
         </div>
         <div style={{ ...cardStyle, padding: "22px 24px" }}>
           <WeekTargets

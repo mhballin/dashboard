@@ -9,7 +9,7 @@ import { SettingsTab } from "./components/SettingsTab";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import { useStreak } from "./utils/useStreak";
-import { isLoggedIn, login, logout, getCards, createCard, updateCard, deleteCard, getAllSettings, setSetting } from "./utils/pb";
+import { isLoggedIn, login, logout, getCards, createCard, updateCard, deleteCard, getAllSettings, setSetting, getTasks, createTask, updateTask, deleteTask, getActivityLog, createActivityEntry, deleteActivityEntry, getWeeklyStats, upsertWeeklyStats } from "./utils/pb";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./utils/dates";
 import { DEFAULT_TASKS, DEFAULT_PITCH } from "./data/defaultContent";
 
@@ -44,6 +44,7 @@ function App() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const weeklyPersistChainRef = useRef(Promise.resolve());
 
   const [loaded, setLoaded] = useState(false);
   const [tab, setTab] = useState("dashboard");
@@ -71,13 +72,12 @@ function App() {
       // Load all settings in one request
       const all = await getAllSettings();
 
-      if (all.tasks) setTasks(all.tasks);
-      if (all[`weekly-${weekKey}`]) setWeekly(all[`weekly-${weekKey}`]);
+      
       if (all.cumulative) setCumulative(all.cumulative);
       if (all.streak !== null && all.streak !== undefined) setStreak(all.streak);
       if (all.lastActive) setLastActive(all.lastActive);
       if (all.pitch) setPitch(all.pitch);
-      if (all.activityLog) setActivityLog(all.activityLog);
+      
       if (all['user-settings']) setUserSettings((prev) => ({ ...prev, ...all['user-settings'] }));
       if (all['notes-ttl-hours']) setNotesTtlHours(all['notes-ttl-hours']);
 
@@ -92,6 +92,44 @@ function App() {
           ? { [today]: [{ id: Date.now(), text: n, createdAt: Date.now(), date: today }] }
           : {};
         setNotesByDate(initial);
+      }
+      // Load tasks from tasks collection
+      const pbTasks = await getTasks();
+      if (pbTasks && pbTasks.length) {
+        setTasks(pbTasks.map((t, i) => ({
+          id: t.id,
+          text: t.text,
+          done: !!t.done,
+          pinned: !!t.pinned,
+          order: t.order ?? i,
+          doneAt: t.updated || null,
+        })));
+      } else if (all.tasks) {
+        // Fallback to settings blob if no records yet
+        setTasks(all.tasks);
+      }
+
+      // Load activity log from activity_log collection
+      const pbActivity = await getActivityLog();
+      if (pbActivity && pbActivity.length) {
+        setActivityLog(pbActivity.map((e) => ({
+          id: e.id,
+          date: e.date,
+          type: e.type,
+          note: e.note,
+        })));
+      } else if (all.activityLog) {
+        setActivityLog(all.activityLog);
+      }
+
+      // Load weekly stats from weekly_stats collection
+      const pbWeekly = await getWeeklyStats(weekKey);
+      if (pbWeekly && pbWeekly.length) {
+        const w = pbWeekly[0];
+            setWeekly({ applications: w.applications || 0, meetings: w.meetings || 0, outreach: w.outreach || 0 });
+            weeklyStatsIdRef.current = w.id;
+      } else if (all[`weekly-${weekKey}`]) {
+        setWeekly(all[`weekly-${weekKey}`]);
       }
 
       // Load cards from cards collection (individual records)
@@ -179,14 +217,6 @@ function App() {
 
   // Persist state changes
   useEffect(() => {
-    if (loaded) setSetting("tasks", tasks);
-  }, [tasks, loaded]);
-
-  useEffect(() => {
-    if (loaded) setSetting(`weekly-${weekKey}`, weekly);
-  }, [weekly, loaded]);
-
-  useEffect(() => {
     if (loaded) setSetting("cumulative", cumulative);
   }, [cumulative, loaded]);
 
@@ -208,9 +238,6 @@ function App() {
     if (loaded) setSetting("notesByDate", notesByDate);
   }, [notesByDate, loaded]);
 
-  useEffect(() => {
-    if (loaded) setSetting("activityLog", activityLog);
-  }, [activityLog, loaded]);
 
   useEffect(() => {
     if (loaded) setSetting("user-settings", userSettings);
@@ -221,18 +248,49 @@ function App() {
     if (tab === "dashboard") checkIn();
   }, [tab]);
 
+  const persistWeekly = async (data) => {
+    weeklyPersistChainRef.current = weeklyPersistChainRef.current
+      .then(async () => {
+        try {
+          const result = await upsertWeeklyStats(weekKey, data, weeklyStatsIdRef.current);
+          if (result && result.id) weeklyStatsIdRef.current = result.id;
+        } catch (err) {
+          console.error("Failed to persist weekly stats:", err);
+        }
+      })
+      .catch((err) => {
+        // swallow errors to keep chain alive
+        console.error("persistWeekly chain error:", err);
+      });
+  };
+
   const inc = (key) => {
-    setWeekly((w) => ({ ...w, [key]: (w[key] || 0) + 1 }));
+    setWeekly((w) => {
+      const next = { ...w, [key]: (w[key] || 0) + 1 };
+      persistWeekly(next);
+      return next;
+    });
     setCumulative((c) => ({ ...c, [key]: (c[key] || 0) + 1 }));
   };
 
   const dec = (key) => {
-    setWeekly((w) => ({ ...w, [key]: Math.max(0, (w[key] || 0) - 1) }));
+    setWeekly((w) => {
+      const next = { ...w, [key]: Math.max(0, (w[key] || 0) - 1) };
+      persistWeekly(next);
+      return next;
+    });
     setCumulative((c) => ({ ...c, [key]: Math.max(0, (c[key] || 0) - 1) }));
   };
 
-  const addLog = (entry) => {
-    setActivityLog((prev) => [{ ...entry, id: Date.now(), date: entry.date || todayStr() }, ...prev]);
+  const addLog = async (entry) => {
+    const newEntry = { date: entry.date || todayStr(), type: entry.type || "note", note: entry.note || "" };
+    try {
+      const created = await createActivityEntry(newEntry);
+      setActivityLog((prev) => [{ id: created.id, ...newEntry }, ...prev]);
+    } catch (err) {
+      console.error("Failed to create activity entry:", err);
+      setActivityLog((prev) => [{ id: Date.now(), ...newEntry }, ...prev]);
+    }
   };
 
   const handleCardCreate = async (card) => {
@@ -261,6 +319,33 @@ function App() {
       }
     } catch (err) {
       console.error("Failed to delete card:", err);
+    }
+  };
+
+  const handleTaskCreate = async (task) => {
+    try {
+      const created = await createTask({ text: task.text, done: !!task.done, pinned: !!task.pinned, order: task.order ?? 0 });
+      if (created && created.id) {
+        setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, id: created.id } : t));
+      }
+    } catch (err) {
+      console.error("Failed to create task:", err);
+    }
+  };
+
+  const handleTaskUpdate = async (id, changes) => {
+    try {
+      if (typeof id === "string") await updateTask(id, changes);
+    } catch (err) {
+      console.error("Failed to update task:", err);
+    }
+  };
+
+  const handleTaskDelete = async (id) => {
+    try {
+      if (typeof id === "string") await deleteTask(id);
+    } catch (err) {
+      console.error("Failed to delete task:", err);
     }
   };
 
@@ -307,6 +392,7 @@ function App() {
 
   const tasksAddRef = useRef(null);
   const notesAddRef = useRef(null);
+  const weeklyStatsIdRef = useRef(null);
 
   // Global keyboard shortcuts: plain `t` / `n` when not typing, Alt fallback
   useEffect(() => {
@@ -592,6 +678,9 @@ function App() {
               locationOverride={userSettings.locationOverride}
               tasks={tasks}
               setTasks={setTasks}
+              onTaskCreate={handleTaskCreate}
+              onTaskUpdate={handleTaskUpdate}
+              onTaskDelete={handleTaskDelete}
               tasksAddRef={tasksAddRef}
               weekly={weekly}
               weeklyApplications={weeklyApplications}
@@ -612,7 +701,10 @@ function App() {
           {tab === "activity" && (
             <ActivityLog
               entries={activityLog}
-              onDelete={(id) => setActivityLog((prev) => prev.filter((e) => e.id !== id))}
+              onDelete={(id) => {
+                setActivityLog((prev) => prev.filter((e) => e.id !== id));
+                if (typeof id === "string") deleteActivityEntry(id).catch((err) => console.error("Failed to delete activity:", err));
+              }}
             />
           )}
 

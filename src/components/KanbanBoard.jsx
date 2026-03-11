@@ -51,8 +51,6 @@ const formatDisplayDate = (dateStr) => {
 };
 
 const STALE_THRESHOLD_DAYS = 14;
-const APPLIED_FOLLOWUP_DAYS = 21;
-const INTERVIEWING_FOLLOWUP_DAYS = 14;
 const BOARD_MAX_WIDTH = 1480;
 
 const staleBadgeStyle = {
@@ -99,42 +97,6 @@ const isStaleCard = (card) => {
   if (!stageDate) return false;
   const diffMs = Date.now() - new Date(stageDate).getTime();
   return diffMs > STALE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000;
-};
-
-const followUpBadgeStyle = {
-  position: "absolute",
-  top: 8,
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  minWidth: 18,
-  height: 16,
-  padding: "0 5px",
-  borderRadius: 999,
-  border: "1px solid #fcd34d",
-  background: "#fffbeb",
-  fontSize: 9,
-  fontWeight: 800,
-  color: "#d97706",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
-  letterSpacing: "0.02em",
-  lineHeight: 1,
-  boxSizing: "border-box",
-  gap: 2,
-};
-
-const isFollowUpDue = (card) => {
-  if (card.col === 'applied') {
-    const appliedDate = card.dates?.applied;
-    if (!appliedDate) return false;
-    return Date.now() - new Date(appliedDate).getTime() > APPLIED_FOLLOWUP_DAYS * 24 * 60 * 60 * 1000;
-  }
-  if (card.col === 'interviewing') {
-    const interviewDate = card.dates?.interviewing;
-    if (!interviewDate) return false;
-    return Date.now() - new Date(interviewDate).getTime() > INTERVIEWING_FOLLOWUP_DAYS * 24 * 60 * 60 * 1000;
-  }
-  return false;
 };
 
 export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate, onCardDelete }) {
@@ -1002,22 +964,6 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                         !!
                       </div>
                     )}
-                    {/* Render follow-up reminder badge for applied/interviewing cards */}
-                    {isFollowUpDue(c) && (
-                      <div
-                        style={{
-                          ...followUpBadgeStyle,
-                          right: 8,
-                        }}
-                        title={c.col === 'applied'
-                          ? `Applied ${Math.floor((Date.now() - new Date(c.dates?.applied).getTime()) / 86400000)} days ago — consider following up`
-                          : `In interviewing for ${Math.floor((Date.now() - new Date(c.dates?.interviewing).getTime()) / 86400000)} days — consider following up`
-                        }
-                      >
-                        ↩ follow up
-                      </div>
-                    )}
-
                     {/* Top Section: Icon + Company Name + Job Title */}
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flex: 1, minWidth: 0 }}>
@@ -1475,40 +1421,6 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           </>
                         )}
 
-                        {/* Follow-up reminder banner */}
-                        {(() => {
-                          const cc = cards.find(c => c.id === editingId);
-                          if (!isFollowUpDue(cc)) return null;
-                          const isApplied = cc.col === 'applied';
-                          const stageDate = isApplied ? cc.dates?.applied : cc.dates?.interviewing;
-                          const daysAgo = Math.floor((Date.now() - new Date(stageDate).getTime()) / 86400000);
-                          return (
-                            <div style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              padding: "10px 12px",
-                              background: "#fffbeb",
-                              border: "1px solid #fcd34d",
-                              borderRadius: 8,
-                              marginBottom: 20,
-                            }}>
-                              <span style={{ fontSize: 16 }}>↩</span>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 12, fontWeight: 600, color: "#d97706", fontFamily: "Plus Jakarta Sans" }}>
-                                  Follow-up due
-                                </div>
-                                <div style={{ fontSize: 12, color: "#92400e", fontFamily: "Plus Jakarta Sans" }}>
-                                  {isApplied
-                                    ? `Applied ${daysAgo} days ago — consider sending a follow-up`
-                                    : `In interviewing for ${daysAgo} days — consider following up`
-                                  }
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })()}
-
                         {/* Notes Section */}
                         <div>
                           <div style={{
@@ -1525,7 +1437,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           <textarea
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                            placeholder="Add your thoughts, follow-up reminders, or interview prep notes..."
+                            placeholder="Add your thoughts or interview prep notes..."
                             rows={10}
                             style={{
                               width: "100%",

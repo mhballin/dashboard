@@ -27,20 +27,22 @@ export function WeekTargets({
 }) {
   const [promptKey, setPromptKey] = useState(null);
   const [promptText, setPromptText] = useState("");
+  const VISIBLE_TARGET_KEYS = ["meetings", "outreach", "applications"];
   const METRIC_COLORS = {
     meetings: "#0d9488",
     outreach: "#be185d",
-    followups: "#7c3aed",
     applications: "#3b82f6",
   };
   const LOGGED_KEYS = ["meetings", "outreach"];
   
   // Use provided targets or fall back to WEEKLY_TARGETS
   const targetArray = targets ? 
-    Object.entries(targets).map(([key, target]) => {
+    Object.entries(targets)
+      .filter(([key]) => VISIBLE_TARGET_KEYS.includes(key))
+      .map(([key, target]) => {
       const iconMap = { meetings: "🤝", outreach: "📞", applications: "📋" };
       const labelMap = { meetings: "Meetings", outreach: "Outreach", applications: "Applications" };
-      return { key, target, icon: iconMap[key], label: labelMap[key] };
+      return { key, target, icon: iconMap[key] || "📌", label: labelMap[key] || key };
     }) 
     : WEEKLY_TARGETS;
   

@@ -93,7 +93,7 @@ export function ActivityLog({ entries = [], onDelete }) {
             padding: "0 14px",
           }}
         >
-          No activity yet - start logging meetings, outreach, and follow-ups.
+          No activity yet - start logging meetings, outreach, and applications.
         </div>
       )}
 

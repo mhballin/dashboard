@@ -1,7 +1,6 @@
 export const WEEKLY_TARGETS = [
   { key: "meetings",      label: "Meetings",      target: 1, icon: "🤝" },
   { key: "outreach",      label: "Outreach",      target: 4, icon: "📨" },
-  { key: "followups",     label: "Follow-ups",    target: 2, icon: "🔁" },
   { key: "applications",  label: "Applications Sent",  target: 2, icon: "📋" },
 ];
 

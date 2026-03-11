@@ -114,7 +114,7 @@ function App() {
         {/* Header */}
         <AppHeader userName={userSettings.userName} weekKey={weekKey} cumulative={cumulative} tab={tab} setTab={setTab} onLogout={handleLogout} />
 
-        <div style={{ padding: "24px 28px", maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ padding: "24px 28px", maxWidth: tab === "applications" ? 1500 : 1100, margin: "0 auto" }}>
           {/* ── DASHBOARD TAB ── */}
           {tab === "dashboard" && (
             <DashboardTab
@@ -156,7 +156,7 @@ function App() {
 
           {/* ── APPLICATIONS TAB ── */}
           {tab === "applications" && (
-            <div style={{ ...cardStyle, padding: "24px 26px" }}>
+            <div style={{ ...cardStyle, padding: "24px 30px" }}>
               <KanbanBoard
                 cards={kanban}
                 setCards={setKanban}

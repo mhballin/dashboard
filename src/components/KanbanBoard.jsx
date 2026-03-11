@@ -50,6 +50,93 @@ const formatDisplayDate = (dateStr) => {
     { month: "short", day: "numeric", year: "numeric" });
 };
 
+const STALE_THRESHOLD_DAYS = 14;
+const APPLIED_FOLLOWUP_DAYS = 21;
+const INTERVIEWING_FOLLOWUP_DAYS = 14;
+const BOARD_MAX_WIDTH = 1480;
+
+const staleBadgeStyle = {
+  position: "absolute",
+  top: 8,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minWidth: 18,
+  height: 16,
+  padding: "0 4px",
+  borderRadius: 999,
+  border: "1px solid #fecaca",
+  background: "#fff1f2",
+  fontSize: 10,
+  fontWeight: 800,
+  color: "#dc2626",
+  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  letterSpacing: "-0.02em",
+  lineHeight: 1,
+  boxSizing: "border-box",
+};
+
+const savedStarButtonStyle = {
+  flexShrink: 0,
+  width: 20,
+  height: 20,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 1,
+  padding: 0,
+  background: "none",
+  border: "none",
+  fontSize: 16,
+  lineHeight: 1,
+  color: "#c5c0b8",
+  cursor: "pointer",
+};
+
+const isStaleCard = (card) => {
+  if (card.col !== 'saved') return false;
+  const stageDate = card.dates?.saved || card.added;
+  if (!stageDate) return false;
+  const diffMs = Date.now() - new Date(stageDate).getTime();
+  return diffMs > STALE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000;
+};
+
+const followUpBadgeStyle = {
+  position: "absolute",
+  top: 8,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minWidth: 18,
+  height: 16,
+  padding: "0 5px",
+  borderRadius: 999,
+  border: "1px solid #fcd34d",
+  background: "#fffbeb",
+  fontSize: 9,
+  fontWeight: 800,
+  color: "#d97706",
+  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  letterSpacing: "0.02em",
+  lineHeight: 1,
+  boxSizing: "border-box",
+  gap: 2,
+};
+
+const isFollowUpDue = (card) => {
+  if (card.col === 'applied') {
+    const appliedDate = card.dates?.applied;
+    if (!appliedDate) return false;
+    return Date.now() - new Date(appliedDate).getTime() > APPLIED_FOLLOWUP_DAYS * 24 * 60 * 60 * 1000;
+  }
+  if (card.col === 'interviewing') {
+    const interviewDate = card.dates?.interviewing;
+    if (!interviewDate) return false;
+    return Date.now() - new Date(interviewDate).getTime() > INTERVIEWING_FOLLOWUP_DAYS * 24 * 60 * 60 * 1000;
+  }
+  return false;
+};
+
 export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate, onCardDelete }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalCol, setModalCol] = useState(null);
@@ -265,12 +352,14 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
 
     // Compute updated dates for the moved card
     const updatedDates = { ...(card.dates || { saved: card.added || todayStr(), applied: null, interviewing: null, closed: null }) };
-    if (col === "applied" && !updatedDates.applied) {
+    if (col === "applied") {
       updatedDates.applied = todayStr();
-    } else if (col === "interviewing" && !updatedDates.interviewing) {
+    } else if (col === "interviewing") {
       updatedDates.interviewing = todayStr();
-    } else if (col === "closed" && !updatedDates.closed) {
+    } else if (col === "closed") {
       updatedDates.closed = todayStr();
+    } else if (col === "saved" && !updatedDates.saved) {
+      updatedDates.saved = todayStr();
     }
 
     setCards((p) =>
@@ -329,11 +418,12 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
   };
 
   return (
-    <div>
-      <div style={{ ...lbl, marginBottom: 20 }}>Applications Tracker</div>
+    <div style={{ width: "100%", maxWidth: BOARD_MAX_WIDTH, margin: "0 auto" }}>
+      <div style={{ ...lbl, marginBottom: 18 }}>Applications Tracker</div>
 
       {/* Kanban Columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,260px)", gap: 14, justifyContent: "center" }}>
+      <div style={{ width: "100%" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 18, alignItems: "start", width: "100%" }}>
         {KANBAN_COLS.map((col) => {
           let colCards = cards.filter((c) => c.col === col.id);
           
@@ -363,17 +453,18 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
               onDragLeave={() => setDragOver(null)}
               style={{
                 background: isOver ? col.bg : "#fafaf8",
-                borderRadius: 16,
-                padding: 14,
-                minHeight: 200,
+                borderRadius: 18,
+                padding: 16,
+                minHeight: 240,
                 border: `1.5px solid ${isOver ? col.color + "50" : "#ede9e3"}`,
                 transition: "all 0.15s",
-                minWidth: 260,
-                width: 260,
+                minWidth: 0,
+                width: "100%",
                 boxSizing: "border-box",
+                boxShadow: isOver ? "0 6px 18px rgba(0,0,0,0.05)" : "0 1px 3px rgba(0,0,0,0.03)",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: col.color }} />
                   <span style={{ ...cardFont, fontSize: 13, fontWeight: 700, color: "#374151" }}>
@@ -395,7 +486,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
               {col.id === "saved" ? (
                 <>
                   {/* Priority Label */}
-                  <div style={{ fontSize: 10, color: "#a09a8f", letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "Plus Jakarta Sans", marginBottom: 6, marginLeft: 4 }}>
+                  <div style={{ fontSize: 10, color: "#a09a8f", letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "Plus Jakarta Sans", marginBottom: 8, marginLeft: 4 }}>
                     PRIORITY
                   </div>
 
@@ -473,11 +564,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 setCards((p) =>
                                   p.map((card) =>
                                     card.id === dragging
-                                      ? { ...card, isHighPriority: true, priorityOrder: po }
+                                      ? { ...card, isHighPriority: false, priorityOrder: po }
                                       : card
                                   )
                                 );
-                                onCardUpdate?.(dragging, { isHighPriority: true, priorityOrder: po });
+                                onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
                               }
                             }
                           }
@@ -491,7 +582,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                         style={{
                           background: "#ffffff",
                           borderRadius: 12,
-                          padding: "8px 12px",
+                          padding: "10px 14px",
                           marginBottom: 8,
                           border: "1px solid #ede9e3",
                           borderLeft: "3.5px solid #c96b5a",
@@ -505,8 +596,38 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           overflow: "hidden",
                         }}
                       >
+                        {isStaleCard(c) && (
+                          <div
+                            style={{
+                              ...staleBadgeStyle,
+                              right: 10,
+                            }}
+                          >
+                            !!
+                          </div>
+                        )}
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flex: 1, minWidth: 0 }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCards((p) =>
+                                  p.map((card) =>
+                                    card.id === c.id
+                                      ? { ...card, isStarred: !card.isStarred }
+                                      : card
+                                  )
+                                );
+                                onCardUpdate?.(c.id, { isStarred: !c.isStarred });
+                              }}
+                              style={{
+                                ...savedStarButtonStyle,
+                                color: c.isStarred ? "#d4a537" : "#c5c0b8",
+                              }}
+                              aria-label={c.isStarred ? "Unstar job" : "Star job"}
+                            >
+                              {c.isStarred ? "★" : "☆"}
+                            </button>
                             {/* Company Icon */}
                             <div style={{ flexShrink: 0 }}>
                             {c.company ? (
@@ -591,32 +712,6 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                             </div>
                           </div>
 
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCards((p) =>
-                                p.map((card) =>
-                                  card.id === c.id
-                                    ? { ...card, isStarred: !card.isStarred }
-                                    : card
-                                )
-                              );
-                              onCardUpdate?.(c.id, { isStarred: !c.isStarred });
-                            }}
-                            style={{
-                              flexShrink: 0,
-                              width: 20,
-                              height: 20,
-                              display: "flex",
-                              alignItems: "flex-start",
-                              justifyContent: "center",
-                              fontSize: 16,
-                              color: c.isStarred ? "#d4a537" : "#c5c0b8",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {c.isStarred ? "★" : "☆"}
-                          </div>
                         </div>
                       </div>
                     );
@@ -627,7 +722,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                   <hr style={{ marginTop: 16, marginBottom: 16, marginLeft: 12, marginRight: 12, border: "none", borderTop: "1px solid #e5e2db" }} />
 
                   {/* Others Label */}
-                  <div style={{ fontSize: 10, color: "#a09a8f", letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "Plus Jakarta Sans", marginBottom: 6, marginLeft: 4 }}>
+                  <div style={{ fontSize: 10, color: "#a09a8f", letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "Plus Jakarta Sans", marginBottom: 8, marginLeft: 4 }}>
                     OTHERS
                   </div>
 
@@ -723,7 +818,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                         style={{
                           background: "#ffffff",
                           borderRadius: 12,
-                          padding: "8px 12px",
+                          padding: "10px 14px",
                           marginBottom: 8,
                           border: "1px solid #ede9e3",
                           borderLeft: "3.5px solid #d5d0c8",
@@ -737,8 +832,38 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           overflow: "hidden",
                         }}
                       >
+                        {isStaleCard(c) && (
+                          <div
+                            style={{
+                              ...staleBadgeStyle,
+                              right: 10,
+                            }}
+                          >
+                            !!
+                          </div>
+                        )}
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flex: 1, minWidth: 0 }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCards((p) =>
+                                p.map((card) =>
+                                  card.id === c.id
+                                    ? { ...card, isStarred: !card.isStarred }
+                                    : card
+                                )
+                              );
+                              onCardUpdate?.(c.id, { isStarred: !c.isStarred });
+                            }}
+                            style={{
+                              ...savedStarButtonStyle,
+                              color: c.isStarred ? "#d4a537" : "#c5c0b8",
+                            }}
+                            aria-label={c.isStarred ? "Unstar job" : "Star job"}
+                          >
+                            {c.isStarred ? "★" : "☆"}
+                          </button>
                           {/* Company Icon */}
                           <div style={{ flexShrink: 0 }}>
                             {c.company ? (
@@ -823,32 +948,6 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                             </div>
                           </div>
 
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCards((p) =>
-                                p.map((card) =>
-                                  card.id === c.id
-                                    ? { ...card, isStarred: !card.isStarred }
-                                    : card
-                                )
-                              );
-                              onCardUpdate?.(c.id, { isStarred: !c.isStarred });
-                            }}
-                            style={{
-                              flexShrink: 0,
-                              width: 20,
-                              height: 20,
-                              display: "flex",
-                              alignItems: "flex-start",
-                              justifyContent: "center",
-                              fontSize: 16,
-                              color: c.isStarred ? "#d4a537" : "#c5c0b8",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {c.isStarred ? "★" : "☆"}
-                          </div>
                         </div>
 
                         {/* Bottom Section: Date + External Link */}
@@ -878,7 +977,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                     style={{
                       background: "#ffffff",
                       borderRadius: 12,
-                      padding: "8px 12px",
+                      padding: "10px 14px",
                       marginBottom: 8,
                       border: "1px solid #ede9e3",
                       borderLeft: `4px solid ${col.color}`,
@@ -888,9 +987,37 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                       opacity: dragging === c.id ? 0.5 : 1,
                       transform: hoveredCardId === c.id ? "translateY(-2px)" : "translateY(0)",
                       transition: "all 0.2s ease",
-                          overflow: "hidden",
+                      position: "relative",
+                      overflow: "hidden",
                     }}
                   >
+                    {/* Render stale badge if card is stale */}
+                    {isStaleCard(c) && (
+                      <div
+                        style={{
+                          ...staleBadgeStyle,
+                          right: 8,
+                        }}
+                      >
+                        !!
+                      </div>
+                    )}
+                    {/* Render follow-up reminder badge for applied/interviewing cards */}
+                    {isFollowUpDue(c) && (
+                      <div
+                        style={{
+                          ...followUpBadgeStyle,
+                          right: 8,
+                        }}
+                        title={c.col === 'applied'
+                          ? `Applied ${Math.floor((Date.now() - new Date(c.dates?.applied).getTime()) / 86400000)} days ago — consider following up`
+                          : `In interviewing for ${Math.floor((Date.now() - new Date(c.dates?.interviewing).getTime()) / 86400000)} days — consider following up`
+                        }
+                      >
+                        ↩ follow up
+                      </div>
+                    )}
+
                     {/* Top Section: Icon + Company Name + Job Title */}
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flex: 1, minWidth: 0 }}>
@@ -988,6 +1115,9 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                         }}
                         style={{
                           background: "none",
+                          position: "absolute",
+                          bottom: 4,
+                          right: 6,
                           border: "none",
                           cursor: "pointer",
                           color: "#9ca3af",
@@ -1009,6 +1139,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
             </div>
           );
         })}
+      </div>
       </div>
 
       {/* Modal - Three Modes: Create, View, Edit */}
@@ -1343,6 +1474,40 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                             </div>
                           </>
                         )}
+
+                        {/* Follow-up reminder banner */}
+                        {(() => {
+                          const cc = cards.find(c => c.id === editingId);
+                          if (!isFollowUpDue(cc)) return null;
+                          const isApplied = cc.col === 'applied';
+                          const stageDate = isApplied ? cc.dates?.applied : cc.dates?.interviewing;
+                          const daysAgo = Math.floor((Date.now() - new Date(stageDate).getTime()) / 86400000);
+                          return (
+                            <div style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              padding: "10px 12px",
+                              background: "#fffbeb",
+                              border: "1px solid #fcd34d",
+                              borderRadius: 8,
+                              marginBottom: 20,
+                            }}>
+                              <span style={{ fontSize: 16 }}>↩</span>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 12, fontWeight: 600, color: "#d97706", fontFamily: "Plus Jakarta Sans" }}>
+                                  Follow-up due
+                                </div>
+                                <div style={{ fontSize: 12, color: "#92400e", fontFamily: "Plus Jakarta Sans" }}>
+                                  {isApplied
+                                    ? `Applied ${daysAgo} days ago — consider sending a follow-up`
+                                    : `In interviewing for ${daysAgo} days — consider following up`
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Notes Section */}
                         <div>

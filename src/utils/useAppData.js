@@ -144,6 +144,8 @@ export function useAppData(tab) {
           isHighPriority: card.isHighPriority !== undefined ? card.isHighPriority : false,
           priorityOrder: card.priorityOrder !== undefined ? card.priorityOrder : 0,
           isStarred: card.isStarred !== undefined ? card.isStarred : false,
+          dates: typeof card.dates === 'string' ? JSON.parse(card.dates) : (card.dates || {}), // Parse dates if they are strings
+          added: card.added || todayStr(), // Ensure added has a default value
         }));
         setKanban(migratedKanban);
       }

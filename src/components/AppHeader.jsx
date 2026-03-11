@@ -3,7 +3,7 @@ import React from "react";
 const TABS = [
   { id: "dashboard", label: "Dashboard" },
   { id: "activity", label: "Activity" },
-  { id: "applications", label: "Applications" },
+  { id: "applications", label: "Tracker" },
   { id: "jobboards", label: "Job Boards & Keywords" },
   { id: "profile", label: "Profile" },
   { id: "settings", label: "Settings" },
@@ -32,6 +32,7 @@ export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {[
             { icon: "🤝", val: cumulative.meetings || 0, l: "Meetings" },
+            { icon: "📞", val: cumulative.outreach || 0, l: "Outreach" },
             { icon: "📋", val: cumulative.applications || 0, l: "Applied" },
           ].map(({ icon, val, l }) => (
             <div key={l} style={{ textAlign: "center", padding: "6px 14px", background: "#f7f5f0", borderRadius: 10 }}>

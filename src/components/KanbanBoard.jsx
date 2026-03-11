@@ -381,7 +381,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
 
   return (
     <div style={{ width: "100%", maxWidth: BOARD_MAX_WIDTH, margin: "0 auto" }}>
-      <div style={{ ...lbl, marginBottom: 18 }}>Applications Tracker</div>
+      <div style={{ ...lbl, marginBottom: 18 }}>Job Tracker</div>
 
       {/* Kanban Columns */}
       <div style={{ width: "100%" }}>

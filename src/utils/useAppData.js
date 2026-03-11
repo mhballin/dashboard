@@ -23,12 +23,31 @@ import {
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./dates";
 import { DEFAULT_TASKS, DEFAULT_PITCH } from "../data/defaultContent";
 
+const TRACKED_APPLICATION_COLUMNS = ["applied", "interviewing", "closed"];
+
+function buildCumulative(entries = [], cards = [], fallback = null) {
+  const meetings = (entries || []).filter((e) => e?.type === "meetings").length;
+  const outreach = (entries || []).filter((e) => e?.type === "outreach").length;
+  const applications = (cards || []).filter((card) => TRACKED_APPLICATION_COLUMNS.includes(card?.col)).length;
+
+  // Preserve legacy cumulative data only when there is no source data yet.
+  if (!entries.length && !cards.length && fallback) {
+    return {
+      meetings: fallback.meetings || 0,
+      outreach: fallback.outreach || 0,
+      applications: fallback.applications || 0,
+    };
+  }
+
+  return { meetings, outreach, applications };
+}
+
 export function useAppData(tab) {
   const [loaded, setLoaded] = useState(false);
   const [weekKey] = useState(getWeekKey());
   const [tasks, setTasks] = useState(DEFAULT_TASKS);
   const [weekly, setWeekly] = useState({ meetings: 0, outreach: 0, applications: 0 });
-  const [cumulative, setCumulative] = useState({ meetings: 15, outreach: 0, applications: 0 });
+  const [cumulative, setCumulative] = useState({ meetings: 0, outreach: 0, applications: 0 });
   const [kanban, setKanban] = useState([]);
   const { streak, lastActive, setStreak, setLastActive, checkIn } = useStreak();
   const [pitch, setPitch] = useState(DEFAULT_PITCH);
@@ -53,7 +72,6 @@ export function useAppData(tab) {
     (async () => {
       const all = await getAllSettings();
 
-      if (all.cumulative) setCumulative(all.cumulative);
       if (all.streak !== null && all.streak !== undefined) setStreak(all.streak);
       if (all.lastActive) setLastActive(all.lastActive);
       if (all.pitch) setPitch(all.pitch);
@@ -148,6 +166,9 @@ export function useAppData(tab) {
           added: card.added || todayStr(), // Ensure added has a default value
         }));
         setKanban(migratedKanban);
+        setCumulative((prev) => buildCumulative(pbActivity || [], migratedKanban, all.cumulative || prev));
+      } else {
+        setCumulative((prev) => buildCumulative(pbActivity || [], [], all.cumulative || prev));
       }
 
       // Migrate expired notes from PB (or legacy) into activity log and delete PB records
@@ -186,6 +207,22 @@ export function useAppData(tab) {
       setLoaded(true);
     })();
   }, []);
+
+  // Keep top-level cumulative counters synced with current app state.
+  useEffect(() => {
+    if (!loaded) return;
+    setCumulative((prev) => {
+      const next = buildCumulative(activityLog, kanban, prev);
+      if (
+        next.meetings === prev.meetings
+        && next.outreach === prev.outreach
+        && next.applications === prev.applications
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [activityLog, kanban, loaded]);
 
   // Persist TTL setting when changed
   useEffect(() => {
@@ -281,7 +318,6 @@ export function useAppData(tab) {
       persistWeekly(next);
       return next;
     });
-    setCumulative((c) => ({ ...c, [key]: (c[key] || 0) + 1 }));
   };
 
   const dec = (key) => {
@@ -290,7 +326,6 @@ export function useAppData(tab) {
       persistWeekly(next);
       return next;
     });
-    setCumulative((c) => ({ ...c, [key]: Math.max(0, (c[key] || 0) - 1) }));
   };
 
   const addLog = async (entry) => {

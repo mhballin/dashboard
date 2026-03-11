@@ -154,7 +154,7 @@ function App() {
             />
           )}
 
-          {/* ── APPLICATIONS TAB ── */}
+          {/* ── TRACKER TAB ── */}
           {tab === "applications" && (
             <div style={{ ...cardStyle, padding: "24px 30px" }}>
               <KanbanBoard

@@ -63,13 +63,13 @@ export function DayHeader({ streak, lastActive, tempUnit = "F", locationOverride
       return;
     }
 
-    // Use an HTTPS geolocation endpoint so weather loads on secure deployments.
-    fetch("https://ipwho.is/")
+    // Use ipapi.co — HTTPS, no API key, works from browser
+    fetch("https://ipapi.co/json/")
       .then((res) => res.json())
       .then((data) => {
-        if (data.success === false) throw new Error("IP geolocation failed");
-        const { latitude, longitude, city, region, country } = data;
-        const normalizedLocation = [city, region || country].filter(Boolean).join(", ");
+        if (data.error) throw new Error("IP geolocation failed");
+        const { latitude, longitude, city, region, country_name } = data;
+        const normalizedLocation = [city, region || country_name].filter(Boolean).join(", ");
         setLocation(normalizedLocation || "Current location");
         return fetchWeatherForCoords(latitude, longitude);
       })

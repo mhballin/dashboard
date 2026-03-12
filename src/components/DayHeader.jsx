@@ -106,8 +106,9 @@ export function DayHeader({ streak, lastActive, tempUnit = "F", locationOverride
           </span>
         </div>
         {weather && (
-          <div style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
-            {weather.emoji} {tempUnit === "C" ? Math.round((weather.temp - 32) * (5 / 9)) : weather.temp}°{tempUnit}{" "}
+          <div style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <span style={{ fontFamily: "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif" }}>{weather.emoji}</span>{" "}
+            {tempUnit === "C" ? Math.round((weather.temp - 32) * (5 / 9)) : weather.temp}°{tempUnit}{" "}
             {location && (
               <span style={{ color: "#9ca3af", fontWeight: 400 }}>
                 in {location}

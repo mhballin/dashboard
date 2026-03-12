@@ -34,14 +34,14 @@ export function DayHeader({ streak, lastActive, tempUnit = "F", locationOverride
       setLocation(locationOverride);
       return;
     }
-    // Fetch location from IP address using ip-api.com (supports CORS)
-    fetch("http://ip-api.com/json/")
+    // Use an HTTPS geolocation endpoint so weather loads on secure deployments.
+    fetch("https://ipwho.is/")
       .then((res) => res.json())
       .then((data) => {
-        const { lat, lon, city, regionName } = data;
-        setLocation(`${city}, ${regionName}`);
+        const { latitude, longitude, city, region } = data;
+        setLocation(`${city}, ${region}`);
         return fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`
         );
       })
       .then((res) => res.json())

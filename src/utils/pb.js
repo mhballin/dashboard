@@ -234,8 +234,6 @@ export async function createActivityEntry(entry) {
   return await pbFetch('POST', `/collections/activity_log/records`, body);
 }
 
-// Removed: updateActivityEntry is unused in the codebase.
-
 export async function deleteActivityEntry(id) {
   return await pbFetch('DELETE', `/collections/activity_log/records/${id}`);
 }
@@ -254,8 +252,6 @@ export async function createNote(note) {
   const body = { ...rest, user: getUserId() };
   return await pbFetch('POST', `/collections/notes/records`, body);
 }
-
-// Removed: updateNote is unused in the codebase.
 
 export async function deleteNote(id) {
   return await pbFetch('DELETE', `/collections/notes/records/${id}`);

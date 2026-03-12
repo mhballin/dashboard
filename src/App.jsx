@@ -65,6 +65,7 @@ function App() {
     inc,
     dec,
     addLog,
+    handleBulkImportCards,
     handleCardCreate,
     handleCardUpdate,
     handleCardDelete,

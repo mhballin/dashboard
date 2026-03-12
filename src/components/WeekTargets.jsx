@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { WEEKLY_TARGETS } from "../data/keywords";
 import { todayStr } from "../utils/dates";
 import { AutoResizeQuickNote } from "./AutoResizeQuickNote";
 
@@ -35,16 +34,14 @@ export function WeekTargets({
   };
   const LOGGED_KEYS = ["meetings", "outreach"];
   
-  // Use provided targets or fall back to WEEKLY_TARGETS
-  const targetArray = targets ? 
-    Object.entries(targets)
-      .filter(([key]) => VISIBLE_TARGET_KEYS.includes(key))
-      .map(([key, target]) => {
+  // `targets` is required — map the provided targets into the render array
+  const targetArray = Object.entries(targets)
+    .filter(([key]) => VISIBLE_TARGET_KEYS.includes(key))
+    .map(([key, target]) => {
       const iconMap = { meetings: "🤝", outreach: "📞", applications: "📋" };
       const labelMap = { meetings: "Meetings", outreach: "Outreach", applications: "Applications" };
       return { key, target, icon: iconMap[key] || "📌", label: labelMap[key] || key };
-    }) 
-    : WEEKLY_TARGETS;
+    });
   
   const done = targetArray.filter((t) => weekly[t.key] >= t.target).length;
 

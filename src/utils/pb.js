@@ -234,9 +234,7 @@ export async function createActivityEntry(entry) {
   return await pbFetch('POST', `/collections/activity_log/records`, body);
 }
 
-export async function updateActivityEntry(id, changes) {
-  return await pbFetch('PATCH', `/collections/activity_log/records/${id}`, changes);
-}
+// Removed: updateActivityEntry is unused in the codebase.
 
 export async function deleteActivityEntry(id) {
   return await pbFetch('DELETE', `/collections/activity_log/records/${id}`);
@@ -257,9 +255,7 @@ export async function createNote(note) {
   return await pbFetch('POST', `/collections/notes/records`, body);
 }
 
-export async function updateNote(id, changes) {
-  return await pbFetch('PATCH', `/collections/notes/records/${id}`, changes);
-}
+// Removed: updateNote is unused in the codebase.
 
 export async function deleteNote(id) {
   return await pbFetch('DELETE', `/collections/notes/records/${id}`);

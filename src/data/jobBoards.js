@@ -1,3 +1,4 @@
+// Seed defaults for first-time setup only — saved data loads from PocketBase after auth
 export const SEARCH_STRINGS = [
   {
     label: "🎯 LinkedIn Boolean — Primary Role Search",
@@ -21,6 +22,7 @@ export const SEARCH_STRINGS = [
   },
 ];
 
+// Seed defaults for first-time setup only — saved data loads from PocketBase after auth
 export const JOB_BOARDS = [
   { section: "🚀 Startup-Focused", boards: [
     { name: "Wellfound",              url: "https://wellfound.com",              tag: "Early-stage startups" },

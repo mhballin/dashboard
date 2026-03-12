@@ -178,17 +178,10 @@ function Section({ title, helper, valueProp, initial, onSave }) {
 }
 
 export default function ProfileTab({ pitch, setPitch, isAuthenticated }) {
-  const defaultAsk = "I'm targeting ops and CoS roles at startups, 5–30 people,\nMaine or remote-friendly. Do you know 2–3 people I should be talking to?";
-
-  const defaultLooking =
-    "Role: Chief of Staff or Head of Operations\nCompany: Early-stage startup, 5–30 people\nLocation: Maine, Remote, or Boston hybrid";
-
-  const defaultProof =
-    "• 4 years as de facto COO at Blueprint Surf\n• 80+ surfboards produced, 65% weight reduction\n• Built Raspberry Pi/AI print monitoring system\n• Roux Institute research partnership + Tuck MBA intern management";
-
-  const [ask, setAsk] = useState(defaultAsk);
-  const [lookingFor, setLookingFor] = useState(defaultLooking);
-  const [proofPoints, setProofPoints] = useState(defaultProof);
+  // Personal defaults removed so new users start with blank fields
+  const [ask, setAsk] = useState("");
+  const [lookingFor, setLookingFor] = useState("");
+  const [proofPoints, setProofPoints] = useState("");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {

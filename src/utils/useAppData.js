@@ -18,7 +18,6 @@ import {
   upsertWeeklyStats,
   getNotes,
   createNote,
-  updateNote,
   deleteNote,
 } from "./pb";
 import { getWeekKey, todayStr, parseDateToLocalMidnight } from "./dates";

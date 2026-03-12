@@ -1,9 +1,3 @@
-export const WEEKLY_TARGETS = [
-  { key: "meetings",      label: "Meetings",      target: 1, icon: "🤝" },
-  { key: "outreach",      label: "Outreach",      target: 4, icon: "📨" },
-  { key: "applications",  label: "Applications Sent",  target: 2, icon: "📋" },
-];
-
 export const KEYWORDS = {
   "Primary Job Titles": ["Chief of Staff","Head of Operations","Business Operations Manager","Operations Manager","BizOps","Director of Operations","Founding Operations"],
   "Secondary / Stretch Titles": ["General Manager","Head of Business Operations","Strategy & Operations","COO","Program Manager","Business Operations Associate","VP Operations","Ops Lead","Head of BizOps","Executive Operations Manager"],

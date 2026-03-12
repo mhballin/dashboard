@@ -1,8 +1,7 @@
 import { useState } from "react";
 import ErrorBoundary from "./ErrorBoundary";
-import { register } from "../utils/pb";
 
-export default function LoginScreen({ onLogin }) {
+export default function LoginScreen({ onLogin, onRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -21,9 +20,7 @@ export default function LoginScreen({ onLogin }) {
     }
     try {
       if (mode === "register") {
-        await register(email, password, name);
-        // Ensure app-level auth state is set (App provides onLogin to set authed)
-        if (onLogin) await onLogin(email, password);
+        if (onRegister) await onRegister(email, password, name);
       } else {
         await onLogin(email, password);
       }

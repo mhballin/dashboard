@@ -10,12 +10,12 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import LoginScreen from "./components/LoginScreen";
 import AppHeader from "./components/AppHeader";
-import { login, logout } from "./utils/pb";
 import { useAppData } from "./utils/useAppData";
 
 const readAuthState = () => ({
   token: localStorage.getItem("pb_token"),
   userId: localStorage.getItem("pb_userId"),
+  email: localStorage.getItem("pb_email"),
 });
 
 const cardStyle = {
@@ -37,11 +37,13 @@ const lbl = {
 function App() {
   const [authState, setAuthState] = useState(readAuthState);
   const authed = !!(authState.token && authState.userId);
+  const [dismissedBootError, setDismissedBootError] = useState(null);
 
   const [tab, setTab] = useState("dashboard");
   const data = useAppData(tab, authState);
   const {
     loaded,
+    bootError,
     tasks,
     setTasks,
     weekly,
@@ -60,11 +62,22 @@ function App() {
     setNotesTtlHours,
     userSettings,
     setUserSettings,
+    jobBoards,
+    searchStrings,
+    keywords,
+    profileAsk,
+    profileLookingFor,
+    profileProofPoints,
     tasksAddRef,
     notesAddRef,
+    handleAuthLogin,
+    handleAuthRegister,
+    handleAuthLogout,
     inc,
     dec,
     addLog,
+    handleFullExport,
+    handleFullImport,
     handleBulkImportCards,
     handleCardCreate,
     handleCardUpdate,
@@ -74,6 +87,12 @@ function App() {
     handleTaskDelete,
     handleQuickNoteAdd,
     handleQuickNoteDelete,
+    handleSetJobBoards,
+    handleSetSearchStrings,
+    handleSetKeywords,
+    handleSetProfileAsk,
+    handleSetProfileLookingFor,
+    handleSetProfileProofPoints,
     weeklyApplications,
     weekKey,
     handleDeleteActivity,
@@ -88,7 +107,7 @@ function App() {
   // data provided by useAppData (loading, persistence and handlers)
 
   function handleLogout() {
-    logout();
+    handleAuthLogout();
     setAuthState(readAuthState());
   }
 
@@ -96,7 +115,11 @@ function App() {
     return (
       <LoginScreen
         onLogin={async (email, password) => {
-          await login(email, password);
+          await handleAuthLogin(email, password);
+          setAuthState(readAuthState());
+        }}
+        onRegister={async (email, password, name) => {
+          await handleAuthRegister(email, password, name);
           setAuthState(readAuthState());
         }}
       />
@@ -135,6 +158,43 @@ function App() {
         <AppHeader userName={userSettings.userName} weekKey={weekKey} cumulative={cumulative} tab={tab} setTab={setTab} onLogout={handleLogout} />
 
         <div style={{ padding: "24px 28px", maxWidth: tab === "applications" ? 1500 : 1100, margin: "0 auto" }}>
+          {loaded && bootError && dismissedBootError !== bootError && (
+            <div
+              style={{
+                background: "#fef2f2",
+                border: "1px solid #e8d4d4",
+                color: "#92400e",
+                padding: "12px 16px",
+                borderRadius: 8,
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 12,
+              }}
+            >
+              <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13 }}>
+                Some data failed to load. Try refreshing.
+              </span>
+              <button
+                onClick={() => setDismissedBootError(bootError)}
+                style={{
+                  fontFamily: "'Plus Jakarta Sans',sans-serif",
+                  border: "none",
+                  background: "transparent",
+                  color: "#92400e",
+                  fontSize: 18,
+                  lineHeight: 1,
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+                aria-label="Dismiss error"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           {/* ── DASHBOARD TAB ── */}
           {tab === "dashboard" && (
             <DashboardTab
@@ -186,11 +246,29 @@ function App() {
           )}
 
           {/* ── JOB BOARDS TAB ── */}
-          {tab === "jobboards" && <JobBoardsTab isAuthenticated={authed} />}
+          {tab === "jobboards" && (
+            <JobBoardsTab
+              jobBoards={jobBoards}
+              onSetJobBoards={handleSetJobBoards}
+              searchStrings={searchStrings}
+              onSetSearchStrings={handleSetSearchStrings}
+              keywords={keywords}
+              onSetKeywords={handleSetKeywords}
+            />
+          )}
 
           {/* ── PROFILE TAB ── */}
           {tab === "profile" && (
-            <ProfileTab pitch={pitch} setPitch={setPitch} isAuthenticated={authed} />
+            <ProfileTab
+              pitch={pitch}
+              setPitch={setPitch}
+              profileAsk={profileAsk}
+              onSetProfileAsk={handleSetProfileAsk}
+              profileLookingFor={profileLookingFor}
+              onSetProfileLookingFor={handleSetProfileLookingFor}
+              profileProofPoints={profileProofPoints}
+              onSetProfileProofPoints={handleSetProfileProofPoints}
+            />
           )}
 
           {/* ── SETTINGS TAB ── */}
@@ -202,6 +280,9 @@ function App() {
                 notesTtlHours={notesTtlHours}
                 setNotesTtlHours={setNotesTtlHours}
                 handleBulkImportCards={handleBulkImportCards}
+                handleFullExport={handleFullExport}
+                handleFullImport={handleFullImport}
+                auth={authState}
               />
             </div>
           )}

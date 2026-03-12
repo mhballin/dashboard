@@ -1,47 +1,12 @@
 import { useState } from 'react';
-import { getAllSettings, setSetting, getCards, getAuthSnapshot } from '../utils/pb';
 
-export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours, handleBulkImportCards }) {
+export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours, handleFullExport, handleFullImport, auth }) {
   const [importMsg, setImportMsg] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
-  const auth = getAuthSnapshot();
 
   const handleExport = async () => {
     try {
-      const settings = await getAllSettings();
-      const cards = await getCards();
-      const stripped = (cards || []).map((c) => ({
-        col: c.col,
-        company: c.company,
-        title: c.title,
-        location: c.location,
-        description: c.description,
-        url: c.url,
-        notes: c.notes,
-        added: c.added,
-        dates: c.dates,
-        isHighPriority: c.isHighPriority,
-        priorityOrder: c.priorityOrder,
-        isStarred: c.isStarred,
-      }));
-
-      const exportObj = {
-        exportedAt: new Date().toISOString(),
-        settings: settings || {},
-        cards: stripped,
-      };
-
-      const json = JSON.stringify(exportObj, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const ymd = new Date().toISOString().slice(0, 10);
-      a.href = url;
-      a.download = `dashboard-backup-${ymd}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      await handleFullExport();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Export failed: ' + (err && err.message ? err.message : err));
@@ -61,23 +26,13 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
     try {
       const text = await f.text();
       const parsed = JSON.parse(text);
-      if (!parsed || typeof parsed !== 'object' || !parsed.settings || !Array.isArray(parsed.cards)) {
+      if (!parsed || typeof parsed !== 'object' || parsed.version === undefined || parsed.version === null) {
         setImportMsg('✗ Invalid file format');
         return;
       }
 
-      // SETTINGS
-      for (const [key, value] of Object.entries(parsed.settings)) {
-        // setSetting is expected to persist each setting in PocketBase
-        // wait for each to complete to ensure consistency
-        // eslint-disable-next-line no-await-in-loop
-        await setSetting(key, value);
-      }
-
-      // CARDS: delegate to useAppData handler to preserve side effects
-      await handleBulkImportCards(parsed.cards || []);
-
-      setImportMsg(`✓ Imported ${(parsed.cards || []).length} cards`);
+      await handleFullImport(parsed);
+      setImportMsg('✓ Full backup restored');
     } catch (err) {
       setImportMsg('✗ ' + (err && err.message ? err.message : String(err)));
     } finally {
@@ -229,6 +184,17 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
           >
             {isImporting ? 'Importing...' : 'Import data'}
           </button>
+        </div>
+
+        <div
+          style={{
+            color: '#8a8680',
+            fontSize: 12,
+            marginTop: 4,
+            fontFamily: "'Plus Jakarta Sans',sans-serif",
+          }}
+        >
+          Exports all data: cards, tasks, activity log, notes, stats, and settings
         </div>
 
         <input id="settings-import-input" type="file" accept=".json" style={{ display: 'none' }} onChange={handleFileChange} />

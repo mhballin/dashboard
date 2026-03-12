@@ -274,12 +274,21 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
       }
     } else {
       // Create new job
+      const today = todayStr();
       const dates = {
-        saved: todayStr(),
+        saved: today,
         applied: null,
         interviewing: null,
         closed: null,
       };
+      if (modalCol === "applied") {
+        dates.applied = today;
+      } else if (modalCol === "interviewing") {
+        dates.applied = today;
+        dates.interviewing = today;
+      } else if (modalCol === "closed") {
+        dates.closed = today;
+      }
       const newCard = {
         id: Date.now(),
         col: modalCol,
@@ -289,7 +298,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
         description: formData.description.trim(),
         url: formData.url.trim(),
         notes: formData.notes.trim(),
-        added: todayStr(),
+        added: today,
         dates,
         isHighPriority: false,
         priorityOrder: Date.now(),
@@ -300,6 +309,13 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
         newCard,
       ]);
       onCardCreate?.(newCard);
+      if (["applied", "interviewing", "closed"].includes(modalCol)) {
+        onLog?.({
+          date: today,
+          type: modalCol,
+          note: `${newCard.company || newCard.title} — ${newCard.title}`,
+        });
+      }
       setModalOpen(false);
       setEditingId(null);
       setModalCol(null);

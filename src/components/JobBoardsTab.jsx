@@ -1,8 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { SearchStringCard } from "./SearchStringCard";
-import { SEARCH_STRINGS, JOB_BOARDS } from "../data/jobBoards";
-import { KEYWORDS } from "../data/keywords";
-import { getSetting, setSetting } from "../utils/pb";
 
 const lbl = {
   fontFamily: "'Plus Jakarta Sans',sans-serif",
@@ -13,55 +10,14 @@ const lbl = {
   color: "#9ca3af",
 };
 
-export function JobBoardsTab({ isAuthenticated }) {
-  const [boards, setBoards] = useState(JOB_BOARDS);
+export function JobBoardsTab({ jobBoards, onSetJobBoards, searchStrings, onSetSearchStrings, keywords, onSetKeywords }) {
   const [editingBoards, setEditingBoards] = useState(false);
-  const [searchStrings, setSearchStrings] = useState(SEARCH_STRINGS);
   const [editingStrings, setEditingStrings] = useState(false);
-  const [keywords, setKeywords] = useState(
-    Object.entries(KEYWORDS).map(([section, words]) => ({ section, keywords: words }))
-  );
   const [editingKeywords, setEditingKeywords] = useState(false);
   const [newKeyword, setNewKeyword] = useState("");
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!loaded) return;
-    setSetting("job-dashboard-boards", boards);
-  }, [boards, loaded]);
-
-  useEffect(() => {
-    if (!loaded) return;
-    setSetting("job-dashboard-search-strings", searchStrings);
-  }, [searchStrings, loaded]);
-
-  useEffect(() => {
-    if (!loaded) return;
-    setSetting("job-dashboard-keywords", keywords);
-  }, [keywords, loaded]);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    let mounted = true;
-    (async () => {
-      try {
-        const [b, ss, kw] = await Promise.all([
-          getSetting("job-dashboard-boards"),
-          getSetting("job-dashboard-search-strings"),
-          getSetting("job-dashboard-keywords"),
-        ]);
-        if (!mounted) return;
-        if (b) setBoards(b);
-        if (ss) setSearchStrings(ss);
-        if (kw) setKeywords(kw);
-      } catch {}
-      if (mounted) setLoaded(true);
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [isAuthenticated]);
+  const boards = Array.isArray(jobBoards) ? jobBoards : [];
+  const strings = Array.isArray(searchStrings) ? searchStrings : [];
+  const keywordSections = Array.isArray(keywords) ? keywords : [];
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box", padding: "0 24px" }}>
@@ -133,7 +89,7 @@ export function JobBoardsTab({ isAuthenticated }) {
                               ? { ...s, boards: s.boards.filter((_, i) => i !== idx) }
                               : s
                           );
-                          setBoards(newBoards);
+                          onSetJobBoards?.(newBoards);
                         }}
                         style={{
                           position: "absolute",
@@ -166,7 +122,7 @@ export function JobBoardsTab({ isAuthenticated }) {
                                 }
                               : s
                           );
-                          setBoards(newBoards);
+                          onSetJobBoards?.(newBoards);
                         }}
                         style={{
                           border: "1px solid #ede9e3",
@@ -196,7 +152,7 @@ export function JobBoardsTab({ isAuthenticated }) {
                                 }
                               : s
                           );
-                          setBoards(newBoards);
+                          onSetJobBoards?.(newBoards);
                         }}
                         style={{
                           border: "1px solid #ede9e3",
@@ -226,7 +182,7 @@ export function JobBoardsTab({ isAuthenticated }) {
                                 }
                               : s
                           );
-                          setBoards(newBoards);
+                          onSetJobBoards?.(newBoards);
                         }}
                         style={{
                           border: "1px solid #ede9e3",
@@ -253,7 +209,7 @@ export function JobBoardsTab({ isAuthenticated }) {
                           ? { ...s, boards: [...s.boards, { name: "New Board", url: "https://", tag: "" }] }
                           : s
                       );
-                      setBoards(newBoards);
+                      onSetJobBoards?.(newBoards);
                     }}
                     style={{
                       display: "flex",
@@ -349,24 +305,24 @@ export function JobBoardsTab({ isAuthenticated }) {
             {editingStrings ? "Done" : "Edit"}
           </button>
         </div>
-        {searchStrings.map((s, i) => (
+        {strings.map((s, i) => (
           <SearchStringCard
             key={i}
             s={s}
             isEditing={editingStrings}
             onUpdate={(updated) => {
-              const next = [...searchStrings];
+              const next = [...strings];
               next[i] = updated;
-              setSearchStrings(next);
+              onSetSearchStrings?.(next);
             }}
-            onDelete={() => setSearchStrings(searchStrings.filter((_, idx) => idx !== i))}
+            onDelete={() => onSetSearchStrings?.(strings.filter((_, idx) => idx !== i))}
           />
         ))}
         {editingStrings && (
           <button
             onClick={() =>
-              setSearchStrings([
-                ...searchStrings,
+              onSetSearchStrings?.([
+                ...strings,
                 { label: "New Search String", query: "", tip: "" },
               ])
             }
@@ -411,7 +367,7 @@ export function JobBoardsTab({ isAuthenticated }) {
         </div>
 
         {/* Keyword Sections */}
-        {keywords.map((sec, secIdx) => (
+        {keywordSections.map((sec, secIdx) => (
           <div key={sec.section} style={{ marginBottom: 6 }}>
             {/* Category label - compact inline */}
             <div style={{ 
@@ -480,7 +436,7 @@ export function JobBoardsTab({ isAuthenticated }) {
                             ? { ...s, keywords: s.keywords.filter((_, i) => i !== idx) }
                             : s
                         );
-                        setKeywords(newKeywords);
+                        onSetKeywords?.(newKeywords);
                       }}
                       style={{
                         fontSize: 14,
@@ -512,10 +468,11 @@ export function JobBoardsTab({ isAuthenticated }) {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && newKeyword.trim()) {
                   // Add to the last section (Skills Keywords)
-                  const newKeywords = [...keywords];
+                  const newKeywords = [...keywordSections];
                   const lastSection = newKeywords[newKeywords.length - 1];
+                  if (!lastSection) return;
                   lastSection.keywords = [...lastSection.keywords, newKeyword.trim()];
-                  setKeywords(newKeywords);
+                  onSetKeywords?.(newKeywords);
                   setNewKeyword("");
                 }
               }}
@@ -534,10 +491,11 @@ export function JobBoardsTab({ isAuthenticated }) {
               onClick={() => {
                 if (newKeyword.trim()) {
                   // Add to the last section (Skills Keywords)
-                  const newKeywords = [...keywords];
+                  const newKeywords = [...keywordSections];
                   const lastSection = newKeywords[newKeywords.length - 1];
+                  if (!lastSection) return;
                   lastSection.keywords = [...lastSection.keywords, newKeyword.trim()];
-                  setKeywords(newKeywords);
+                  onSetKeywords?.(newKeywords);
                   setNewKeyword("");
                 }
               }}

@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { getSetting, setSetting } from "../utils/pb";
 
 function Section({ title, helper, valueProp, initial, onSave }) {
   const isControlled = valueProp !== undefined;
@@ -177,36 +176,16 @@ function Section({ title, helper, valueProp, initial, onSave }) {
   );
 }
 
-export default function ProfileTab({ pitch, setPitch, isAuthenticated }) {
-  // Personal defaults removed so new users start with blank fields
-  const [ask, setAsk] = useState("");
-  const [lookingFor, setLookingFor] = useState("");
-  const [proofPoints, setProofPoints] = useState("");
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    let mounted = true;
-    (async () => {
-      try {
-        const [storedAsk, storedLooking, storedProof] = await Promise.all([
-          getSetting("profile-ask"),
-          getSetting("profile-looking"),
-          getSetting("profile-proof"),
-        ]);
-
-        if (!mounted) return;
-        if (storedAsk != null) setAsk(storedAsk);
-        if (storedLooking != null) setLookingFor(storedLooking);
-        if (storedProof != null) setProofPoints(storedProof);
-      } catch (e) {}
-      if (mounted) setLoaded(true);
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [isAuthenticated]);
+export default function ProfileTab({
+  pitch,
+  setPitch,
+  profileAsk,
+  onSetProfileAsk,
+  profileLookingFor,
+  onSetProfileLookingFor,
+  profileProofPoints,
+  onSetProfileProofPoints,
+}) {
 
   return (
     <div style={{ padding: "8px 0" }}>
@@ -220,30 +199,27 @@ export default function ProfileTab({ pitch, setPitch, isAuthenticated }) {
       <Section
         title="THE ASK"
         helper="Use this at the end of every networking meeting"
-        valueProp={ask}
+        valueProp={profileAsk}
         onSave={(v) => {
-          setAsk(v);
-          setSetting("profile-ask", v);
+          onSetProfileAsk?.(v);
         }}
       />
 
       <Section
         title="WHAT I'M LOOKING FOR"
         helper="Quick reference for calls and coffee chats"
-        valueProp={lookingFor}
+        valueProp={profileLookingFor}
         onSave={(v) => {
-          setLookingFor(v);
-          setSetting("profile-looking", v);
+          onSetProfileLookingFor?.(v);
         }}
       />
 
       <Section
         title="KEY PROOF POINTS"
         helper="Highlights to work into conversation"
-        valueProp={proofPoints}
+        valueProp={profileProofPoints}
         onSave={(v) => {
-          setProofPoints(v);
-          setSetting("profile-proof", v);
+          onSetProfileProofPoints?.(v);
         }}
       />
     </div>

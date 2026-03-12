@@ -171,6 +171,17 @@ export async function getAllSettings() {
   }, {});
 }
 
+export async function getAllSettingsRecords() {
+  const filter = `(user="${getUserId()}")`;
+  const q = `?filter=${encodeURIComponent(filter)}&perPage=200`;
+  const res = await pbFetch('GET', `/collections/settings/records${q}`);
+  return (res && (res.records || res.items)) || [];
+}
+
+export async function deleteSettingRecord(id) {
+  return await pbFetch('DELETE', `/collections/settings/records/${id}`);
+}
+
 export async function getCards() {
   const filter = `(user="${getUserId()}")`;
   const q = `?filter=${encodeURIComponent(filter)}&perPage=500&sort=-created`;
@@ -285,6 +296,17 @@ export async function upsertWeeklyStats(weekKey, data, existingId) {
   return await pbFetch('POST', `/collections/weekly_stats/records`, {
     weekKey, ...data, user: getUserId()
   });
+}
+
+export async function createWeeklyStat(data) {
+  return await pbFetch('POST', `/collections/weekly_stats/records`, {
+    ...data,
+    user: getUserId(),
+  });
+}
+
+export async function deleteWeeklyStat(id) {
+  return await pbFetch('DELETE', `/collections/weekly_stats/records/${id}`);
 }
 
 // End of file

@@ -42,7 +42,11 @@ function buildCumulative(entries = [], cards = [], fallback = null) {
   return { meetings, outreach, applications };
 }
 
-export function useAppData(tab) {
+export function useAppData(tab, authState) {
+  const authToken = authState?.token || null;
+  const authUserId = authState?.userId || null;
+  const isAuthReady = !!(authToken && authUserId);
+
   const [loaded, setLoaded] = useState(false);
   const [weekKey] = useState(getWeekKey());
   const [tasks, setTasks] = useState(DEFAULT_TASKS);
@@ -67,10 +71,19 @@ export function useAppData(tab) {
   const tasksAddRef = useRef(null);
   const notesAddRef = useRef(null);
 
-  // Load from PocketBase on mount
+  // Load from PocketBase when auth is available
   useEffect(() => {
+    if (!isAuthReady) {
+      setLoaded(false);
+      return;
+    }
+
+    let cancelled = false;
+
     (async () => {
       const all = await getAllSettings();
+
+      if (cancelled) return;
 
       if (all.streak !== null && all.streak !== undefined) setStreak(all.streak);
       if (all.lastActive) setLastActive(all.lastActive);
@@ -85,6 +98,8 @@ export function useAppData(tab) {
       } catch (err) {
         console.error("Failed to load notes from PB:", err);
       }
+
+      if (cancelled) return;
 
       const mapPbRecord = (r) => {
         const createdAt = r.created ? Date.parse(r.created) : (r.createdAt || Date.now());
@@ -126,6 +141,7 @@ export function useAppData(tab) {
       }
 
       const pbTasks = await getTasks();
+      if (cancelled) return;
       if (pbTasks && pbTasks.length) {
         setTasks(pbTasks.map((t, i) => ({
           id: t.id,
@@ -140,6 +156,7 @@ export function useAppData(tab) {
       }
 
       const pbActivity = await getActivityLog();
+      if (cancelled) return;
       if (pbActivity && pbActivity.length) {
         setActivityLog(pbActivity.map((e) => ({ id: e.id, date: e.date, type: e.type, note: e.note })));
       } else if (all.activityLog) {
@@ -147,6 +164,7 @@ export function useAppData(tab) {
       }
 
       const pbWeekly = await getWeeklyStats(weekKey);
+      if (cancelled) return;
       if (pbWeekly && pbWeekly.length) {
         const w = pbWeekly[0];
         setWeekly({ applications: w.applications || 0, meetings: w.meetings || 0, outreach: w.outreach || 0 });
@@ -156,6 +174,7 @@ export function useAppData(tab) {
       }
 
       const k = await getCards();
+      if (cancelled) return;
       if (k && k.length) {
         const migratedKanban = k.map((card) => ({
           ...card,
@@ -206,7 +225,11 @@ export function useAppData(tab) {
 
       setLoaded(true);
     })();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthReady, authToken, authUserId, weekKey]);
 
   // Keep top-level cumulative counters synced with current app state.
   useEffect(() => {

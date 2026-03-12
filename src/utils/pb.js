@@ -2,6 +2,7 @@ const BASE_URL = window.location.hostname === 'localhost' ? '' : 'https://api.da
 
 const getToken = () => localStorage.getItem("pb_token");
 const getUserId = () => localStorage.getItem("pb_userId");
+const getEmail = () => localStorage.getItem("pb_email");
 
 export async function login(email, password) {
   const res = await fetch(`${BASE_URL}/auth/login`, {
@@ -45,6 +46,8 @@ export async function login(email, password) {
 
   localStorage.setItem("pb_token", token);
   localStorage.setItem("pb_userId", userId);
+  if (emailOut) localStorage.setItem("pb_email", emailOut);
+  else localStorage.removeItem("pb_email");
 
   return { token, userId, email: emailOut };
 }
@@ -91,10 +94,19 @@ export async function register(email, password, name) {
 export function logout() {
   localStorage.removeItem("pb_token");
   localStorage.removeItem("pb_userId");
+  localStorage.removeItem("pb_email");
 }
 
 export function isLoggedIn() {
   return !!getToken();
+}
+
+export function getAuthSnapshot() {
+  return {
+    token: getToken(),
+    userId: getUserId(),
+    email: getEmail(),
+  };
 }
 
 async function pbFetch(method, path, body) {

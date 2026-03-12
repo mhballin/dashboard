@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { getAllSettings, setSetting, getCards, createCard, deleteCard } from '../utils/pb';
+import { getAllSettings, setSetting, getCards, createCard, deleteCard, getAuthSnapshot } from '../utils/pb';
 
 export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours }) {
   const [importMsg, setImportMsg] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
+  const auth = getAuthSnapshot();
 
   const handleExport = async () => {
     try {
@@ -156,6 +157,48 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
 
   return (
     <div style={{ maxWidth: 600 }}>
+      {/* Account Section */}
+      <div style={sectionStyle}>
+        <div style={{ ...lbl, marginBottom: 16 }}>Current Account</div>
+        <div
+          style={{
+            border: '1px solid #ede9e3',
+            borderRadius: 12,
+            background: '#fafaf8',
+            padding: '12px 14px',
+          }}
+        >
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ ...lbl, marginBottom: 6 }}>Email</div>
+            <div
+              style={{
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: 14,
+                color: '#1a1a1a',
+                fontWeight: 600,
+                wordBreak: 'break-word',
+              }}
+            >
+              {auth.email || 'Not available until next login'}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ ...lbl, marginBottom: 6 }}>User ID</div>
+            <div
+              style={{
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: 13,
+                color: '#374151',
+                wordBreak: 'break-all',
+              }}
+            >
+              {auth.userId || 'Not signed in'}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Data Section */}
       <div style={sectionStyle}>
         <div style={{ ...lbl, marginBottom: 16 }}>Data</div>

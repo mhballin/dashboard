@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tasks } from "./components/Tasks";
 import { WeekTargets } from "./components/WeekTargets";
 import { KanbanBoard } from "./components/KanbanBoard";
@@ -10,8 +10,13 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import LoginScreen from "./components/LoginScreen";
 import AppHeader from "./components/AppHeader";
-import { isLoggedIn, login, logout, deleteActivityEntry } from "./utils/pb";
+import { login, logout, deleteActivityEntry } from "./utils/pb";
 import { useAppData } from "./utils/useAppData";
+
+const readAuthState = () => ({
+  token: localStorage.getItem("pb_token"),
+  userId: localStorage.getItem("pb_userId"),
+});
 
 const cardStyle = {
   background: "#ffffff",
@@ -30,10 +35,11 @@ const lbl = {
 };
 
 function App() {
-  const [authed, setAuthed] = useState(isLoggedIn());
+  const [authState, setAuthState] = useState(readAuthState);
+  const authed = !!(authState.token && authState.userId);
 
   const [tab, setTab] = useState("dashboard");
-  const data = useAppData(tab);
+  const data = useAppData(tab, authState);
   const {
     loaded,
     tasks,
@@ -72,15 +78,28 @@ function App() {
     handleDeleteActivity,
   } = data;
 
+  useEffect(() => {
+    const syncAuthFromStorage = () => setAuthState(readAuthState());
+    window.addEventListener("storage", syncAuthFromStorage);
+    return () => window.removeEventListener("storage", syncAuthFromStorage);
+  }, []);
+
   // data provided by useAppData (loading, persistence and handlers)
 
   function handleLogout() {
     logout();
-    setAuthed(false);
+    setAuthState(readAuthState());
   }
 
   if (!authed) {
-    return <LoginScreen onLogin={async (email, password) => { await login(email, password); setAuthed(true); }} />;
+    return (
+      <LoginScreen
+        onLogin={async (email, password) => {
+          await login(email, password);
+          setAuthState(readAuthState());
+        }}
+      />
+    );
   }
 
   if (!loaded) {

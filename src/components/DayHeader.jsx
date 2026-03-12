@@ -30,30 +30,52 @@ export function DayHeader({ streak, lastActive, tempUnit = "F", locationOverride
   const [location, setLocation] = useState(null);
 
   useEffect(() => {
-    if (locationOverride) {
-      setLocation(locationOverride);
+    const fetchWeatherForCoords = (latitude, longitude) => {
+      return fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          const temp = Math.round(data.current.temperature_2m);
+          const code = data.current.weather_code;
+          const label = WMO[code] || "—";
+          const [emoji] = label.split(" ");
+          setWeather({ temp, label, emoji });
+        });
+    };
+
+    const query = typeof locationOverride === "string" ? locationOverride.trim() : "";
+
+    if (query) {
+      fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`)
+        .then((res) => res.json())
+        .then((data) => {
+          const firstResult = data?.results?.[0];
+          if (!firstResult) throw new Error("No geocoding result");
+          const normalizedLocation = [firstResult.name, firstResult.admin1 || firstResult.country].filter(Boolean).join(", ");
+          setLocation(normalizedLocation || query);
+          return fetchWeatherForCoords(firstResult.latitude, firstResult.longitude);
+        })
+        .catch(() => {
+          setLocation(query);
+          setWeather(null);
+        });
       return;
     }
+
     // Use an HTTPS geolocation endpoint so weather loads on secure deployments.
     fetch("https://ipwho.is/")
       .then((res) => res.json())
       .then((data) => {
-        const { latitude, longitude, city, region } = data;
-        setLocation(`${city}, ${region}`);
-        return fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`
-        );
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        const temp = Math.round(data.current.temperature_2m);
-        const code = data.current.weather_code;
-        const label = WMO[code] || "—";
-        const [emoji] = label.split(" ");
-        setWeather({ temp, label, emoji });
+        if (data.success === false) throw new Error("IP geolocation failed");
+        const { latitude, longitude, city, region, country } = data;
+        const normalizedLocation = [city, region || country].filter(Boolean).join(", ");
+        setLocation(normalizedLocation || "Current location");
+        return fetchWeatherForCoords(latitude, longitude);
       })
       .catch(() => {
         // Silently fail, just don't show weather
+        setWeather(null);
       });
   }, [locationOverride]);
 

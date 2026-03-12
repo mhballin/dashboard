@@ -24,10 +24,7 @@ dist-ssr
 *.sw?
 
 tree.txt
-FEATURES.md
-IDEAS.md
+/docs
 AGENTS.md
-CLAUDE.md
-ARCHITECTURE.md
-CLAUDE Project instructions.md
+
 .github

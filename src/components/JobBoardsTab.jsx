@@ -13,7 +13,7 @@ const lbl = {
   color: "#9ca3af",
 };
 
-export function JobBoardsTab() {
+export function JobBoardsTab({ isAuthenticated }) {
   const [boards, setBoards] = useState(JOB_BOARDS);
   const [editingBoards, setEditingBoards] = useState(false);
   const [searchStrings, setSearchStrings] = useState(SEARCH_STRINGS);
@@ -23,20 +23,25 @@ export function JobBoardsTab() {
   );
   const [editingKeywords, setEditingKeywords] = useState(false);
   const [newKeyword, setNewKeyword] = useState("");
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    if (!loaded) return;
     setSetting("job-dashboard-boards", boards);
-  }, [boards]);
+  }, [boards, loaded]);
 
   useEffect(() => {
+    if (!loaded) return;
     setSetting("job-dashboard-search-strings", searchStrings);
-  }, [searchStrings]);
+  }, [searchStrings, loaded]);
 
   useEffect(() => {
+    if (!loaded) return;
     setSetting("job-dashboard-keywords", keywords);
-  }, [keywords]);
+  }, [keywords, loaded]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     let mounted = true;
     (async () => {
       try {
@@ -50,12 +55,13 @@ export function JobBoardsTab() {
         if (ss) setSearchStrings(ss);
         if (kw) setKeywords(kw);
       } catch {}
+      if (mounted) setLoaded(true);
     })();
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box", padding: "0 24px" }}>

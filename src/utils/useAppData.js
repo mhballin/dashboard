@@ -13,6 +13,7 @@ import {
   deleteTask,
   getActivityLog,
   createActivityEntry,
+  deleteActivityEntry,
   getWeeklyStats,
   upsertWeeklyStats,
   getNotes,
@@ -362,6 +363,33 @@ export function useAppData(tab, authState) {
     }
   };
 
+  const handleBulkImportCards = async (cardsArray) => {
+    try {
+      for (const c of kanban) {
+        // eslint-disable-next-line no-await-in-loop
+        await deleteCard(c.id);
+      }
+      const created = [];
+      for (const card of cardsArray) {
+        // eslint-disable-next-line no-await-in-loop
+        const result = await createCard(card);
+        if (result) created.push(result);
+      }
+      setKanban(created);
+      const n = created.length;
+      const newEntry = { type: "import", text: `Imported ${n} card${n !== 1 ? "s" : ""}`, date: todayStr() };
+      try {
+        const logged = await createActivityEntry(newEntry);
+        setActivityLog((prev) => [logged || { id: Date.now(), ...newEntry }, ...prev]);
+      } catch {
+        setActivityLog((prev) => [{ id: Date.now(), ...newEntry }, ...prev]);
+      }
+    } catch (err) {
+      console.error("Failed to bulk import cards:", err);
+      throw err;
+    }
+  };
+
   const handleCardCreate = async (card) => {
     try {
       const created = await createCard(card);
@@ -511,7 +539,8 @@ export function useAppData(tab, authState) {
     return applied && applied.getTime() >= monday.getTime() && applied.getTime() <= sunday.getTime();
   }).length;
 
-  const handleDeleteActivity = (id) => {
+  const handleDeleteActivity = async (id) => {
+    if (typeof id === "string") await deleteActivityEntry(id).catch((err) => console.error("Failed to delete activity:", err));
     setActivityLog((prev) => prev.filter((e) => e.id !== id));
   };
 
@@ -541,6 +570,7 @@ export function useAppData(tab, authState) {
     inc,
     dec,
     addLog,
+    handleBulkImportCards,
     handleCardCreate,
     handleCardUpdate,
     handleCardDelete,

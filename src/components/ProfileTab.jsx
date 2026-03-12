@@ -177,7 +177,7 @@ function Section({ title, helper, valueProp, initial, onSave }) {
   );
 }
 
-export default function ProfileTab({ pitch, setPitch }) {
+export default function ProfileTab({ pitch, setPitch, isAuthenticated }) {
   const defaultAsk = "I'm targeting ops and CoS roles at startups, 5–30 people,\nMaine or remote-friendly. Do you know 2–3 people I should be talking to?";
 
   const defaultLooking =
@@ -189,8 +189,10 @@ export default function ProfileTab({ pitch, setPitch }) {
   const [ask, setAsk] = useState(defaultAsk);
   const [lookingFor, setLookingFor] = useState(defaultLooking);
   const [proofPoints, setProofPoints] = useState(defaultProof);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     let mounted = true;
     (async () => {
       try {
@@ -205,12 +207,13 @@ export default function ProfileTab({ pitch, setPitch }) {
         if (storedLooking != null) setLookingFor(storedLooking);
         if (storedProof != null) setProofPoints(storedProof);
       } catch (e) {}
+      if (mounted) setLoaded(true);
     })();
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <div style={{ padding: "8px 0" }}>

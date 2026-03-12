@@ -10,7 +10,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import LoginScreen from "./components/LoginScreen";
 import AppHeader from "./components/AppHeader";
-import { login, logout, deleteActivityEntry } from "./utils/pb";
+import { login, logout } from "./utils/pb";
 import { useAppData } from "./utils/useAppData";
 
 const readAuthState = () => ({
@@ -166,10 +166,7 @@ function App() {
           {tab === "activity" && (
             <ActivityLog
               entries={activityLog}
-              onDelete={(id) => {
-                handleDeleteActivity(id);
-                if (typeof id === "string") deleteActivityEntry(id).catch((err) => console.error("Failed to delete activity:", err));
-              }}
+              onDelete={(id) => handleDeleteActivity(id)}
             />
           )}
 
@@ -188,11 +185,11 @@ function App() {
           )}
 
           {/* ── JOB BOARDS TAB ── */}
-          {tab === "jobboards" && <JobBoardsTab />}
+          {tab === "jobboards" && <JobBoardsTab isAuthenticated={authed} />}
 
           {/* ── PROFILE TAB ── */}
           {tab === "profile" && (
-            <ProfileTab pitch={pitch} setPitch={setPitch} />
+            <ProfileTab pitch={pitch} setPitch={setPitch} isAuthenticated={authed} />
           )}
 
           {/* ── SETTINGS TAB ── */}
@@ -203,6 +200,7 @@ function App() {
                 setUserSettings={setUserSettings}
                 notesTtlHours={notesTtlHours}
                 setNotesTtlHours={setNotesTtlHours}
+                handleBulkImportCards={handleBulkImportCards}
               />
             </div>
           )}

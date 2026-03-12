@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { getAllSettings, setSetting, getCards, createCard, deleteCard, getAuthSnapshot } from '../utils/pb';
+import { getAllSettings, setSetting, getCards, getAuthSnapshot } from '../utils/pb';
 
-export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours }) {
+export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours, handleBulkImportCards }) {
   const [importMsg, setImportMsg] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
   const auth = getAuthSnapshot();
@@ -74,20 +74,10 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
         await setSetting(key, value);
       }
 
-      // CARDS: remove existing, then recreate from import
-      const existing = await getCards();
-      for (const ex of existing || []) {
-        // eslint-disable-next-line no-await-in-loop
-        await deleteCard(ex.id);
-      }
+      // CARDS: delegate to useAppData handler to preserve side effects
+      await handleBulkImportCards(parsed.cards || []);
 
-      for (const card of parsed.cards || []) {
-        // eslint-disable-next-line no-await-in-loop
-        await createCard(card);
-      }
-
-      setImportMsg('✓ Imported — reloading...');
-      setTimeout(() => window.location.reload(), 1000);
+      setImportMsg(`✓ Imported ${(parsed.cards || []).length} cards`);
     } catch (err) {
       setImportMsg('✗ ' + (err && err.message ? err.message : String(err)));
     } finally {

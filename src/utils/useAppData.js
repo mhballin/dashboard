@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useStreak } from "./useStreak";
 import {
   login,
@@ -34,6 +34,16 @@ import { JOB_BOARDS, SEARCH_STRINGS } from "../data/jobBoards";
 import { KEYWORDS } from "../data/keywords";
 
 const TRACKED_APPLICATION_COLUMNS = ["applied", "interviewing", "closed"];
+const CRM_STALE_THRESHOLD_DAYS = 14;
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
+const PRIORITY_REASON_SCORES = {
+  OVERDUE_FOLLOW_UP: { reason: "overdue follow-up", score: 5 },
+  UPCOMING_DEADLINE: { reason: "deadline within 72h", score: 4 },
+  STALE_APPLICATION: { reason: "stale application", score: 3 },
+  STARRED: { reason: "starred card", score: 2 },
+  FOLLOW_UP_TODAY: { reason: "follow-up due today", score: 1 },
+};
 
 function buildCumulative(entries = [], cards = [], fallback = null) {
   const meetings = (entries || []).filter((e) => e?.type === "meetings").length;
@@ -50,6 +60,30 @@ function buildCumulative(entries = [], cards = [], fallback = null) {
   }
 
   return { meetings, outreach, applications };
+}
+
+function toDateMillis(value) {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime();
+  }
+
+  if (typeof value === "string") {
+    const ymd = value.slice(0, 10);
+    const parsedLocal = parseDateToLocalMidnight(ymd);
+    if (parsedLocal) return parsedLocal.getTime();
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
+}
+
+function getCardLabel(card) {
+  if (!card) return "Unknown role";
+  const company = card.company?.trim();
+  const title = card.title?.trim();
+  return [company, title].filter(Boolean).join(" - ") || "Unknown role";
 }
 
 export function useAppData(tab, authState) {
@@ -484,6 +518,66 @@ export function useAppData(tab, authState) {
     }
   };
 
+  const handleUpdateCardField = async (cardId, fieldName, value) => {
+    try {
+      const realId = await resolveId(cardId);
+      setKanban((prev) => prev.map((card) => (
+        card.id === cardId || card.id === realId
+          ? { ...card, [fieldName]: value }
+          : card
+      )));
+      await updateCard(realId, { [fieldName]: value });
+    } catch (err) {
+      console.error("Failed to update card field:", err);
+    }
+  };
+
+  const handleUpdateInterviewNotes = async (cardId, notesArray) => {
+    try {
+      const realId = await resolveId(cardId);
+      const nextNotes = Array.isArray(notesArray) ? notesArray : [];
+      setKanban((prev) => prev.map((card) => (
+        card.id === cardId || card.id === realId
+          ? { ...card, interviewNotes: nextNotes }
+          : card
+      )));
+      await updateCard(realId, { interviewNotes: nextNotes });
+    } catch (err) {
+      console.error("Failed to update interview notes:", err);
+    }
+  };
+
+  const handleSetFollowUp = async (cardId, date) => {
+    const card = kanban.find((c) => c.id === cardId);
+    const cardLabel = getCardLabel(card);
+    await handleUpdateCardField(cardId, "followUpDate", date || null);
+    await handleUpdateCardField(cardId, "reminderSnoozedUntil", null);
+    if (date) {
+      await addLog({
+        type: "note",
+        note: `Set follow-up for ${cardLabel} on ${date}`,
+      });
+    }
+  };
+
+  const handleSnoozeReminder = async (cardId, snoozeUntilDate) => {
+    const card = kanban.find((c) => c.id === cardId);
+    const cardLabel = getCardLabel(card);
+    await handleUpdateCardField(cardId, "reminderSnoozedUntil", snoozeUntilDate || null);
+    if (snoozeUntilDate) {
+      await addLog({
+        type: "note",
+        note: `Snoozed reminder for ${cardLabel} until ${snoozeUntilDate}`,
+      });
+    }
+  };
+
+  const handleToggleStarred = async (cardId) => {
+    const card = kanban.find((c) => c.id === cardId);
+    const nextStarred = !(card?.starred === true);
+    await handleUpdateCardField(cardId, "starred", nextStarred);
+  };
+
   const handleTaskCreate = async (task) => {
     const tempId = task.id;
     const createPromise = createTask({ text: task.text, done: !!task.done, pinned: !!task.pinned, order: task.order ?? 0 });
@@ -637,6 +731,17 @@ export function useAppData(tab, authState) {
           isHighPriority: !!card.isHighPriority,
           priorityOrder: card.priorityOrder || Date.now(),
           isStarred: !!card.isStarred,
+          followUpDate: card.followUpDate || null,
+          deadline: card.deadline || null,
+          reminderSnoozedUntil: card.reminderSnoozedUntil || null,
+          contactName: card.contactName || "",
+          contactRole: card.contactRole || "",
+          contactEmail: card.contactEmail || "",
+          contactLinkedIn: card.contactLinkedIn || "",
+          contactLastDate: card.contactLastDate || null,
+          contactNextStep: card.contactNextStep || "",
+          interviewNotes: Array.isArray(card.interviewNotes) ? card.interviewNotes : [],
+          starred: !!card.starred,
         });
         if (created) restoredCards.push(created);
       }
@@ -869,6 +974,68 @@ export function useAppData(tab, authState) {
     return applied && applied.getTime() >= monday.getTime() && applied.getTime() <= sunday.getTime();
   }).length;
 
+  const followUpsDueToday = useMemo(() => {
+    const todayMillis = toDateMillis(todayStr());
+    return (kanban || []).filter((card) => {
+      const followUpMillis = toDateMillis(card.followUpDate);
+      if (followUpMillis === null || followUpMillis !== todayMillis) return false;
+      const snoozeMillis = toDateMillis(card.reminderSnoozedUntil);
+      return snoozeMillis === null || snoozeMillis < todayMillis;
+    });
+  }, [kanban]);
+
+  const overdueFollowUps = useMemo(() => {
+    const todayMillis = toDateMillis(todayStr());
+    return (kanban || []).filter((card) => {
+      const followUpMillis = toDateMillis(card.followUpDate);
+      if (followUpMillis === null || followUpMillis >= todayMillis) return false;
+      const snoozeMillis = toDateMillis(card.reminderSnoozedUntil);
+      return snoozeMillis === null || snoozeMillis < todayMillis;
+    });
+  }, [kanban]);
+
+  const upcomingDeadlines = useMemo(() => {
+    const now = Date.now();
+    return (kanban || []).filter((card) => {
+      const deadlineMillis = toDateMillis(card.deadline);
+      if (deadlineMillis === null) return false;
+      return deadlineMillis >= now && deadlineMillis <= now + THREE_DAYS_MS;
+    });
+  }, [kanban]);
+
+  const staleApplications = useMemo(() => {
+    const now = Date.now();
+    return (kanban || []).filter((card) => {
+      if (!card || !["applied", "interviewing"].includes(card.col)) return false;
+      const stageDate = card.dates?.[card.col] || card.dates?.applied || card.added;
+      const stageMillis = toDateMillis(stageDate);
+      if (stageMillis === null) return false;
+      return now - stageMillis > CRM_STALE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000;
+    });
+  }, [kanban]);
+
+  const priorityQueue = useMemo(() => {
+    const byCardId = new Map();
+
+    const applyPriority = (cards, reasonScore) => {
+      for (const card of cards) {
+        const key = String(card?.id ?? `${card?.company || "unknown"}-${card?.title || "unknown"}`);
+        const existing = byCardId.get(key);
+        if (!existing || reasonScore.score > existing.score) {
+          byCardId.set(key, { card, reason: reasonScore.reason, score: reasonScore.score });
+        }
+      }
+    };
+
+    applyPriority(overdueFollowUps, PRIORITY_REASON_SCORES.OVERDUE_FOLLOW_UP);
+    applyPriority(upcomingDeadlines, PRIORITY_REASON_SCORES.UPCOMING_DEADLINE);
+    applyPriority(staleApplications, PRIORITY_REASON_SCORES.STALE_APPLICATION);
+    applyPriority((kanban || []).filter((card) => !!(card?.starred || card?.isStarred)), PRIORITY_REASON_SCORES.STARRED);
+    applyPriority(followUpsDueToday, PRIORITY_REASON_SCORES.FOLLOW_UP_TODAY);
+
+    return Array.from(byCardId.values()).sort((a, b) => b.score - a.score);
+  }, [kanban, followUpsDueToday, overdueFollowUps, upcomingDeadlines, staleApplications]);
+
   const handleDeleteActivity = async (id) => {
     if (typeof id === "string") await deleteActivityEntry(id).catch((err) => console.error("Failed to delete activity:", err));
     setActivityLog((prev) => prev.filter((e) => e.id !== id));
@@ -974,6 +1141,11 @@ export function useAppData(tab, authState) {
     handleCardCreate,
     handleCardUpdate,
     handleCardDelete,
+    handleUpdateCardField,
+    handleUpdateInterviewNotes,
+    handleSetFollowUp,
+    handleSnoozeReminder,
+    handleToggleStarred,
     handleTaskCreate,
     handleTaskUpdate,
     handleTaskDelete,
@@ -986,6 +1158,11 @@ export function useAppData(tab, authState) {
     handleSetProfileLookingFor,
     handleSetProfileProofPoints,
     weeklyApplications,
+    followUpsDueToday,
+    overdueFollowUps,
+    upcomingDeadlines,
+    staleApplications,
+    priorityQueue,
     weekKey,
     handleDeleteActivity,
   };

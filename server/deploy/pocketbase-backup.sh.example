@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ENV_FILE="/etc/job-dashboard/pocketbase-backup.env"
+if [[ -f "$ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+fi
+
+: "${PB_DATA_DIR:?PB_DATA_DIR is required}"
+: "${PB_PUBLIC_DIR:?PB_PUBLIC_DIR is required}"
+: "${BACKUP_ROOT:?BACKUP_ROOT is required}"
+RETENTION_DAYS="${RETENTION_DAYS:-14}"
+
+DATE_UTC="$(date -u +%Y%m%dT%H%M%SZ)"
+HOST="$(hostname -s)"
+ARCHIVE_DIR="$BACKUP_ROOT/daily"
+ARCHIVE_FILE="$ARCHIVE_DIR/pocketbase-${HOST}-${DATE_UTC}.tar.gz"
+
+mkdir -p "$ARCHIVE_DIR"
+
+tar -czf "$ARCHIVE_FILE" \
+  -C "$(dirname "$PB_DATA_DIR")" "$(basename "$PB_DATA_DIR")" \
+  -C "$(dirname "$PB_PUBLIC_DIR")" "$(basename "$PB_PUBLIC_DIR")"
+
+find "$ARCHIVE_DIR" -type f -name 'pocketbase-*.tar.gz' -mtime +"$RETENTION_DAYS" -delete
+
+echo "created=$ARCHIVE_FILE"

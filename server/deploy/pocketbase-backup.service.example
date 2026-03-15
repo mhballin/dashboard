@@ -1,0 +1,14 @@
+[Unit]
+Description=PocketBase backup job
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+EnvironmentFile=/etc/job-dashboard/pocketbase-backup.env
+ExecStart=/bin/bash /home/ubuntu/dashboard/server/deploy/pocketbase-backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

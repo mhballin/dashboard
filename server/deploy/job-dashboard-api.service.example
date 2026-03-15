@@ -5,11 +5,19 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
-WorkingDirectory=/opt/job-dashboard/server
+# Set the runtime user/group for your VM (example: ubuntu)
+User=ubuntu
+Group=ubuntu
+
+# Set your checked-out server directory
+WorkingDirectory=/home/ubuntu/dashboard/server
+
+# Keep production secrets and runtime config outside the repo
 EnvironmentFile=/etc/job-dashboard/api.env
-ExecStart=/usr/bin/node index.js
+
+# If Node is installed with nvm, use the full absolute node path
+# Example below matches Oracle VM setup with nvm-managed Node 20.
+ExecStart=/home/ubuntu/.nvm/versions/node/v20.20.1/bin/node index.js
 Restart=always
 RestartSec=3
 KillSignal=SIGTERM
@@ -17,8 +25,9 @@ TimeoutStopSec=20
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
-ProtectHome=true
-ReadWritePaths=/opt/job-dashboard/server
+
+# Because code lives under /home/ubuntu, true can block service access.
+ProtectHome=read-only
 
 [Install]
 WantedBy=multi-user.target

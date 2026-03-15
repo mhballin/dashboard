@@ -173,7 +173,7 @@ app.all('/api/*', async (req, res) => {
   }
 })
 
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
   const pbHost = new URL(PB_URL).host
   console.log(`Server listening on ${PORT}`)
   console.log(`PocketBase target host: ${pbHost}`)

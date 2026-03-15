@@ -8,6 +8,9 @@ Type=oneshot
 User=root
 Group=root
 EnvironmentFile=/etc/job-dashboard/pocketbase-backup.env
+
+# Update to the installed script path on your VM.
+# Example: /usr/local/bin/pocketbase-backup.sh
 ExecStart=/bin/bash /home/ubuntu/dashboard/server/deploy/pocketbase-backup.sh
 Nice=10
 IOSchedulingClass=best-effort

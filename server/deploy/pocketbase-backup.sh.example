@@ -8,7 +8,6 @@ if [[ -f "$ENV_FILE" ]]; then
 fi
 
 : "${PB_DATA_DIR:?PB_DATA_DIR is required}"
-: "${PB_PUBLIC_DIR:?PB_PUBLIC_DIR is required}"
 : "${BACKUP_ROOT:?BACKUP_ROOT is required}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
 
@@ -19,9 +18,19 @@ ARCHIVE_FILE="$ARCHIVE_DIR/pocketbase-${HOST}-${DATE_UTC}.tar.gz"
 
 mkdir -p "$ARCHIVE_DIR"
 
-tar -czf "$ARCHIVE_FILE" \
-  -C "$(dirname "$PB_DATA_DIR")" "$(basename "$PB_DATA_DIR")" \
-  -C "$(dirname "$PB_PUBLIC_DIR")" "$(basename "$PB_PUBLIC_DIR")"
+tar_args=(
+  -C "$(dirname "$PB_DATA_DIR")" "$(basename "$PB_DATA_DIR")"
+)
+
+if [[ -n "${PB_PUBLIC_DIR:-}" ]]; then
+  if [[ -d "$PB_PUBLIC_DIR" ]]; then
+    tar_args+=( -C "$(dirname "$PB_PUBLIC_DIR")" "$(basename "$PB_PUBLIC_DIR")" )
+  else
+    echo "warning=PB_PUBLIC_DIR is set but directory does not exist: $PB_PUBLIC_DIR"
+  fi
+fi
+
+tar -czf "$ARCHIVE_FILE" "${tar_args[@]}"
 
 find "$ARCHIVE_DIR" -type f -name 'pocketbase-*.tar.gz' -mtime +"$RETENTION_DAYS" -delete
 

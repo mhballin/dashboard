@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { todayStr } from "../utils/dates";
 
 export function AutoResizeQuickNote({ quickNote, setQuickNote, onLog, onQuickNoteAdd, quickNoteAddRef }) {

@@ -25,15 +25,6 @@ const cardStyle = {
   border: "1px solid #ede9e3",
 };
 
-const lbl = {
-  fontFamily: "'Plus Jakarta Sans',sans-serif",
-  fontSize: 11,
-  fontWeight: 700,
-  letterSpacing: "0.08em",
-  textTransform: "uppercase",
-  color: "#9ca3af",
-};
-
 function App() {
   const [authState, setAuthState] = useState(readAuthState);
   const authed = !!(authState.token && authState.userId);

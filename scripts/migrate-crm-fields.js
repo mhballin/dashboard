@@ -1,3 +1,5 @@
+/* global process */
+
 // Usage: PB_URL=https://your-pocketbase.example PB_ADMIN_EMAIL=admin@example.com PB_ADMIN_PASSWORD=yourpass node scripts/migrate-crm-fields.js
 //
 // This script is idempotent: it only appends missing fields and skips fields that

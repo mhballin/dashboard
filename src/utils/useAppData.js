@@ -325,7 +325,7 @@ export function useAppData(tab, authState) {
     return () => {
       cancelled = true;
     };
-  }, [isAuthReady, authToken, authUserId, weekKey]);
+  }, [isAuthReady, authToken, authUserId, weekKey, setStreak, setLastActive]);
 
   // Keep top-level cumulative counters synced with current app state.
   useEffect(() => {
@@ -414,7 +414,7 @@ export function useAppData(tab, authState) {
   // Auto check-in when navigating to dashboard tab
   useEffect(() => {
     if (tab === "dashboard") checkIn();
-  }, [tab]);
+  }, [tab, checkIn]);
 
   const persistWeekly = async (data) => {
     weeklyPersistChainRef.current = weeklyPersistChainRef.current
@@ -461,12 +461,10 @@ export function useAppData(tab, authState) {
   const handleBulkImportCards = async (cardsArray) => {
     try {
       for (const c of kanban) {
-        // eslint-disable-next-line no-await-in-loop
         await deleteCard(c.id);
       }
       const created = [];
       for (const card of cardsArray) {
-        // eslint-disable-next-line no-await-in-loop
         const result = await createCard(card);
         if (result) created.push(result);
       }
@@ -717,7 +715,6 @@ export function useAppData(tab, authState) {
 
       const restoredCards = [];
       for (const card of cards) {
-        // eslint-disable-next-line no-await-in-loop
         const created = await createCard({
           col: card.col || "saved",
           company: card.company || "",
@@ -748,7 +745,6 @@ export function useAppData(tab, authState) {
 
       const restoredTasks = [];
       for (const task of tasksRecords) {
-        // eslint-disable-next-line no-await-in-loop
         const created = await createTask({
           text: task.text || "",
           done: !!task.done,
@@ -760,7 +756,6 @@ export function useAppData(tab, authState) {
 
       const restoredActivity = [];
       for (const entry of activityRecords) {
-        // eslint-disable-next-line no-await-in-loop
         const created = await createActivityEntry({
           date: entry.date || todayStr(),
           type: entry.type || "note",
@@ -771,7 +766,6 @@ export function useAppData(tab, authState) {
 
       const restoredNotes = [];
       for (const note of noteRecords) {
-        // eslint-disable-next-line no-await-in-loop
         const created = await createNote({
           content: note.content || note.text || "",
           date: note.date || todayStr(),
@@ -784,7 +778,6 @@ export function useAppData(tab, authState) {
       const restoredWeekly = [];
       for (const stat of weeklyStats) {
         if (!stat.weekKey) continue;
-        // eslint-disable-next-line no-await-in-loop
         const created = await createWeeklyStat({
           weekKey: stat.weekKey,
           meetings: stat.meetings || 0,
@@ -795,7 +788,6 @@ export function useAppData(tab, authState) {
       }
 
       for (const [key, value] of Object.entries(settingsToRestore)) {
-        // eslint-disable-next-line no-await-in-loop
         await setSetting(key, value);
       }
 
@@ -928,9 +920,6 @@ export function useAppData(tab, authState) {
     })
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-  const tasksAdd = tasksAddRef;
-  const notesAdd = notesAddRef;
-
   // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
@@ -942,7 +931,9 @@ export function useAppData(tab, authState) {
           const isEditable = active.isContentEditable || tag === "input" || tag === "textarea" || tag === "select";
           if (isEditable) return;
         }
-      } catch (err) {}
+      } catch {
+        // Ignore focus detection issues and skip shortcut handling.
+      }
 
       const k = (e.key || "").toLowerCase();
       const hasModifier = e.altKey || e.metaKey || e.ctrlKey;
@@ -1163,7 +1154,6 @@ export function useAppData(tab, authState) {
     upcomingDeadlines,
     staleApplications,
     priorityQueue,
-    weekKey,
     handleDeleteActivity,
   };
 }

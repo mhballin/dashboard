@@ -61,7 +61,18 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
 
   const addTask = () => {
     if (!text.trim()) return setAdding(false);
-    const newTask = { id: Date.now(), text: text.trim(), done: false, pinned: false, order: notDone.length };
+    const maxNumericId = tasks.reduce((max, task) => {
+      const numericId = Number(task.id);
+      if (!Number.isFinite(numericId)) return max;
+      return Math.max(max, numericId);
+    }, 0);
+    const newTask = {
+      id: maxNumericId + 1,
+      text: text.trim(),
+      done: false,
+      pinned: false,
+      order: notDone.length,
+    };
     setTasks((p) => [...p, newTask]);
     if (onTaskCreate) onTaskCreate(newTask);
     setText("");

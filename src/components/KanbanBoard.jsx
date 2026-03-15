@@ -43,14 +43,6 @@ const extractMetadata = (descriptionHTML) => {
   };
 };
 
-// Date formatting function
-const formatDisplayDate = (dateStr) => {
-  if (!dateStr) return null;
-  const [y, m, d] = dateStr.split("-");
-  return new Date(y, m - 1, d).toLocaleDateString("en-US", 
-    { month: "short", day: "numeric", year: "numeric" });
-};
-
 const STALE_THRESHOLD_DAYS = 14;
 const BOARD_MAX_WIDTH = 1480;
 
@@ -679,10 +671,6 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                     }}
                   >
                   {highCards.map((c) => {
-                    const colDateKey = "saved";
-                    const colDate = c.dates ? c.dates[colDateKey] : null;
-                    const displayDate = colDate || c.added;
-
                     return (
                       <div
                         key={c.id}
@@ -915,10 +903,6 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                     }}
                   >
                   {lowCards.map((c) => {
-                    const colDateKey = "saved";
-                    const colDate = c.dates ? c.dates[colDateKey] : null;
-                    const displayDate = colDate || c.added;
-
                     return (
                       <div
                         key={c.id}
@@ -1118,12 +1102,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 </>
               ) : (
                 /* Regular rendering for non-saved columns */
-                colCards.map((c, idx) => {
-                // Get the date for the current column
-                const colDateKey = col.id === "saved" ? "saved" : col.id;
-                const colDate = c.dates ? c.dates[colDateKey] : null;
-                const displayDate = colDate || c.added;
-
+                colCards.map((c) => {
                 return (
                   <div
                     key={c.id}

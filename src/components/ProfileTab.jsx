@@ -4,13 +4,9 @@ function Section({ title, helper, valueProp, initial, onSave }) {
   const isControlled = valueProp !== undefined;
   const [value, setValue] = useState(initial || "");
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(isControlled ? valueProp : initial || "");
+  const [draft, setDraft] = useState(initial || "");
   const [copied, setCopied] = useState(false);
   const textareaRef = useRef(null);
-
-  useEffect(() => {
-    if (isControlled) setDraft(valueProp);
-  }, [valueProp, isControlled]);
 
   useEffect(() => {
     if (editing && textareaRef.current) textareaRef.current.focus();
@@ -23,7 +19,9 @@ function Section({ title, helper, valueProp, initial, onSave }) {
       await navigator.clipboard.writeText(displayed || "");
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch (e) {}
+    } catch {
+      // Clipboard write can fail in restricted browser contexts.
+    }
   };
 
   const startEdit = () => {

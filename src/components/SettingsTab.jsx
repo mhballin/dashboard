@@ -8,7 +8,6 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
     try {
       await handleFullExport();
     } catch (err) {
-      // eslint-disable-next-line no-alert
       alert('Export failed: ' + (err && err.message ? err.message : err));
     }
   };

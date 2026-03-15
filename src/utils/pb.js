@@ -191,7 +191,7 @@ export async function getCards() {
 }
 
 export async function createCard(card) {
-  const { id, ...rest } = card;
+  const { id: _id, ...rest } = card;
   const body = { ...rest, user: getUserId() };
   return await pbFetch('POST', `/collections/cards/records`, body);
 }
@@ -218,7 +218,7 @@ export async function getTasks() {
 }
 
 export async function createTask(task) {
-  const { id, ...rest } = task;
+  const { id: _id, ...rest } = task;
   const body = { ...rest, user: getUserId() };
   return await pbFetch('POST', `/collections/tasks/records`, body);
 }
@@ -241,7 +241,7 @@ export async function getActivityLog() {
 }
 
 export async function createActivityEntry(entry) {
-  const { id, ...rest } = entry;
+  const { id: _id, ...rest } = entry;
   const body = { ...rest, user: getUserId() };
   return await pbFetch('POST', `/collections/activity_log/records`, body);
 }
@@ -260,7 +260,7 @@ export async function getNotes() {
 }
 
 export async function createNote(note) {
-  const { id, ...rest } = note;
+  const { id: _id, ...rest } = note;
   const body = { ...rest, user: getUserId() };
   return await pbFetch('POST', `/collections/notes/records`, body);
 }

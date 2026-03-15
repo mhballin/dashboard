@@ -1,0 +1,24 @@
+[Unit]
+Description=Job Dashboard API Proxy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/job-dashboard/server
+EnvironmentFile=/etc/job-dashboard/api.env
+ExecStart=/usr/bin/node index.js
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/job-dashboard/server
+
+[Install]
+WantedBy=multi-user.target

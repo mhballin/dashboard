@@ -1,4 +1,5 @@
-const BASE_URL = window.location.hostname === 'localhost' ? '' : 'https://api.dashboard.michaelballin.com';
+const CONFIGURED_BASE_URL = (import.meta.env.VITE_API_URL || '').trim();
+const BASE_URL = CONFIGURED_BASE_URL.replace(/\/+$/, '');
 
 const getToken = () => localStorage.getItem("pb_token");
 const getUserId = () => localStorage.getItem("pb_userId");

@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "migrate": "bash scripts/migrate.sh",
-    "schema:export": "node scripts/export-pb-schema.js"
+    "schema:export": "node scripts/export-pb-schema.js",
+    "seed:local": "node scripts/seed-local.js"
   },
   "dependencies": {
     "lucide-react": "^0.576.0",

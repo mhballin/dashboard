@@ -1,0 +1,19 @@
+{
+  "settings": [
+    { "key": "pitch", "value": "{\"text\":\"Sample pitch for local dev\"}", "userId": "local" }
+  ],
+  "tasks": [
+    { "text": "Test local task", "completed": false, "pinned": false }
+  ],
+  "cards": [
+    {
+      "company": "Acme Inc",
+      "title": "Frontend Engineer (Local)",
+      "url": "https://example.com/job/1",
+      "description": "Sample job for local testing",
+      "col": "saved",
+      "added": "2026-03-19",
+      "dates": { "saved": "2026-03-19", "applied": null, "interviewing": null, "closed": null }
+    }
+  ]
+}

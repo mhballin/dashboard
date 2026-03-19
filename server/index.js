@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import { initWeeklyRecapScheduler } from './email/weeklyRecapJob.js'
 
 const PB_URL = (globalThis.process?.env?.PB_URL || '').replace(/\/+$/, '')
 const PORT = globalThis.process?.env?.PORT || 3001
@@ -179,4 +180,5 @@ app.listen(PORT, '127.0.0.1', () => {
   console.log(`PocketBase target host: ${pbHost}`)
   console.log(`CORS allowlist: ${CORS_ALLOWED_ORIGINS.join(', ')}`)
   console.log(`Upstream timeout: ${UPSTREAM_TIMEOUT_MS}ms`)
+  initWeeklyRecapScheduler()
 })

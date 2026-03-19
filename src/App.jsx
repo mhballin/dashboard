@@ -51,6 +51,8 @@ function App() {
     activeQuickNotes,
     notesTtlHours,
     setNotesTtlHours,
+    weeklyEmailOptIn,
+    setWeeklyEmailOptIn,
     userSettings,
     setUserSettings,
     jobBoards,
@@ -270,6 +272,8 @@ function App() {
                 setUserSettings={setUserSettings}
                 notesTtlHours={notesTtlHours}
                 setNotesTtlHours={setNotesTtlHours}
+                weeklyEmailOptIn={weeklyEmailOptIn}
+                setWeeklyEmailOptIn={setWeeklyEmailOptIn}
                 handleBulkImportCards={handleBulkImportCards}
                 handleFullExport={handleFullExport}
                 handleFullImport={handleFullImport}

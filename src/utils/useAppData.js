@@ -104,6 +104,7 @@ export function useAppData(tab, authState) {
   const [quickNote, setQuickNote] = useState("");
   const [activityLog, setActivityLog] = useState([]);
   const [notesTtlHours, setNotesTtlHours] = useState(24);
+  const [weeklyEmailOptIn, setWeeklyEmailOptIn] = useState(true);
   const [userSettings, setUserSettings] = useState({
     userName: "Mike Ballin",
     tempUnit: "F",
@@ -168,6 +169,7 @@ export function useAppData(tab, authState) {
           storedProfileAsk,
           storedProfileLookingFor,
           storedProfileProof,
+          storedWeeklyEmailOptIn,
         ] = await Promise.all([
           getSetting("job-dashboard-boards"),
           getSetting("job-dashboard-search-strings"),
@@ -175,6 +177,7 @@ export function useAppData(tab, authState) {
           getSetting("profile-ask"),
           getSetting("profile-looking"),
           getSetting("profile-proof"),
+          getSetting("weekly_email_opt_in"),
         ]);
 
         if (cancelled) return;
@@ -188,6 +191,7 @@ export function useAppData(tab, authState) {
         setProfileAsk(typeof storedProfileAsk === "string" ? storedProfileAsk : "");
         setProfileLookingFor(typeof storedProfileLookingFor === "string" ? storedProfileLookingFor : "");
         setProfileProofPoints(typeof storedProfileProof === "string" ? storedProfileProof : "");
+        setWeeklyEmailOptIn(storedWeeklyEmailOptIn === null ? true : Boolean(storedWeeklyEmailOptIn));
 
         const pbNotes = await getNotes();
 
@@ -347,6 +351,10 @@ export function useAppData(tab, authState) {
   useEffect(() => {
     if (loaded) setSetting("notes-ttl-hours", notesTtlHours);
   }, [notesTtlHours, loaded]);
+
+  useEffect(() => {
+    if (loaded) setSetting("weekly_email_opt_in", !!weeklyEmailOptIn);
+  }, [weeklyEmailOptIn, loaded]);
 
   // Periodic migration: run every 30 minutes to move expired notes to activity
   useEffect(() => {
@@ -851,6 +859,11 @@ export function useAppData(tab, authState) {
       if (settingsToRestore.pitch) setPitch(settingsToRestore.pitch);
       if (settingsToRestore["user-settings"]) setUserSettings((prev) => ({ ...prev, ...settingsToRestore["user-settings"] }));
       if (settingsToRestore["notes-ttl-hours"]) setNotesTtlHours(settingsToRestore["notes-ttl-hours"]);
+      if (settingsToRestore.weekly_email_opt_in !== undefined) {
+        setWeeklyEmailOptIn(Boolean(settingsToRestore.weekly_email_opt_in));
+      } else {
+        setWeeklyEmailOptIn(true);
+      }
 
       setJobBoards(Array.isArray(settingsToRestore["job-dashboard-boards"]) ? settingsToRestore["job-dashboard-boards"] : JOB_BOARDS);
       setSearchStrings(Array.isArray(settingsToRestore["job-dashboard-search-strings"]) ? settingsToRestore["job-dashboard-search-strings"] : (SEARCH_STRINGS || []));
@@ -1110,6 +1123,8 @@ export function useAppData(tab, authState) {
     activeQuickNotes,
     notesTtlHours,
     setNotesTtlHours,
+    weeklyEmailOptIn,
+    setWeeklyEmailOptIn,
     userSettings,
     setUserSettings,
     jobBoards,

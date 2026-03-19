@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours, handleFullExport, handleFullImport, auth }) {
+export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setNotesTtlHours, weeklyEmailOptIn, setWeeklyEmailOptIn, handleFullExport, handleFullImport, auth }) {
   const [importMsg, setImportMsg] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -97,6 +97,10 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
     const next = Number(e.target.value);
     if (!Number.isFinite(next) || next <= 0) return;
     setNotesTtlHours(next);
+  };
+
+  const handleWeeklyRecapToggle = (e) => {
+    setWeeklyEmailOptIn(e.target.checked);
   };
 
   return (
@@ -320,6 +324,52 @@ export function SettingsTab({ userSettings, setUserSettings, notesTtlHours, setN
             New notes stay in Today&apos;s Note quick reference for this long.
           </div>
         </div>
+      </div>
+
+      <div style={sectionStyle}>
+        <div style={{ ...lbl, marginBottom: 16 }}>Email</div>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 14,
+            border: "1px solid #ede9e3",
+            borderRadius: 12,
+            background: "#fafaf8",
+            padding: "12px 14px",
+            cursor: "pointer",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#1a1a1a",
+                marginBottom: 4,
+              }}
+            >
+              Weekly recap email
+            </div>
+            <div
+              style={{
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: 12,
+                color: "#6b7280",
+              }}
+            >
+              Receive your recap every Monday at 5:00am ET.
+            </div>
+          </div>
+          <input
+            type="checkbox"
+            checked={weeklyEmailOptIn}
+            onChange={handleWeeklyRecapToggle}
+            style={{ width: 18, height: 18, cursor: "pointer" }}
+          />
+        </label>
       </div>
 
       {/* Preferences Section */}

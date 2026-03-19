@@ -1,0 +1,90 @@
+<mjml>
+  <mj-head>
+    <mj-preview>Your weekly Job Search HQ recap is ready.</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, Helvetica, sans-serif" color="#1a1a1a" />
+      <mj-text font-size="14px" line-height="1.5" />
+      <mj-section padding="0" />
+      <mj-column padding="0" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f7f5f0" width="600px">
+    <mj-section padding="24px 16px" background-color="#f7f5f0">
+      <mj-column background-color="#ffffff" border="1px solid #ede9e3" border-radius="8px" padding="20px 20px 12px">
+        <mj-text font-size="12px" color="#6b7280" text-transform="uppercase" letter-spacing="1px" font-weight="700">Job Search HQ</mj-text>
+        <mj-text font-size="28px" font-weight="700" padding-top="8px">Your Week in Review</mj-text>
+        <mj-text color="#6b7280" padding-top="2px">{{weekLabel}}</mj-text>
+
+        {{#if stats.isEmpty}}
+          <mj-text color="#374151" padding-top="12px">Every job search has quiet weeks. This Monday is a fresh start - pick one thing and go.</mj-text>
+        {{else}}
+          <mj-table padding-top="12px">
+            <tr>
+              <td style="padding:8px;border:1px solid #ede9e3;border-radius:8px;background:#fafaf8;">
+                <div style="font-size:24px;font-weight:700;color:#16a34a;">{{stats.applications}}</div>
+                <div style="font-size:12px;color:#6b7280;">Applications</div>
+              </td>
+              <td style="padding:8px;border:1px solid #ede9e3;border-radius:8px;background:#fafaf8;">
+                <div style="font-size:24px;font-weight:700;color:#16a34a;">{{stats.meetings}}</div>
+                <div style="font-size:12px;color:#6b7280;">Meetings</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ede9e3;border-radius:8px;background:#fafaf8;">
+                <div style="font-size:24px;font-weight:700;color:#16a34a;">{{stats.outreach}}</div>
+                <div style="font-size:12px;color:#6b7280;">Outreach</div>
+              </td>
+              <td style="padding:8px;border:1px solid #ede9e3;border-radius:8px;background:#fafaf8;">
+                <div style="font-size:24px;font-weight:700;color:#16a34a;">{{stats.followups}}</div>
+                <div style="font-size:12px;color:#6b7280;">Follow-ups</div>
+              </td>
+            </tr>
+          </mj-table>
+        {{/if}}
+
+        {{#if hasActivityLog}}
+          <mj-text font-size="16px" font-weight="700" padding-top="18px">Activity Log</mj-text>
+          {{#each activityLog}}
+            <mj-text color="#6b7280" font-size="12px" font-weight="700" text-transform="uppercase" padding-top="8px">{{dateLabel}}</mj-text>
+            {{#each entries}}
+              <mj-text padding-top="4px">{{typeEmoji type}} {{titleCase type}} - {{note}}</mj-text>
+            {{/each}}
+          {{/each}}
+        {{/if}}
+
+        <mj-text font-size="16px" font-weight="700" padding-top="18px">Your Pipeline</mj-text>
+        <mj-text padding-top="8px">Saved ({{pipeline.saved.count}}): {{cardList pipeline.saved.cards}}</mj-text>
+        <mj-text>Applied ({{pipeline.applied.count}}): {{cardList pipeline.applied.cards}}</mj-text>
+        <mj-text>Interviewing ({{pipeline.interviewing.count}}): {{cardList pipeline.interviewing.cards}}</mj-text>
+        <mj-text>Closed this week ({{pipeline.closedThisWeek.count}}): {{cardList pipeline.closedThisWeek.cards}}</mj-text>
+
+        {{#if hasStaleCards}}
+          <mj-text font-size="16px" font-weight="700" padding-top="18px">Worth a follow-up?</mj-text>
+          {{#each staleCards}}
+            <mj-text padding-top="4px">{{company}} - {{titleCase col}} {{daysStale}} days ago</mj-text>
+          {{/each}}
+        {{/if}}
+
+        <mj-text font-size="16px" font-weight="700" padding-top="18px">Your Focus This Week</mj-text>
+        {{#if tasks.isEmpty}}
+          <mj-text>No tasks queued up - head to your dashboard to plan the week.</mj-text>
+        {{else}}
+          {{#each tasks.pinned}}
+            <mj-text>📌 {{text}}</mj-text>
+          {{/each}}
+          {{#each tasks.unpinned}}
+            <mj-text>○ {{text}}</mj-text>
+          {{/each}}
+        {{/if}}
+
+        <mj-button padding-top="20px" href="https://dashboard.michaelballin.com" background-color="#16a34a" color="#ffffff" border-radius="8px">View your full dashboard</mj-button>
+        <mj-text font-size="12px" color="#6b7280" align="center" padding-top="12px">
+          Manage email preferences in your dashboard Settings.
+        </mj-text>
+        <mj-text font-size="11px" color="#9ca3af" align="center" padding-top="4px">
+          Job Search HQ - Sent from {{fromEmail}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

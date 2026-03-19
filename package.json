@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:app": "npm --prefix server run dev & npm run dev",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "migrate": "bash scripts/migrate.sh"
+    "migrate": "bash scripts/migrate.sh",
+    "schema:export": "node scripts/export-pb-schema.js"
   },
   "dependencies": {
     "lucide-react": "^0.576.0",

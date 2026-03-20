@@ -1,19 +1,1310 @@
 {
-  "settings": [
-    { "key": "pitch", "value": "{\"text\":\"Sample pitch for local dev\"}", "userId": "local" }
-  ],
-  "tasks": [
-    { "text": "Test local task", "completed": false, "pinned": false }
-  ],
-  "cards": [
-    {
-      "company": "Acme Inc",
-      "title": "Frontend Engineer (Local)",
-      "url": "https://example.com/job/1",
-      "description": "Sample job for local testing",
-      "col": "saved",
-      "added": "2026-03-19",
-      "dates": { "saved": "2026-03-19", "applied": null, "interviewing": null, "closed": null }
-    }
-  ]
+  "version": 2,
+  "exportedAt": "2026-03-20T00:00:00.000Z",
+  "note": "Sanitized seed data for local development. All names, emails, and company names are fictional.",
+  "data": {
+    "settings": {
+      "cumulative": {
+        "meetings": 2,
+        "outreach": 4,
+        "applications": 5
+      },
+      "streak": 2,
+      "lastActive": "2026-03-20",
+      "pitch": "\"I co-founded a Maine startup building structural products with 3D-printed cores. Over four years I served as de facto COO: supply chain, manufacturing ops, customer relationships, research partnerships, budgeting \u2014 everything that needed to happen, I made happen. I'm best at taking an early-stage, messy situation and building systems and momentum around it. I'm now looking for an ops or chief-of-staff role at a small startup where I can do that for someone else's company.\"\n\nTHE ASK: \"I'm targeting ops and CoS roles at startups, 5\u201330 people, remote-friendly or Northeast US. Do you know 2\u20133 people I should be talking to?\"",
+      "user-settings": {
+        "userName": "Demo User",
+        "tempUnit": "F",
+        "locationOverride": null,
+        "weeklyTargets": {
+          "meetings": 1,
+          "outreach": 4,
+          "followups": 2,
+          "applications": 2
+        }
+      },
+      "notes-ttl-hours": 24,
+      "job-dashboard-boards": [
+        {
+          "section": "\ud83d\ude80 Startup-Focused",
+          "boards": [
+            {
+              "name": "Wellfound",
+              "url": "https://wellfound.com/role/r/chief-of-staff",
+              "tag": "Best for early-stage startups"
+            },
+            {
+              "name": "Startup.jobs",
+              "url": "https://startup.jobs/roles/chief-of-staff",
+              "tag": "CoS + Ops roles"
+            },
+            {
+              "name": "Work at a Startup (YC)",
+              "url": "https://workatastartup.com",
+              "tag": "YC portfolio companies"
+            },
+            {
+              "name": "Contrary Talent",
+              "url": "https://jobs.contrary.com",
+              "tag": "VC-backed startups"
+            },
+            {
+              "name": "Pallet \u2014 Ops Jobs",
+              "url": "https://pallet.xyz/list/ops-jobs/jobs",
+              "tag": "Ops-curated pallet"
+            },
+            {
+              "name": "Lenny's Job Board",
+              "url": "https://www.lennysjobs.com",
+              "tag": "PM/Ops at growth cos"
+            }
+          ]
+        },
+        {
+          "section": "\ud83d\uddfa\ufe0f Regional",
+          "boards": [
+            {
+              "name": "Built In Boston",
+              "url": "https://www.builtinboston.com/jobs",
+              "tag": "Boston + remote"
+            },
+            {
+              "name": "Maine Startups",
+              "url": "https://www.mainestartups.com/jobs",
+              "tag": "Maine ecosystem"
+            },
+            {
+              "name": "MassHire Job Board",
+              "url": "https://jobquest.dcs.eol.mass.gov",
+              "tag": "MA state board"
+            }
+          ]
+        },
+        {
+          "section": "\ud83d\udccb General",
+          "boards": [
+            {
+              "name": "LinkedIn",
+              "url": "https://www.linkedin.com/jobs/search/?keywords=%22chief+of+staff%22+OR+%22head+of+operations%22+OR+%22bizops%22+OR+%22founding+operations%22&f_TPR=r604800",
+              "tag": "Boolean pre-loaded (past 7 days)"
+            },
+            {
+              "name": "Indeed",
+              "url": "https://www.indeed.com/jobs?q=chief+of+staff+OR+head+of+operations+OR+bizops&jt=fulltime",
+              "tag": "Broad reach"
+            },
+            {
+              "name": "Glassdoor",
+              "url": "https://www.glassdoor.com/Job/jobs.htm?sc.keyword=chief+of+staff",
+              "tag": "+ salary data"
+            },
+            {
+              "name": "Himalayas",
+              "url": "https://himalayas.app/jobs/titles/chief-of-staff",
+              "tag": "Remote-first"
+            },
+            {
+              "name": "Remote OK",
+              "url": "https://remoteok.com/remote-operations-jobs",
+              "tag": "Remote ops"
+            },
+            {
+              "name": "We Work Remotely",
+              "url": "https://weworkremotely.com/remote-jobs/search?term=operations",
+              "tag": "Remote ops"
+            }
+          ]
+        },
+        {
+          "section": "\ud83d\udcf0 Newsletters & Curated",
+          "boards": [
+            {
+              "name": "Beyond Bay St.",
+              "url": "https://beyondbayst.substack.com",
+              "tag": "CoS / S&O weekly digest"
+            },
+            {
+              "name": "The CoS Network",
+              "url": "https://www.thecosnw.com/jobs",
+              "tag": "Chief of Staff specific"
+            },
+            {
+              "name": "OpsCurated",
+              "url": "https://opscurated.com",
+              "tag": "Ops roles newsletter"
+            },
+            {
+              "name": "Banana Capital Jobs",
+              "url": "https://jobs.bananacapital.vc",
+              "tag": "Pre-seed / seed"
+            }
+          ]
+        },
+        {
+          "section": "\ud83c\udfaf Niche / Specialty",
+          "boards": [
+            {
+              "name": "Climate Draft",
+              "url": "https://www.climatedraft.org",
+              "tag": "Climate-focused roles"
+            },
+            {
+              "name": "80,000 Hours",
+              "url": "https://jobs.80000hours.org",
+              "tag": "Mission-driven orgs"
+            },
+            {
+              "name": "Idealist",
+              "url": "https://www.idealist.org/en/jobs?q=operations",
+              "tag": "Nonprofits + social impact"
+            },
+            {
+              "name": "F6S Jobs",
+              "url": "https://www.f6s.com/jobs",
+              "tag": "Startup accelerator network"
+            },
+            {
+              "name": "Propel Search",
+              "url": "https://propelsearch.io",
+              "tag": "CoS placement firm"
+            },
+            {
+              "name": "The Cannon Project",
+              "url": "https://thecannonproject.com",
+              "tag": "Ops placement firm"
+            }
+          ]
+        }
+      ],
+      "job-dashboard-search-strings": [
+        {
+          "label": "\ud83c\udfaf LinkedIn Boolean \u2014 CoS / Ops (Primary)",
+          "query": "(\"chief of staff\" OR \"head of operations\" OR \"business operations\" OR \"bizops\" OR \"operations manager\" OR \"founding operations\") AND (\"startup\" OR \"early stage\" OR \"series A\" OR \"seed\")",
+          "tip": "Paste into LinkedIn Jobs search bar. Filter: Date posted \u2192 Past week. Job type \u2192 Full-time."
+        },
+        {
+          "label": "\ud83d\udd0d LinkedIn Boolean \u2014 Broader Ops",
+          "query": "(\"general manager\" OR \"director of operations\" OR \"head of biz ops\" OR \"chief operating officer\" OR \"VP operations\" OR \"strategy and operations\") AND (\"startup\" OR \"early-stage\" OR \"small team\" OR \"founding team\")",
+          "tip": "Use when primary search runs dry. Good for COO-lite roles at 10\u201350 person companies."
+        },
+        {
+          "label": "\u2699\ufe0f LinkedIn Boolean \u2014 Product + Ops Hybrid",
+          "query": "(\"product operations\" OR \"program manager\" OR \"product manager\" OR \"head of product\" OR \"product lead\") AND (\"operations\" OR \"startup\" OR \"seed\" OR \"series A\") NOT (\"senior\" OR \"staff\" OR \"principal\" OR \"director\")",
+          "tip": "For PM/PO hybrid roles. The NOT clause filters out senior-only posts."
+        },
+        {
+          "label": "\ud83c\udf3f LinkedIn Boolean \u2014 Maine / New England",
+          "query": "(\"chief of staff\" OR \"operations manager\" OR \"business operations\" OR \"general manager\") AND (\"Maine\" OR \"Portland ME\" OR \"New Hampshire\" OR \"Vermont\" OR \"Boston\" OR \"remote\")",
+          "tip": "Geo-focused. Also try filtering Location to 'Portland, Maine Area' in LinkedIn."
+        },
+        {
+          "label": "\ud83c\udfed LinkedIn Boolean \u2014 Manufacturing / Hardware Ops",
+          "query": "(\"operations manager\" OR \"head of operations\" OR \"manufacturing operations\" OR \"supply chain\" OR \"product development\") AND (\"3D printing\" OR \"composites\" OR \"hardware\" OR \"manufacturing\" OR \"marine\" OR \"outdoor\" OR \"consumer goods\") AND (\"startup\" OR \"small company\")",
+          "tip": "Leverages your manufacturing startup background for hardware-adjacent roles."
+        },
+        {
+          "label": "\ud83d\udd0e Google X-Ray Search (paste into Google)",
+          "query": "site:indeed.com \"chief of staff\" OR \"head of operations\" \"startup\" \"Maine\" OR \"remote\" -senior -principal",
+          "tip": "Paste into Google.com \u2014 surfaces Indeed listings that LinkedIn misses."
+        }
+      ],
+      "job-dashboard-keywords": [
+        {
+          "section": "Primary Job Titles",
+          "keywords": [
+            "Chief of Staff",
+            "Head of Operations",
+            "Business Operations Manager",
+            "Operations Manager",
+            "BizOps",
+            "Director of Operations",
+            "Founding Operations"
+          ]
+        },
+        {
+          "section": "Secondary / Stretch Titles",
+          "keywords": [
+            "General Manager",
+            "Head of Business Operations",
+            "Strategy & Operations",
+            "COO",
+            "Program Manager",
+            "Business Operations Associate",
+            "VP Operations",
+            "Ops Lead",
+            "Head of BizOps",
+            "Executive Operations Manager"
+          ]
+        },
+        {
+          "section": "Product / Design Titles (alternate lane)",
+          "keywords": [
+            "Product Manager",
+            "Product Operations",
+            "Product Lead",
+            "Head of Product",
+            "Product Designer",
+            "Design Engineer",
+            "Product Development Engineer"
+          ]
+        },
+        {
+          "section": "Manufacturing / Hardware Titles",
+          "keywords": [
+            "Manufacturing Operations Manager",
+            "Supply Chain Manager",
+            "Product Development Manager",
+            "Composites Engineer",
+            "3D Printing / Additive Manufacturing Specialist"
+          ]
+        },
+        {
+          "section": "Company Type Keywords",
+          "keywords": [
+            "startup",
+            "early-stage",
+            "seed stage",
+            "Series A",
+            "pre-seed",
+            "small team",
+            "founding team",
+            "lean team",
+            "bootstrapped",
+            "venture-backed"
+          ]
+        },
+        {
+          "section": "Industry / Sector Keywords",
+          "keywords": [
+            "SaaS",
+            "hardware",
+            "climate tech",
+            "outdoor industry",
+            "marine",
+            "consumer goods",
+            "e-commerce",
+            "sustainability",
+            "manufacturing",
+            "composites",
+            "deep tech"
+          ]
+        },
+        {
+          "section": "Skills Keywords (resume + search)",
+          "keywords": [
+            "operational excellence",
+            "process improvement",
+            "cross-functional",
+            "systems thinking",
+            "CAD design",
+            "Rhino",
+            "Fusion 360",
+            "Grasshopper",
+            "3D printing",
+            "composite manufacturing",
+            "supply chain",
+            "vendor management",
+            "project management",
+            "stakeholder management",
+            "product roadmap"
+          ]
+        }
+      ],
+      "profile-looking": "Role: Chief of Staff or Head of Operations\nCompany: Early-stage startup, 5\u201330 people\nLocation: Maine, Remote, or Boston hybrid",
+      "profile-ask": "I'm targeting ops and CoS roles at startups, 5\u201330 people,\nMaine or remote-friendly. Do you know 2\u20133 people I should be talking to?",
+      "last_recap_sent": "2026-W12",
+      "weekly_email_opt_in": true
+    },
+    "cards": [
+      {
+        "added": "2026-03-20",
+        "col": "saved",
+        "company": "Northwind Energy",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": null,
+          "closed": null,
+          "interviewing": null,
+          "saved": "2026-03-20"
+        },
+        "deadline": "",
+        "description": "We're looking for a hands-on operator to help scale our team from 15 to 50. You'll own everything from hiring processes to vendor management to internal tooling. Ideal candidate has 3-5 years in ops at a startup.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": true,
+        "notes": "",
+        "priorityOrder": 1774014280690,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Program Manager",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Energy Program Coordinator"
+      },
+      {
+        "added": "2026-03-19",
+        "col": "saved",
+        "company": "Blaze API",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": null,
+          "closed": null,
+          "interviewing": null,
+          "saved": "2026-03-19"
+        },
+        "deadline": "",
+        "description": "Join our fast-growing team as we build developer tools for the modern web. You'll work cross-functionally with engineering and product to drive adoption and support our community.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": true,
+        "isStarred": false,
+        "notes": "",
+        "priorityOrder": 1773966816783,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Content  Marketer",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Developer Relations Engineer"
+      },
+      {
+        "added": "2026-03-12",
+        "col": "applied",
+        "company": "Brightworks Products",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": "2026-03-12",
+          "closed": null,
+          "interviewing": null,
+          "saved": "2026-03-12"
+        },
+        "deadline": "",
+        "description": "This role sits at the intersection of product and operations. You'll triage customer issues, build internal workflows, and help shape our support strategy as we scale.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "Eh might as well",
+        "priorityOrder": 1773319875171,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Product Support Specialist",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Product Support Specialist"
+      },
+      {
+        "added": "2026-03-12",
+        "col": "interviewing",
+        "company": "Coastal Boatworks",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": null,
+          "closed": null,
+          "interviewing": null,
+          "saved": "2026-03-12"
+        },
+        "deadline": "",
+        "description": "We need someone who can manage complex projects across engineering and manufacturing. You'll coordinate timelines, track deliverables, and keep stakeholders aligned.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "Applied and stuff, seams like a terrible commute and hours though",
+        "priorityOrder": 1773313348803,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Designer - 1-3 Years Expirence",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Project Manager"
+      },
+      {
+        "added": "2026-03-05",
+        "col": "saved",
+        "company": "Horizon Fintech",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": null,
+          "closed": null,
+          "interviewing": null,
+          "saved": "2026-03-05"
+        },
+        "deadline": "",
+        "description": "Help us build the financial infrastructure of the future. This role focuses on internal operations \u2014 process design, cross-team coordination, and strategic planning.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": true,
+        "isStarred": true,
+        "notes": "Sophie works here",
+        "priorityOrder": 1772994849308,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Vibe Growth Marketing Manager",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Strategy & Operations Associate"
+      },
+      {
+        "added": "2026-03-04",
+        "col": "saved",
+        "company": "Stillwater Furniture",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": null,
+          "closed": null,
+          "interviewing": null,
+          "saved": "2026-03-04"
+        },
+        "deadline": "",
+        "description": "Support our workshop operations including scheduling, inventory management, and quality control. Ideal for someone who loves hands-on problem solving.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "",
+        "priorityOrder": 1774014273458,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Purchasing Manager",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Operations Coordinator"
+      },
+      {
+        "added": "2026-03-04",
+        "col": "saved",
+        "company": "Clearpath Networks",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": "2026-03-10",
+          "closed": null,
+          "interviewing": "2026-03-04",
+          "saved": "2026-01-04"
+        },
+        "deadline": "",
+        "description": "Manage field operations for our network deployment teams. You'll coordinate crews, track project milestones, and ensure quality standards are met.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "Im not qualified for this but could be cool",
+        "priorityOrder": 1772723875870,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Product Manager",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Field Operations Manager"
+      },
+      {
+        "added": "2026-03-04",
+        "col": "saved",
+        "company": "Apex Manufacturing",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": "2026-03-14",
+          "closed": null,
+          "interviewing": "2026-03-10",
+          "saved": "2024-01-01"
+        },
+        "deadline": "",
+        "description": "Drive customer activation and retention through data analysis and process optimization. You'll work with sales and product to improve the onboarding experience.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "",
+        "priorityOrder": 1774014238207,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Activation Analyst",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Activation Analyst"
+      },
+      {
+        "added": "2026-03-04",
+        "col": "interviewing",
+        "company": "Trident Defense Systems",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": "2026-02-09",
+          "closed": null,
+          "interviewing": "2026-03-04",
+          "saved": "2026-03-04"
+        },
+        "deadline": "",
+        "description": "Lead a cross-functional team building next-generation composite structures. You'll manage the technical roadmap, coordinate with suppliers, and oversee production.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "I dont really want this job",
+        "priorityOrder": 1772591927991,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Maine Composites Bridge",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Composites Bridge Lead"
+      },
+      {
+        "added": "2026-03-04",
+        "col": "interviewing",
+        "company": "Pinecrest Health",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": "2026-03-01",
+          "closed": null,
+          "interviewing": "2026-03-10",
+          "saved": "2026-03-02"
+        },
+        "deadline": "",
+        "description": "Analyze health data to identify trends and support clinical decision-making. You'll build dashboards, run queries, and present findings to stakeholders.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "",
+        "priorityOrder": 1772682217181,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Health Data Analyst",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Health Data Analyst"
+      },
+      {
+        "added": "2026-03-04",
+        "col": "applied",
+        "company": "Summit Seating Co.",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": "2026-03-02",
+          "closed": null,
+          "interviewing": "2026-03-10",
+          "saved": "2026-03-04"
+        },
+        "deadline": "",
+        "description": "Support our engineering team with CAD work, prototyping, and testing. You'll help bring new products from concept to production.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": true,
+        "isStarred": false,
+        "notes": "",
+        "priorityOrder": 1772591651394,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Engineering Technician",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Engineering Technician"
+      },
+      {
+        "added": "2026-03-03",
+        "col": "saved",
+        "company": "Ridgeline Renewables",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": "2026-03-03",
+          "closed": null,
+          "interviewing": "2026-03-04",
+          "saved": "2026-03-03"
+        },
+        "deadline": "",
+        "description": "Oversee operations at our wind energy installations. You'll manage maintenance schedules, coordinate with utilities, and optimize energy output.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "",
+        "priorityOrder": 1773966805283,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Project Manager - Composites",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Wind Energy Operations Lead"
+      },
+      {
+        "added": "2026-03-03",
+        "col": "saved",
+        "company": "Meridian Software",
+        "contactEmail": "",
+        "contactLastDate": "",
+        "contactLinkedIn": "",
+        "contactName": "",
+        "contactNextStep": "",
+        "contactRole": "",
+        "dates": {
+          "applied": "2026-03-03",
+          "closed": null,
+          "interviewing": "2026-03-03",
+          "saved": "2026-03-03"
+        },
+        "deadline": "",
+        "description": "Own the product lifecycle from discovery through launch. You'll work with engineering, design, and customers to ship features that matter.",
+        "followUpDate": "",
+        "interviewNotes": null,
+        "isHighPriority": false,
+        "isStarred": false,
+        "notes": "hashdf",
+        "priorityOrder": 1772643025797,
+        "reminderSnoozedUntil": "",
+        "starred": false,
+        "title": "Product Manager",
+        "url": "",
+        "user": "seed_user_001",
+        "role": "Product Manager"
+      }
+    ],
+    "tasks": [
+      {
+        "text": "Research companies in the climate tech accelerator cohort",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Prep for Pinecrest Health interview (Tuesday)",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Research companies doing modular construction: BuildCo, ModFrame, StackHouse",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Send Alex the contact info for the ops recruiter",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Thank Sarah for the intro to Alex",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Follow up with the innovation center contact",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Research the new VP of Product at Meridian Software",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Reply to Dana's article about startup hiring trends",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Email recruiter at Talent Bridge \u2014 hello@talentbridge.io",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Look through open roles at Solarflare",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Look through open roles at GreenGrid",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Message to Chris about the PM role",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Follow up with Chris about the PM intro",
+        "done": true,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Look into the new biotech startup incubator and reach out to founders",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Follow up with Chris next week if no response",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Check out the marine innovation lab announcements",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Look up Greenleaf Analytics and see if they're hiring",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Email recruiter at CoS Placements \u2014 recruiter@cosplace.io",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Email recruiter at Ops Network \u2014 hello@opsnetwork.io",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Email contact at Summit Seating \u2014 hiring@summitseating.com",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Email contact at Trident \u2014 jobs@tridentsystems.com",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Follow up with Coastal Boatworks in a week if no response",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      },
+      {
+        "text": "Draft a cold outreach template for ops roles",
+        "done": false,
+        "pinned": false,
+        "order": 0,
+        "user": "seed_user_001"
+      }
+    ],
+    "activityLog": [
+      {
+        "date": "2026-03-14",
+        "type": "applied",
+        "note": "Apex Manufacturing \u2014 Activation Analyst",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-12",
+        "type": "applied",
+        "note": "Meridian Software \u2014 Product Manager II",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-12",
+        "type": "outreach",
+        "note": "Tried to connect with Chris about the PM role \u2014 might not work out",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-12",
+        "type": "applied",
+        "note": "Brightworks Products \u2014 Product Support Specialist",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-08",
+        "type": "meetings",
+        "note": "Met with founder building bio-based composite materials \u2014 great energy, worth following up",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-08",
+        "type": "closed",
+        "note": "State agency \u2014 Environmental Specialist III",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-08",
+        "type": "outreach",
+        "note": "LinkedIn message to Chris about the product ops role",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-08",
+        "type": "outreach",
+        "note": "Reached out to founder at a wind energy startup about potential ops roles",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-05",
+        "type": "note",
+        "note": "Connected with a contact at the innovation center \u2014 sent intro email",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-05",
+        "type": "meetings",
+        "note": "Met with founder building a composite building product \u2014 really strong fit, good mutual interest, need to follow up",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-05",
+        "type": "interviewing",
+        "note": "Pinecrest Health \u2014 Health Data Analyst",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-05",
+        "type": "note",
+        "note": "Solid productive week \u2014 momentum is building",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-04",
+        "type": "applied",
+        "note": "Summit Seating Co. \u2014 Engineering Technician",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-04",
+        "type": "outreach",
+        "note": "LinkedIn message to recruiter about a manufacturing ops role \u2014 will circle back in April",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-04",
+        "type": "note",
+        "note": "Feeling good about the pipeline \u2014 keep pushing",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-04",
+        "type": "applied",
+        "note": "Trident Defense Systems \u2014 Composites Bridge Lead",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-04",
+        "type": "interviewing",
+        "note": "Trident Defense Systems \u2014 Composites Bridge Lead",
+        "user": "seed_user_001"
+      },
+      {
+        "date": "2026-03-04",
+        "type": "applied",
+        "note": "Pinecrest Health \u2014 Health Data Analyst",
+        "user": "seed_user_001"
+      }
+    ],
+    "notes": [],
+    "weeklyStats": [
+      {
+        "applications": 0,
+        "meetings": 0,
+        "outreach": 1,
+        "user": "seed_user_001",
+        "weekKey": "2026-W11"
+      },
+      {
+        "applications": 0,
+        "meetings": 0,
+        "outreach": 0,
+        "user": "seed_user_001",
+        "weekKey": ""
+      },
+      {
+        "applications": 0,
+        "meetings": 0,
+        "outreach": 0,
+        "user": "seed_user_001",
+        "weekKey": ""
+      }
+    ],
+    "jobBoards": [
+      {
+        "section": "\ud83d\ude80 Startup-Focused",
+        "boards": [
+          {
+            "name": "Wellfound",
+            "url": "https://wellfound.com/role/r/chief-of-staff",
+            "tag": "Best for early-stage startups"
+          },
+          {
+            "name": "Startup.jobs",
+            "url": "https://startup.jobs/roles/chief-of-staff",
+            "tag": "CoS + Ops roles"
+          },
+          {
+            "name": "Work at a Startup (YC)",
+            "url": "https://workatastartup.com",
+            "tag": "YC portfolio companies"
+          },
+          {
+            "name": "Contrary Talent",
+            "url": "https://jobs.contrary.com",
+            "tag": "VC-backed startups"
+          },
+          {
+            "name": "Pallet \u2014 Ops Jobs",
+            "url": "https://pallet.xyz/list/ops-jobs/jobs",
+            "tag": "Ops-curated pallet"
+          },
+          {
+            "name": "Lenny's Job Board",
+            "url": "https://www.lennysjobs.com",
+            "tag": "PM/Ops at growth cos"
+          }
+        ]
+      },
+      {
+        "section": "\ud83d\uddfa\ufe0f Regional",
+        "boards": [
+          {
+            "name": "Built In Boston",
+            "url": "https://www.builtinboston.com/jobs",
+            "tag": "Boston + remote"
+          },
+          {
+            "name": "Maine Startups",
+            "url": "https://www.mainestartups.com/jobs",
+            "tag": "Maine ecosystem"
+          },
+          {
+            "name": "MassHire Job Board",
+            "url": "https://jobquest.dcs.eol.mass.gov",
+            "tag": "MA state board"
+          }
+        ]
+      },
+      {
+        "section": "\ud83d\udccb General",
+        "boards": [
+          {
+            "name": "LinkedIn",
+            "url": "https://www.linkedin.com/jobs/search/?keywords=%22chief+of+staff%22+OR+%22head+of+operations%22+OR+%22bizops%22+OR+%22founding+operations%22&f_TPR=r604800",
+            "tag": "Boolean pre-loaded (past 7 days)"
+          },
+          {
+            "name": "Indeed",
+            "url": "https://www.indeed.com/jobs?q=chief+of+staff+OR+head+of+operations+OR+bizops&jt=fulltime",
+            "tag": "Broad reach"
+          },
+          {
+            "name": "Glassdoor",
+            "url": "https://www.glassdoor.com/Job/jobs.htm?sc.keyword=chief+of+staff",
+            "tag": "+ salary data"
+          },
+          {
+            "name": "Himalayas",
+            "url": "https://himalayas.app/jobs/titles/chief-of-staff",
+            "tag": "Remote-first"
+          },
+          {
+            "name": "Remote OK",
+            "url": "https://remoteok.com/remote-operations-jobs",
+            "tag": "Remote ops"
+          },
+          {
+            "name": "We Work Remotely",
+            "url": "https://weworkremotely.com/remote-jobs/search?term=operations",
+            "tag": "Remote ops"
+          }
+        ]
+      },
+      {
+        "section": "\ud83d\udcf0 Newsletters & Curated",
+        "boards": [
+          {
+            "name": "Beyond Bay St.",
+            "url": "https://beyondbayst.substack.com",
+            "tag": "CoS / S&O weekly digest"
+          },
+          {
+            "name": "The CoS Network",
+            "url": "https://www.thecosnw.com/jobs",
+            "tag": "Chief of Staff specific"
+          },
+          {
+            "name": "OpsCurated",
+            "url": "https://opscurated.com",
+            "tag": "Ops roles newsletter"
+          },
+          {
+            "name": "Banana Capital Jobs",
+            "url": "https://jobs.bananacapital.vc",
+            "tag": "Pre-seed / seed"
+          }
+        ]
+      },
+      {
+        "section": "\ud83c\udfaf Niche / Specialty",
+        "boards": [
+          {
+            "name": "Climate Draft",
+            "url": "https://www.climatedraft.org",
+            "tag": "Climate-focused roles"
+          },
+          {
+            "name": "80,000 Hours",
+            "url": "https://jobs.80000hours.org",
+            "tag": "Mission-driven orgs"
+          },
+          {
+            "name": "Idealist",
+            "url": "https://www.idealist.org/en/jobs?q=operations",
+            "tag": "Nonprofits + social impact"
+          },
+          {
+            "name": "F6S Jobs",
+            "url": "https://www.f6s.com/jobs",
+            "tag": "Startup accelerator network"
+          },
+          {
+            "name": "Propel Search",
+            "url": "https://propelsearch.io",
+            "tag": "CoS placement"
+          },
+          {
+            "name": "The Cannon Project",
+            "url": "https://thecannonproject.com",
+            "tag": "Ops placement"
+          }
+        ]
+      }
+    ],
+    "searchStrings": [
+      {
+        "label": "\ud83c\udfaf LinkedIn Boolean \u2014 CoS / Ops (Primary)",
+        "query": "(\"chief of staff\" OR \"head of operations\" OR \"business operations\" OR \"bizops\" OR \"operations manager\" OR \"founding operations\") AND (\"startup\" OR \"early stage\" OR \"series A\" OR \"seed\")",
+        "tip": "Paste into LinkedIn Jobs search bar. Filter: Date posted \u2192 Past week. Job type \u2192 Full-time."
+      },
+      {
+        "label": "\ud83d\udd0d LinkedIn Boolean \u2014 Broader Ops",
+        "query": "(\"general manager\" OR \"director of operations\" OR \"head of biz ops\" OR \"chief operating officer\" OR \"VP operations\" OR \"strategy and operations\") AND (\"startup\" OR \"early-stage\" OR \"small team\" OR \"founding team\")",
+        "tip": "Use when primary search runs dry. Good for COO-lite roles at 10\u201350 person companies."
+      },
+      {
+        "label": "\u2699\ufe0f LinkedIn Boolean \u2014 Product + Ops Hybrid",
+        "query": "(\"product operations\" OR \"program manager\" OR \"product manager\" OR \"head of product\" OR \"product lead\") AND (\"operations\" OR \"startup\" OR \"seed\" OR \"series A\") NOT (\"senior\" OR \"staff\" OR \"principal\" OR \"director\")",
+        "tip": "For PM/PO hybrid roles. The NOT clause filters out senior-only posts."
+      },
+      {
+        "label": "\ud83c\udf3f LinkedIn Boolean \u2014 Maine / New England",
+        "query": "(\"chief of staff\" OR \"operations manager\" OR \"business operations\" OR \"general manager\") AND (\"Maine\" OR \"Portland ME\" OR \"New Hampshire\" OR \"Vermont\" OR \"Boston\" OR \"remote\")",
+        "tip": "Geo-focused. Also try filtering Location to 'Portland, Maine Area' in LinkedIn."
+      },
+      {
+        "label": "\ud83c\udfed LinkedIn Boolean \u2014 Manufacturing / Hardware Ops",
+        "query": "(\"operations manager\" OR \"head of operations\" OR \"manufacturing operations\" OR \"supply chain\" OR \"product development\") AND (\"3D printing\" OR \"composites\" OR \"hardware\" OR \"manufacturing\" OR \"marine\" OR \"outdoor\" OR \"consumer goods\") AND (\"startup\" OR \"small company\")",
+        "tip": "Leverages your manufacturing startup background for hardware-adjacent roles."
+      },
+      {
+        "label": "\ud83d\udd0e Google X-Ray Search (paste into Google)",
+        "query": "site:indeed.com \"chief of staff\" OR \"head of operations\" \"startup\" \"Maine\" OR \"remote\" -senior -principal",
+        "tip": "Paste into Google.com \u2014 surfaces Indeed listings that LinkedIn misses."
+      }
+    ],
+    "keywords": [
+      {
+        "section": "Primary Job Titles",
+        "keywords": [
+          "Chief of Staff",
+          "Head of Operations",
+          "Business Operations Manager",
+          "Operations Manager",
+          "BizOps",
+          "Director of Operations",
+          "Founding Operations"
+        ]
+      },
+      {
+        "section": "Secondary / Stretch Titles",
+        "keywords": [
+          "General Manager",
+          "Head of Business Operations",
+          "Strategy & Operations",
+          "COO",
+          "Program Manager",
+          "Business Operations Associate",
+          "VP Operations",
+          "Ops Lead",
+          "Head of BizOps",
+          "Executive Operations Manager"
+        ]
+      },
+      {
+        "section": "Product / Design Titles (alternate lane)",
+        "keywords": [
+          "Product Manager",
+          "Product Operations",
+          "Product Lead",
+          "Head of Product",
+          "Product Designer",
+          "Design Engineer",
+          "Product Development Engineer"
+        ]
+      },
+      {
+        "section": "Manufacturing / Hardware Titles",
+        "keywords": [
+          "Manufacturing Operations Manager",
+          "Supply Chain Manager",
+          "Product Development Manager",
+          "Composites Engineer",
+          "3D Printing / Additive Manufacturing Specialist"
+        ]
+      },
+      {
+        "section": "Company Type Keywords",
+        "keywords": [
+          "startup",
+          "early-stage",
+          "seed stage",
+          "Series A",
+          "pre-seed",
+          "small team",
+          "founding team",
+          "lean team",
+          "bootstrapped",
+          "venture-backed"
+        ]
+      },
+      {
+        "section": "Industry / Sector Keywords",
+        "keywords": [
+          "SaaS",
+          "hardware",
+          "climate tech",
+          "outdoor industry",
+          "marine",
+          "consumer goods",
+          "e-commerce",
+          "sustainability",
+          "manufacturing",
+          "composites",
+          "deep tech"
+        ]
+      },
+      {
+        "section": "Skills Keywords (resume + search)",
+        "keywords": [
+          "operational excellence",
+          "process improvement",
+          "cross-functional",
+          "systems thinking",
+          "CAD design",
+          "Rhino",
+          "Fusion 360",
+          "Grasshopper",
+          "3D printing",
+          "composite manufacturing",
+          "supply chain",
+          "vendor management",
+          "project management",
+          "stakeholder management",
+          "product roadmap"
+        ]
+      }
+    ],
+    "profileAsk": "I'm targeting ops and CoS roles at startups, 5\u201330 people, remote-friendly or Northeast US. Do you know 2\u20133 people I should be talking to?",
+    "profileLookingFor": "Role: Chief of Staff or Head of Operations\nCompany: Early-stage startup, 5\u201330 people\nLocation: Remote or Northeast US hybrid",
+    "profileProofPoints": "4 years as de facto COO at an early-stage startup\nBuilt supply chain, manufacturing, and ops from scratch\nManaged research partnerships and customer relationships\nExperience with hardware, composites, and physical products"
+  }
 }

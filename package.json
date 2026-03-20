@@ -16,6 +16,7 @@
     "migrate": "bash scripts/migrate.sh",
     "schema:export": "node scripts/export-pb-schema.js",
     "seed:local": "node scripts/seed-local.js",
+    "setup": "bash scripts/setup-local.sh",
     "prepare": "husky"
   },
   "dependencies": {

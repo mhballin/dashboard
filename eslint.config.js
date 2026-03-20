@@ -26,4 +26,33 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    files: ['scripts/**/*.js', 'scripts/**/*.{cjs,mjs}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      sourceType: 'module',
+    },
+    rules: {
+      // Local utility scripts are operational tooling, not app runtime code.
+      'no-unused-vars': 'off',
+      'no-redeclare': 'off',
+    },
+  },
+  {
+    files: ['pocketbase/pb_migrations/**/*.js', 'pb_migrations/**/*.js'],
+    languageOptions: {
+      globals: {
+        migrate: 'readonly',
+        Collection: 'readonly',
+      },
+      sourceType: 'script',
+    },
+    rules: {
+      // PocketBase migration runtime provides globals and has generated shapes.
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
 ])

@@ -106,6 +106,6 @@ node --check server/index.js
 ## Related Docs
 
 - [README.md](../README.md)
-- [docs/SCHEMA-WORKFLOW.md](SCHEMA-WORKFLOW.md)
+- [docs/ARCHITECTURE.md](ARCHITECTURE.md#schema-change-workflow)
 - [docs/ARCHITECTURE.md](ARCHITECTURE.md)
 - [docs/ops/SERVER-RUNBOOK.md](ops/SERVER-RUNBOOK.md)

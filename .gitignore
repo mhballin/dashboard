@@ -33,7 +33,7 @@ tree.txt
 /docs/*
 !/docs/ARCHITECTURE.md
 !/docs/LOCAL-DEVELOPMENT.md
-!/docs/SCHEMA-WORKFLOW.md
+!/docs/ARCHITECTURE.md
 /docs/ops/*
 !/docs/ops/SERVER-RUNBOOK.md
 AGENTS.md

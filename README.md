@@ -1,61 +1,64 @@
 # Job Search HQ
 
-A focused job-search workspace for tracking applications, outreach, and weekly momentum in one place.
+One place to run your entire job search — track applications, stay on top of follow-ups, and keep weekly momentum visible.
 
-(screenshot)
+**Open the app:** https://dashboard.michaelballin.com
 
-## Live App
+---
 
-- App URL: https://dashboard.michaelballin.com
-- Create an account from the login screen with your email and password.
-- Returning users can sign in from the same screen.
+## What you get
 
-## What It Does
+- **A Kanban board for applications** — Drag cards from Saved → Applied → Interviewing → Closed. Every move is timestamped and logged.
+- **A daily dashboard** — See your top tasks, weekly targets, and streak at a glance so you know what to do first.
+- **An activity log** — Everything you do is tracked: applications, meetings, outreach. Use it to review what changed each week.
+- **Job boards & search strings** — Save your go-to boards and LinkedIn/Boolean search strings for quick reuse.
+- **Profile & pitch storage** — Keep your elevator pitch and proof points ready to paste into messages.
+- **Weekly recap emails** — Monday morning summary of last week's activity and what needs attention (opt-out in Settings).
+- **Export & import** — Back up everything to a single JSON file and restore when needed.
 
-- **Dashboard** — Quick view of today: the top tasks (drag to reorder), a streak banner, weekly target counters (meetings, outreach, follow-ups, applications), and a quick-note area for pitch or scratch notes.
-- **Applications (Kanban)** — Four-column board (Saved → Applied → Interviewing → Closed). Create, edit, and drag job cards; cards store company, title, URL, description and notes. Moving cards to Applied/Interviewing/Closed stamps dates and adds an entry to the activity log.
-- **Job Boards & Search Strings** — Curated grid of saved job boards and editable LinkedIn/Boolean search strings you can copy. Add, edit, or remove boards and search queries from the UI.
-- **Activity Log** — Chronological log that groups meetings, outreach, follow-ups and applications by date. Each entry is editable and removable.
-- **Profile** — Lightweight place to keep a short pitch you reuse for outreach.
-- **Settings / Backups** — Export and import a single JSON file to back up or restore all data; change weekly targets, name, and quick-note retention.
+## How it works
 
-## Who It Is For
+1. Create an account at https://dashboard.michaelballin.com with your email and password.
+2. Add jobs to your Kanban board — paste URLs, add notes, and drag between columns.
+3. Use the dashboard daily — check off tasks, log meetings and outreach, track your weekly targets.
+4. Let the app handle the bookkeeping so you can focus on outreach and interviews.
 
-Job Search HQ is built for job seekers who want one command center for daily execution: what to apply to, who to follow up with, and whether weekly goals are on track.
+## Screenshots
 
-## Stack
+![Kanban board](public/screenshots/kanban.svg)
 
-- React (JSX) + Vite
-- Frontend hosting: Cloudflare Pages
-- API: Express proxy (`server/index.js`)
-- Backend data store: PocketBase on Oracle Cloud
-- UI: inline styles, Plus Jakarta Sans font
-- No external UI libraries or CSS frameworks
-- Drag-and-drop: native HTML5 drag-and-drop (no DnD library)
+![Dashboard](public/screenshots/dashboard.svg)
 
-## How It Is Deployed
+![Activity log](public/screenshots/activity.svg)
 
-- Frontend: Cloudflare Pages at `dashboard.michaelballin.com`
-- API: `api.dashboard.michaelballin.com` on Oracle Cloud
-- PocketBase: `pocketbase.michaelballin.com` on Oracle Cloud
-- Reverse proxy: Caddy on the Oracle VM
+## Built with
 
-The browser talks to the Express API, and the API forwards authenticated collection requests to PocketBase.
+- React + Vite frontend on Cloudflare Pages
+- PocketBase backend on Oracle Cloud
+- Express API proxy with Caddy reverse proxy
+- No external UI libraries — custom inline styles
 
-## Documentation
+---
 
-Developer and operations docs:
+## For developers
 
-- [docs/LOCAL-DEVELOPMENT.md](docs/LOCAL-DEVELOPMENT.md)
-- [docs/SCHEMA-WORKFLOW.md](docs/SCHEMA-WORKFLOW.md)
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- [docs/ops/SERVER-RUNBOOK.md](docs/ops/SERVER-RUNBOOK.md)
+If you want to run the project locally or contribute, start here:
 
-Production infrastructure templates:
+- [Local development setup](docs/LOCAL-DEVELOPMENT.md)
+- [Architecture and data flow](docs/ARCHITECTURE.md)
+- [Product roadmap](docs/ROADMAP.md)
+- [Server operations runbook](docs/ops/SERVER-RUNBOOK.md)
+- [Production verification log](docs/ops/PROD-VERIFICATION.md)
 
-- [server/deploy/job-dashboard-api.service.example](server/deploy/job-dashboard-api.service.example)
+### Doc authority
 
-## Why I built this
+| Question | Where to look |
+|---|---|
+| How does the system work? | [ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| How do I run it locally? | [LOCAL-DEVELOPMENT.md](docs/LOCAL-DEVELOPMENT.md) |
+| What is shipped? What is next? | [ROADMAP.md](docs/ROADMAP.md) |
+| How do I deploy or fix the server? | [SERVER-RUNBOOK.md](docs/ops/SERVER-RUNBOOK.md) |
+| Coding rules for AI agents? | [AGENTS.md](AGENTS.md) |
 
-I made this as a practical workspace to stop scattering job leads across tabs, notes, and browser bookmarks. It collects the small pieces that matter — search strings, a kanban for applications, quick outreach notes, and weekly targets — and keeps them in one system instead of across disconnected tools.
+If two docs disagree, trust ARCHITECTURE.md + current code for technical questions, ROADMAP.md for product status, and SERVER-RUNBOOK.md for operations.
 

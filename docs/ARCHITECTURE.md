@@ -231,7 +231,7 @@ Snapshots provide visibility and code review diffs. Migrations provide repeatabl
 
 ```bash
 ./pocketbase/pocketbase serve --http=127.0.0.1:8090
-npm run dev:app
+npm run dev
 ```
 
 2. Make schema changes locally (PocketBase admin UI or migration script).

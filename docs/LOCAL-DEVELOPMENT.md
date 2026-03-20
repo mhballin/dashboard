@@ -44,19 +44,25 @@ cp server/.env.example server/.env
 - Set `VITE_API_PROXY_TARGET` in `.env` to your local API URL, typically `http://127.0.0.1:3001`.
 - `server/.env` is local-first by default and points to `http://127.0.0.1:8090`.
 
-6. Start PocketBase in Terminal 1:
+6. Optional one-command bootstrap (reset local PocketBase data, import schema, and seed sample data):
+
+```bash
+npm run setup
+```
+
+7. Start PocketBase in Terminal 1 (skip if you just ran `npm run setup`):
 
 ```bash
 ./pocketbase/pocketbase serve --http=127.0.0.1:8090
 ```
 
-7. Start the app stack in Terminal 2 (Express API + Vite):
+8. Start the app stack in Terminal 2 (Express API + Vite + PocketBase helper):
 
 ```bash
-npm run dev:app
+npm run dev
 ```
 
-8. Open `http://localhost:5173`.
+9. Open `http://localhost:5173`.
 
 ## Export PocketBase Schema Snapshot
 

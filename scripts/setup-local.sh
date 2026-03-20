@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Script audit findings (2026-03-20)
+# Referenced by: package.json (npm run setup)
+# Referenced by docs: docs/LOCAL-DEVELOPMENT.md
+# Decision: keep
+# Purpose: reset local PocketBase data, import canonical schema snapshot,
+# and seed local development data in one repeatable bootstrap flow.
+
 PB_BIN="./pocketbase/pocketbase"
 PB_DIR="./pocketbase/pb_data"
 PB_ADDR="127.0.0.1:8090"
@@ -8,7 +15,6 @@ PB_URL="http://127.0.0.1:8090"
 PB_ADMIN_EMAIL="admin@local.dev"
 PB_ADMIN_PASSWORD="password123"
 SCHEMA_FILE="schema/pocketbase-collections.json"
-ALT_SCHEMA_FILE="pb-collections.json"
 
 echo "→ Resetting PocketBase data at ${PB_DIR}"
 rm -rf "$PB_DIR"
@@ -47,8 +53,6 @@ echo "→ Creating admin user ${PB_ADMIN_EMAIL}"
 # Import schema if present
 if [[ -f "$SCHEMA_FILE" ]]; then
   IMPORT_SRC="$SCHEMA_FILE"
-elif [[ -f "$ALT_SCHEMA_FILE" ]]; then
-  IMPORT_SRC="$ALT_SCHEMA_FILE"
 else
   IMPORT_SRC=""
 fi
@@ -59,7 +63,7 @@ if [[ -n "$IMPORT_SRC" ]]; then
     -H "Content-Type: application/json" \
     --data-binary "@$IMPORT_SRC" || echo "Schema import returned non-zero status"
 else
-  echo "→ No schema file found (schema/pocketbase-collections.json or pb-collections.json) — skipping import"
+  echo "→ No schema file found (schema/pocketbase-collections.json) — skipping import"
 fi
 
 # Run local seeding script

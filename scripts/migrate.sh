@@ -7,13 +7,13 @@ SCRIPT="${1:-}"
 
 if [[ -z "$SCRIPT" ]]; then
   echo "Usage: npm run migrate -- <script-name.js>" >&2
-  echo "Example: npm run migrate -- migrate-crm-fields.js" >&2
+  echo "Example: npm run migrate -- add-new-field.js" >&2
   exit 1
 fi
 
 # Block path traversal — only plain .js filenames are allowed
 if [[ "$SCRIPT" != *.js ]] || [[ "$SCRIPT" == */* ]] || [[ "$SCRIPT" == *..* ]]; then
-  echo "Error: provide a plain .js filename only (e.g. migrate-crm-fields.js)" >&2
+  echo "Error: provide a plain .js filename only (e.g. add-new-field.js)" >&2
   exit 1
 fi
 

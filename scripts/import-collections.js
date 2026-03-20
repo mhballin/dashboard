@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-const fs = require('fs')
-const fetch = require('node-fetch')
+// Canonical import script — .js and .mjs duplicates removed [cleanup pass]
+import { readFile } from 'node:fs/promises'
 
 const PB_URL = process.env.PB_URL || 'http://127.0.0.1:8090'
 const ADMIN_TOKEN = process.env.PB_ADMIN_TOKEN || ''
+const SCHEMA_PATH = process.env.PB_SCHEMA_PATH || 'schema/pocketbase-collections.json'
 if (!ADMIN_TOKEN) {
   console.error('Set PB_ADMIN_TOKEN in env')
   process.exit(1)
@@ -12,9 +13,9 @@ if (!ADMIN_TOKEN) {
 const WANT = new Set(['cards','tasks','activity_log','weekly_stats','notes','settings'])
 
 async function main(){
-  const raw = fs.readFileSync('pb-collections.json','utf8')
+  const raw = await readFile(SCHEMA_PATH,'utf8')
   const parsed = JSON.parse(raw)
-  const items = parsed.items || []
+  const items = parsed.items || parsed.collections || []
 
   for (const item of items) {
     if (!WANT.has(item.name)) continue

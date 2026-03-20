@@ -4,18 +4,19 @@ import { Plus, ExternalLink, Trash2, Globe } from "lucide-react";
 import { KANBAN_COLS } from "../data/kanbanCols";
 import { todayStr } from "../utils/dates";
 import { getAuthSnapshot } from "../utils/pb";
+import { theme, cardStyle as themeCardStyle } from "../styles/theme";
 
 const lbl = {
-  fontFamily: "'Plus Jakarta Sans',sans-serif",
+  fontFamily: theme.fonts.ui,
   fontSize: 11,
   fontWeight: 700,
   letterSpacing: "0.08em",
   textTransform: "uppercase",
-  color: "#9ca3af",
+  color: theme.colors.muted,
 };
 
 const cardFont = {
-  fontFamily: "'Plus Jakarta Sans',sans-serif",
+  fontFamily: theme.fonts.ui,
 };
 
 // Metadata extraction function
@@ -62,7 +63,7 @@ const staleBadgeStyle = {
   fontSize: 10,
   fontWeight: 800,
   color: "#dc2626",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontFamily: theme.fonts.ui,
   letterSpacing: "-0.02em",
   lineHeight: 1,
   boxSizing: "border-box",
@@ -81,7 +82,7 @@ const savedStarButtonStyle = {
   border: "none",
   fontSize: 16,
   lineHeight: 1,
-  color: "#c5c0b8",
+  color: theme.colors.border,
   cursor: "pointer",
 };
 
@@ -170,13 +171,13 @@ function DatePicker({ value, onChange }) {
         ref={btnRef}
         onClick={handleToggle}
         style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: theme.fonts.ui,
           fontSize: 12,
           fontWeight: value ? 500 : 400,
-          color: value ? "#374151" : "#9ca3af",
-          background: value ? "white" : "transparent",
-          border: value ? "1px solid #e5e7eb" : "1px dashed #d1d5db",
-          borderRadius: 8,
+          color: value ? theme.colors.text : theme.colors.muted,
+          background: value ? theme.colors.cardBg : "transparent",
+          border: value ? `1px solid ${theme.colors.inputBorder}` : `1px dashed ${theme.colors.inputBorder}`,
+          borderRadius: theme.radii.default,
           padding: "3px 9px",
           cursor: "pointer",
           outline: "none",
@@ -193,8 +194,8 @@ function DatePicker({ value, onChange }) {
             top: pos.top,
             left: pos.left,
             zIndex: 99999,
-            background: "white",
-            border: "1px solid #ede9e3",
+            background: theme.colors.cardBg,
+            border: `1px solid ${theme.colors.border}`,
             borderRadius: 14,
             boxShadow: "0 8px 30px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06)",
             padding: "14px 12px 10px",
@@ -205,23 +206,23 @@ function DatePicker({ value, onChange }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <button
               onClick={prevMonth}
-              style={{ background: "none", border: "none", cursor: "pointer", color: "#374151", fontSize: 18, padding: "2px 8px", borderRadius: 6, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              style={{ background: "none", border: "none", cursor: "pointer", color: theme.colors.text, fontSize: 18, padding: "2px 8px", borderRadius: theme.radii.small, lineHeight: 1, fontFamily: theme.fonts.ui }}
             >
               ‹
             </button>
-            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 600, color: "#1a1a1a" }}>
+            <span style={{ fontFamily: theme.fonts.ui, fontSize: 13, fontWeight: 600, color: theme.colors.text }}>
               {MONTHS[viewMonth]} {viewYear}
             </span>
             <button
               onClick={nextMonth}
-              style={{ background: "none", border: "none", cursor: "pointer", color: "#374151", fontSize: 18, padding: "2px 8px", borderRadius: 6, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              style={{ background: "none", border: "none", cursor: "pointer", color: theme.colors.text, fontSize: 18, padding: "2px 8px", borderRadius: theme.radii.small, lineHeight: 1, fontFamily: theme.fonts.ui }}
             >
               ›
             </button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
             {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-              <div key={d} style={{ textAlign: "center", fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 10, fontWeight: 700, color: "#9ca3af", letterSpacing: "0.05em", paddingBottom: 4 }}>
+              <div key={d} style={{ textAlign: "center", fontFamily: theme.fonts.ui, fontSize: 10, fontWeight: 700, color: theme.colors.muted, letterSpacing: "0.05em", paddingBottom: 4 }}>
                 {d}
               </div>
             ))}
@@ -239,11 +240,11 @@ function DatePicker({ value, onChange }) {
                     width: "100%",
                     aspectRatio: "1",
                     border: "none",
-                    borderRadius: 6,
+                    borderRadius: theme.radii.small,
                     cursor: day ? "pointer" : "default",
-                    background: sel ? "#16a34a" : tod ? "#f0fdf4" : "transparent",
-                    color: sel ? "white" : tod ? "#16a34a" : day ? "#374151" : "transparent",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    background: sel ? theme.colors.primary : tod ? theme.colors.streakGradientStart : "transparent",
+                    color: sel ? "white" : tod ? theme.colors.primary : day ? theme.colors.text : "transparent",
+                    fontFamily: theme.fonts.ui,
                     fontSize: 12,
                     fontWeight: sel || tod ? 600 : 400,
                     outline: "none",
@@ -257,10 +258,10 @@ function DatePicker({ value, onChange }) {
             })}
           </div>
           {value && (
-            <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #f3f4f6", textAlign: "center" }}>
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${theme.colors.subtle}`, textAlign: "center" }}>
               <button
                 onClick={() => { onChange(""); setOpen(false); }}
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 11, color: "#9ca3af", background: "none", border: "none", cursor: "pointer" }}
+                style={{ fontFamily: theme.fonts.ui, fontSize: 11, color: theme.colors.muted, background: "none", border: "none", cursor: "pointer" }}
               >
                 Clear date
               </button>
@@ -334,7 +335,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
   };
 
   const getCompanyColor = (companyName) => {
-    if (!companyName) return '#9ca3af';
+    if (!companyName) return theme.colors.muted;
     
     // Generate a consistent color based on the company name
     const colors = [
@@ -719,11 +720,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
               }}
               onDragLeave={() => setDragOver(null)}
               style={{
-                background: isOver ? col.bg : "#fafaf8",
+                background: isOver ? col.bg : theme.colors.subtle,
                 borderRadius: 18,
                 padding: 16,
                 minHeight: 240,
-                border: `1.5px solid ${isOver ? col.color + "50" : "#ede9e3"}`,
+                border: `1.5px solid ${isOver ? col.color + "50" : theme.colors.border}`,
                 transition: "all 0.15s",
                 minWidth: 0,
                 width: "100%",
@@ -732,18 +733,18 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: col.color }} />
-                  <span style={{ ...cardFont, fontSize: 13, fontWeight: 700, color: "#374151" }}>
+                  <span style={{ ...cardFont, fontSize: 13, fontWeight: 700, color: theme.colors.text }}>
                     {col.label}
                   </span>
-                  <span style={{ ...cardFont, fontSize: 11, color: "#9ca3af" }}>
+                  <span style={{ ...cardFont, fontSize: 11, color: theme.colors.muted }}>
                     ({colCards.length})
                   </span>
                 </div>
                 <button
                   onClick={() => openModal(col.id)}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex", padding: 2 }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: theme.colors.muted, display: "flex", padding: 2 }}
                 >
                   <Plus size={15} />
                 </button>
@@ -754,7 +755,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 {col.id === "saved" ? (
                 <>
                   {/* Priority Label */}
-                  <div style={{ fontSize: 10, color: "#a09a8f", letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "Plus Jakarta Sans", marginBottom: 8, marginLeft: 4 }}>
+                  <div style={{ fontSize: 10, color: theme.colors.muted, letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: theme.fonts.ui, marginBottom: 8, marginLeft: 4 }}>
                     PRIORITY
                   </div>
 
@@ -790,76 +791,75 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                   {highCards.map((c) => {
                     return (
                       <div
-                        key={c.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, c.id)}
-                        onDragEnd={handleDragEnd}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setDragOver(c.id);
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (dragging !== null) {
-                            const draggedCard = cards.find((card) => card.id === dragging);
-                            if (draggedCard && draggedCard.col !== "saved") {
-                              move(dragging, "saved");
-                            } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
-                              if (draggedCard.isHighPriority === true) {
-                                const draggedOrder = draggedCard.priorityOrder;
-                                const targetOrder = c.priorityOrder;
-                                setCards((p) =>
-                                  p.map((card) => {
-                                    if (card.id === dragging) {
-                                      return { ...card, priorityOrder: targetOrder };
-                                    }
-                                    if (card.id === c.id) {
-                                      return { ...card, priorityOrder: draggedOrder };
-                                    }
-                                    return card;
-                                  })
-                                );
-                                onCardUpdate?.(dragging, { priorityOrder: targetOrder });
-                                onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
-                              } else {
-                                const po = Date.now();
-                                setCards((p) =>
-                                  p.map((card) =>
-                                    card.id === dragging
-                                      ? { ...card, isHighPriority: false, priorityOrder: po }
-                                      : card
-                                  )
-                                );
-                                onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
+                            key={c.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, c.id)}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setDragOver(c.id);
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (dragging !== null) {
+                                const draggedCard = cards.find((card) => card.id === dragging);
+                                if (draggedCard && draggedCard.col !== "saved") {
+                                  move(dragging, "saved");
+                                } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
+                                  if (draggedCard.isHighPriority === true) {
+                                    const draggedOrder = draggedCard.priorityOrder;
+                                    const targetOrder = c.priorityOrder;
+                                    setCards((p) =>
+                                      p.map((card) => {
+                                        if (card.id === dragging) {
+                                          return { ...card, priorityOrder: targetOrder };
+                                        }
+                                        if (card.id === c.id) {
+                                          return { ...card, priorityOrder: draggedOrder };
+                                        }
+                                        return card;
+                                      })
+                                    );
+                                    onCardUpdate?.(dragging, { priorityOrder: targetOrder });
+                                    onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
+                                  } else {
+                                    const po = Date.now();
+                                    setCards((p) =>
+                                      p.map((card) =>
+                                        card.id === dragging
+                                          ? { ...card, isHighPriority: false, priorityOrder: po }
+                                          : card
+                                      )
+                                    );
+                                    onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
+                                  }
+                                }
                               }
-                            }
-                          }
-                          setDragging(null);
-                          setDragOver(null);
-                          setIsDragging(false);
-                        }}
-                        onClick={() => handleCardClick(c)}
-                        onMouseEnter={() => setHoveredCardId(c.id)}
-                        onMouseLeave={() => setHoveredCardId(null)}
-                        style={{
-                          background: "#ffffff",
-                          borderRadius: 12,
-                          padding: "10px 14px",
-                          marginBottom: 8,
-                          border: "1px solid #ede9e3",
-                          borderLeft: "3.5px solid #c96b5a",
-                          boxShadow: hoveredCardId === c.id ? "0 4px 12px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.04)",
-                          cursor: "pointer",
-                          userSelect: "none",
-                          opacity: dragging === c.id ? 0.5 : 1,
-                          transform: hoveredCardId === c.id ? "translateY(-2px)" : "translateY(0)",
-                          transition: "all 0.2s ease",
-                          position: "relative",
-                          overflow: "hidden",
-                        }}
-                      >
+                              setDragging(null);
+                              setDragOver(null);
+                              setIsDragging(false);
+                            }}
+                            onClick={() => handleCardClick(c)}
+                            onMouseEnter={() => setHoveredCardId(c.id)}
+                            onMouseLeave={() => setHoveredCardId(null)}
+                            style={{
+                              ...themeCardStyle(),
+                              borderRadius: 12,
+                              padding: "10px 14px",
+                              marginBottom: 8,
+                              borderLeft: "3.5px solid #c96b5a",
+                              boxShadow: hoveredCardId === c.id ? "0 4px 12px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.04)",
+                              cursor: "pointer",
+                              userSelect: "none",
+                              opacity: dragging === c.id ? 0.5 : 1,
+                              transform: hoveredCardId === c.id ? "translateY(-2px)" : "translateY(0)",
+                              transition: "all 0.2s ease",
+                              position: "relative",
+                              overflow: "hidden",
+                            }}
+                          >
                         {isStaleCard(c) && (
                           <div
                             style={{
@@ -902,10 +902,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                   style={{
                                     width: 18,
                                     height: 18,
-                                    borderRadius: 4,
+                                    borderRadius: theme.radii.small,
                                     objectFit: "contain",
-                                    border: "1px solid #e5e7eb",
-                                    background: "white",
+                                    border: `1px solid ${theme.colors.inputBorder}`,
+                                    background: theme.colors.cardBg,
                                   }}
                                   onError={(e) => {
                                     e.target.style.display = "none";
@@ -917,7 +917,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                     display: "none",
                                     width: 32,
                                     height: 32,
-                                    borderRadius: 6,
+                                    borderRadius: theme.radii.small,
                                     background: getCompanyColor(c.company),
                                     alignItems: "center",
                                     justifyContent: "center",
@@ -935,11 +935,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                   display: "flex",
                                   width: 32,
                                   height: 32,
-                                  borderRadius: 6,
-                                  background: "#f3f4f6",
+                                  borderRadius: theme.radii.small,
+                                  background: theme.colors.subtle,
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  color: "#9ca3af",
+                                  color: theme.colors.muted,
                                 }}
                               >
                                 <Globe size={18} />
@@ -955,7 +955,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 ...cardFont,
                                 fontSize: 11,
                                 fontWeight: 700,
-                                color: "#6b7280",
+                                color: theme.colors.muted,
                                 lineHeight: 1.3,
                                 marginBottom: 2,
                               }}>
@@ -965,13 +965,13 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 ...cardFont,
                                 fontSize: 13,
                                 fontWeight: 500,
-                                color: "#374151",
+                                color: theme.colors.text,
                                 lineHeight: 1.3,
                               }}>
                                 {c.title}
                               </div>
                               {c.location ? (
-                                <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
+                                <div style={{ ...cardFont, fontSize: 11, color: theme.colors.muted, marginTop: 2 }}>
                                   {c.location}
                                 </div>
                               ) : null}
@@ -988,7 +988,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                   <hr style={{ marginTop: 16, marginBottom: 16, marginLeft: 12, marginRight: 12, border: "none", borderTop: "1px solid #e5e2db" }} />
 
                   {/* Others Label */}
-                  <div style={{ fontSize: 10, color: "#a09a8f", letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "Plus Jakarta Sans", marginBottom: 8, marginLeft: 4 }}>
+                  <div style={{ fontSize: 10, color: theme.colors.muted, letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: theme.fonts.ui, marginBottom: 8, marginLeft: 4 }}>
                     OTHERS
                   </div>
 
@@ -1024,76 +1024,75 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                   {lowCards.map((c) => {
                     return (
                       <div
-                        key={c.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, c.id)}
-                        onDragEnd={handleDragEnd}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setDragOver(c.id);
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (dragging !== null) {
-                            const draggedCard = cards.find((card) => card.id === dragging);
-                            if (draggedCard && draggedCard.col !== "saved") {
-                              move(dragging, "saved");
-                            } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
-                              if (draggedCard.isHighPriority !== true) {
-                                const draggedOrder = draggedCard.priorityOrder;
-                                const targetOrder = c.priorityOrder;
-                                setCards((p) =>
-                                  p.map((card) => {
-                                    if (card.id === dragging) {
-                                      return { ...card, priorityOrder: targetOrder };
-                                    }
-                                    if (card.id === c.id) {
-                                      return { ...card, priorityOrder: draggedOrder };
-                                    }
-                                    return card;
-                                  })
-                                );
-                                onCardUpdate?.(dragging, { priorityOrder: targetOrder });
-                                onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
-                              } else {
-                                const po = Date.now();
-                                setCards((p) =>
-                                  p.map((card) =>
-                                    card.id === dragging
-                                      ? { ...card, isHighPriority: false, priorityOrder: po }
-                                      : card
-                                  )
-                                );
-                                onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
+                            key={c.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, c.id)}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setDragOver(c.id);
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (dragging !== null) {
+                                const draggedCard = cards.find((card) => card.id === dragging);
+                                if (draggedCard && draggedCard.col !== "saved") {
+                                  move(dragging, "saved");
+                                } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
+                                  if (draggedCard.isHighPriority !== true) {
+                                    const draggedOrder = draggedCard.priorityOrder;
+                                    const targetOrder = c.priorityOrder;
+                                    setCards((p) =>
+                                      p.map((card) => {
+                                        if (card.id === dragging) {
+                                          return { ...card, priorityOrder: targetOrder };
+                                        }
+                                        if (card.id === c.id) {
+                                          return { ...card, priorityOrder: draggedOrder };
+                                        }
+                                        return card;
+                                      })
+                                    );
+                                    onCardUpdate?.(dragging, { priorityOrder: targetOrder });
+                                    onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
+                                  } else {
+                                    const po = Date.now();
+                                    setCards((p) =>
+                                      p.map((card) =>
+                                        card.id === dragging
+                                          ? { ...card, isHighPriority: false, priorityOrder: po }
+                                          : card
+                                      )
+                                    );
+                                    onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
+                                  }
+                                }
                               }
-                            }
-                          }
-                          setDragging(null);
-                          setDragOver(null);
-                          setIsDragging(false);
-                        }}
-                        onClick={() => handleCardClick(c)}
-                        onMouseEnter={() => setHoveredCardId(c.id)}
-                        onMouseLeave={() => setHoveredCardId(null)}
-                        style={{
-                          background: "#ffffff",
-                          borderRadius: 12,
-                          padding: "10px 14px",
-                          marginBottom: 8,
-                          border: "1px solid #ede9e3",
-                          borderLeft: "3.5px solid #d5d0c8",
-                          boxShadow: hoveredCardId === c.id ? "0 4px 12px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.04)",
-                          cursor: "pointer",
-                          userSelect: "none",
-                          opacity: dragging === c.id ? 0.5 : 1,
-                          transform: hoveredCardId === c.id ? "translateY(-2px)" : "translateY(0)",
-                          transition: "all 0.2s ease",
-                          position: "relative",
-                          overflow: "hidden",
-                        }}
-                      >
+                              setDragging(null);
+                              setDragOver(null);
+                              setIsDragging(false);
+                            }}
+                            onClick={() => handleCardClick(c)}
+                            onMouseEnter={() => setHoveredCardId(c.id)}
+                            onMouseLeave={() => setHoveredCardId(null)}
+                            style={{
+                              ...themeCardStyle(),
+                              borderRadius: 12,
+                              padding: "10px 14px",
+                              marginBottom: 8,
+                              borderLeft: "3.5px solid #d5d0c8",
+                              boxShadow: hoveredCardId === c.id ? "0 4px 12px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.04)",
+                              cursor: "pointer",
+                              userSelect: "none",
+                              opacity: dragging === c.id ? 0.5 : 1,
+                              transform: hoveredCardId === c.id ? "translateY(-2px)" : "translateY(0)",
+                              transition: "all 0.2s ease",
+                              position: "relative",
+                              overflow: "hidden",
+                            }}
+                          >
                         {isStaleCard(c) && (
                           <div
                             style={{
@@ -1136,10 +1135,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                   style={{
                                     width: 18,
                                     height: 18,
-                                    borderRadius: 4,
+                                    borderRadius: theme.radii.small,
                                     objectFit: "contain",
-                                    border: "1px solid #e5e7eb",
-                                    background: "white",
+                                    border: `1px solid ${theme.colors.inputBorder}`,
+                                    background: theme.colors.cardBg,
                                   }}
                                   onError={(e) => {
                                     e.target.style.display = "none";
@@ -1151,7 +1150,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                     display: "none",
                                     width: 32,
                                     height: 32,
-                                    borderRadius: 6,
+                                    borderRadius: theme.radii.small,
                                     background: getCompanyColor(c.company),
                                     alignItems: "center",
                                     justifyContent: "center",
@@ -1169,11 +1168,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                   display: "flex",
                                   width: 32,
                                   height: 32,
-                                  borderRadius: 6,
-                                  background: "#f3f4f6",
+                                  borderRadius: theme.radii.small,
+                                  background: theme.colors.subtle,
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  color: "#9ca3af",
+                                  color: theme.colors.muted,
                                 }}
                               >
                                 <Globe size={18} />
@@ -1187,7 +1186,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 ...cardFont,
                                 fontSize: 11,
                                 fontWeight: 700,
-                                color: "#6b7280",
+                                color: theme.colors.muted,
                                 lineHeight: 1.3,
                                 marginBottom: 2,
                               }}>
@@ -1197,13 +1196,13 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 ...cardFont,
                                 fontSize: 13,
                                 fontWeight: 500,
-                                color: "#374151",
+                                color: theme.colors.text,
                                 lineHeight: 1.3,
                               }}>
                                 {c.title}
                               </div>
                               {c.location ? (
-                                <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
+                                <div style={{ ...cardFont, fontSize: 11, color: theme.colors.muted, marginTop: 2 }}>
                                   {c.location}
                                 </div>
                               ) : null}
@@ -1232,11 +1231,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                     onMouseEnter={() => setHoveredCardId(c.id)}
                     onMouseLeave={() => setHoveredCardId(null)}
                     style={{
-                      background: "#ffffff",
+                      ...themeCardStyle(),
                       borderRadius: 12,
                       padding: "10px 14px",
                       marginBottom: 8,
-                      border: "1px solid #ede9e3",
                       borderLeft: `4px solid ${col.color}`,
                       boxShadow: hoveredCardId === c.id ? "0 4px 12px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.04)",
                       cursor: "pointer",
@@ -1272,10 +1270,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                               style={{
                                 width: 20,
                                 height: 20,
-                                borderRadius: 6,
+                                borderRadius: theme.radii.small,
                                 objectFit: "contain",
-                                border: "1px solid #e5e7eb",
-                                background: "white",
+                                border: `1px solid ${theme.colors.inputBorder}`,
+                                background: theme.colors.cardBg,
                               }}
                               onError={(e) => {
                                 e.target.style.display = "none";
@@ -1287,7 +1285,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 display: "none",
                                 width: 32,
                                 height: 32,
-                                borderRadius: 6,
+                                borderRadius: theme.radii.small,
                                 background: getCompanyColor(c.company),
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -1305,11 +1303,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                               display: "flex",
                               width: 32,
                               height: 32,
-                              borderRadius: 6,
-                              background: "#f3f4f6",
+                              borderRadius: theme.radii.small,
+                              background: theme.colors.subtle,
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "#9ca3af",
+                              color: theme.colors.muted,
                             }}
                           >
                             <Globe size={18} />
@@ -1323,7 +1321,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           ...cardFont,
                           fontSize: 11,
                           fontWeight: 700,
-                          color: "#6b7280",
+                          color: theme.colors.muted,
                           lineHeight: 1.3,
                           marginBottom: 2,
                         }}>
@@ -1333,13 +1331,13 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           ...cardFont,
                           fontSize: 13,
                           fontWeight: 500,
-                          color: "#374151",
+                          color: theme.colors.text,
                           lineHeight: 1.3,
                         }}>
                           {c.title}
                         </div>
                         {c.location ? (
-                          <div style={{ ...cardFont, fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
+                          <div style={{ ...cardFont, fontSize: 11, color: theme.colors.muted, marginTop: 2 }}>
                             {c.location}
                           </div>
                         ) : null}
@@ -1361,7 +1359,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           right: 6,
                           border: "none",
                           cursor: "pointer",
-                          color: "#9ca3af",
+                          color: theme.colors.muted,
                           flexShrink: 0,
                           padding: 2,
                           opacity: hoveredCardId === c.id ? 1 : 0,
@@ -1413,7 +1411,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 borderRadius: 20,
                 padding: isViewMode ? 32 : 24,
                 boxShadow: "0 20px 25px rgba(0,0,0,0.15)",
-                border: "1px solid #ede9e3",
+                border: `1px solid ${theme.colors.border}`,
                 maxWidth: isViewMode ? 1200 : 450,
                 width: "90%",
                 maxHeight: "90vh",
@@ -1460,7 +1458,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 return (
                   <>
                     {/* Header with Logo */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, paddingBottom: 20, borderBottom: `3px solid ${currentCol?.color || '#e5e7eb'}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, paddingBottom: 20, borderBottom: `3px solid ${currentCol?.color || theme.colors.inputBorder}` }}>
                       <div style={{ flexShrink: 0 }}>
                         {formData.company ? (
                           <>
@@ -1472,7 +1470,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 height: 64,
                                 borderRadius: 12,
                                 objectFit: "contain",
-                                border: "1px solid #e5e7eb",
+                                border: `1px solid ${theme.colors.inputBorder}`,
                                 background: "white",
                               }}
                               onError={(e) => {
@@ -1504,10 +1502,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                               width: 64,
                               height: 64,
                               borderRadius: 12,
-                              background: "#f3f4f6",
+                              background: theme.colors.subtle,
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "#9ca3af",
+                              color: theme.colors.muted,
                             }}
                           >
                             <Globe size={32} />
@@ -1520,7 +1518,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           fontSize: 24,
                           fontWeight: 700,
                           marginBottom: 4,
-                          color: "#1a1a1a",
+                          color: theme.colors.text,
                         }}>
                           {formData.company || "Company"}
                         </h2>
@@ -1528,7 +1526,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           ...cardFont,
                           fontSize: 16,
                           fontWeight: 500,
-                          color: "#6b7280",
+                          color: theme.colors.muted,
                         }}>
                           {formData.title || "Job Title"}
                         </div>
@@ -1566,8 +1564,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           fontWeight: 600,
                           letterSpacing: "0.5px",
                           textTransform: "uppercase",
-                          color: "#9ca3af",
-                          fontFamily: "Plus Jakarta Sans",
+                          color: theme.colors.muted,
+                          fontFamily: theme.fonts.ui,
                           marginBottom: 8,
                         }}>
                           JOB DESCRIPTION
@@ -1575,18 +1573,18 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                         {formData.description ? (
                           <div style={{
                             fontSize: 14,
-                            color: "#374151",
+                            color: theme.colors.text,
                             lineHeight: 1.7,
-                            fontFamily: "Plus Jakarta Sans",
+                            fontFamily: theme.fonts.ui,
                           }}
                            dangerouslySetInnerHTML={{ __html: formData.description }}
                           />
                         ) : (
                           <div style={{
                             fontSize: 14,
-                            color: "#9ca3af",
+                            color: theme.colors.muted,
                             fontStyle: "italic",
-                            fontFamily: "Plus Jakarta Sans",
+                            fontFamily: theme.fonts.ui,
                           }}>
                             No description provided
                           </div>
@@ -1600,18 +1598,18 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                         {hasMetadata && (
                           <div style={{
                             padding: 12,
-                            background: "#f7f5f0",
-                            borderRadius: 8,
+                            background: theme.colors.bg,
+                            borderRadius: theme.radii.default,
                             marginBottom: 20,
                           }}>
                             {metadata.location && (
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                                 <span style={{ fontSize: 16 }}>📍</span>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 12, color: "#6b7280", fontFamily: "Plus Jakarta Sans" }}>
+                                  <div style={{ fontSize: 12, color: theme.colors.muted, fontFamily: theme.fonts.ui }}>
                                     Location
                                   </div>
-                                  <div style={{ fontSize: 13, fontWeight: 500, color: "#374151", fontFamily: "Plus Jakarta Sans" }}>
+                                  <div style={{ fontSize: 13, fontWeight: 500, color: theme.colors.text, fontFamily: theme.fonts.ui }}>
                                     {metadata.location}
                                   </div>
                                 </div>
@@ -1621,10 +1619,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                                 <span style={{ fontSize: 16 }}>💰</span>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 12, color: "#6b7280", fontFamily: "Plus Jakarta Sans" }}>
+                                  <div style={{ fontSize: 12, color: theme.colors.muted, fontFamily: theme.fonts.ui }}>
                                     Salary
                                   </div>
-                                  <div style={{ fontSize: 13, fontWeight: 500, color: "#374151", fontFamily: "Plus Jakarta Sans" }}>
+                                  <div style={{ fontSize: 13, fontWeight: 500, color: theme.colors.text, fontFamily: theme.fonts.ui }}>
                                     {metadata.salary}
                                   </div>
                                 </div>
@@ -1634,10 +1632,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 0 }}>
                                 <span style={{ fontSize: 16 }}>💼</span>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 12, color: "#6b7280", fontFamily: "Plus Jakarta Sans" }}>
+                                  <div style={{ fontSize: 12, color: theme.colors.muted, fontFamily: theme.fonts.ui }}>
                                     Job Type
                                   </div>
-                                  <div style={{ fontSize: 13, fontWeight: 500, color: "#374151", fontFamily: "Plus Jakarta Sans" }}>
+                                  <div style={{ fontSize: 13, fontWeight: 500, color: theme.colors.text, fontFamily: theme.fonts.ui }}>
                                     {metadata.jobType}
                                   </div>
                                 </div>
@@ -1654,18 +1652,18 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                               fontWeight: 600,
                               letterSpacing: "0.5px",
                               textTransform: "uppercase",
-                              color: "#9ca3af",
-                              fontFamily: "Plus Jakarta Sans",
+                              color: theme.colors.muted,
+                              fontFamily: theme.fonts.ui,
                               marginBottom: 8,
                             }}>
-                              TIMELINE
-                            </div>
-                            <div style={{
-                              padding: 12,
-                              background: "#f7f5f0",
-                              borderRadius: 8,
-                              marginBottom: 20,
-                            }}>
+                                TIMELINE
+                              </div>
+                              <div style={{
+                                padding: 12,
+                                background: theme.colors.bg,
+                                borderRadius: theme.radii.default,
+                                marginBottom: 20,
+                              }}>
                               {timelineEntries.map((entry) => (
                                 <div 
                                   key={entry.key}
@@ -1678,8 +1676,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 >
                                   <div style={{ 
                                     fontSize: 12, 
-                                    color: "#6b7280", 
-                                    fontFamily: "Plus Jakarta Sans" 
+                                    color: theme.colors.muted, 
+                                    fontFamily: theme.fonts.ui 
                                   }}>
                                     {entry.label}
                                   </div>
@@ -1711,8 +1709,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                             fontWeight: 600,
                             letterSpacing: "0.5px",
                             textTransform: "uppercase",
-                            color: "#9ca3af",
-                            fontFamily: "Plus Jakarta Sans",
+                            color: theme.colors.muted,
+                            fontFamily: theme.fonts.ui,
                             marginBottom: 8,
                           }}>
                             YOUR NOTES
@@ -1724,8 +1722,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                             rows={10}
                             style={{
                               width: "100%",
-                              border: "2px solid #e5e7eb",
-                              borderRadius: 12,
+                              border: `2px solid ${theme.colors.inputBorder}`,
+                              borderRadius: theme.radii.default,
                               padding: 12,
                               ...cardFont,
                               fontSize: 14,
@@ -1743,7 +1741,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                               width: "100%",
                               background: currentCol?.color || "#3b82f6",
                               border: "none",
-                              borderRadius: 6,
+                              borderRadius: theme.radii.default,
                               padding: "8px 12px",
                               color: "white",
                               ...cardFont,
@@ -1762,10 +1760,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                     <div style={{ 
                       position: "sticky",
                       bottom: 0,
-                      background: "#ffffff",
+                      background: theme.colors.cardBg,
                       paddingTop: 16,
                       marginTop: 24,
-                      borderTop: "1px solid #ede9e3",
+                      borderTop: `1px solid ${theme.colors.border}`,
                       display: "flex", 
                       gap: 12,
                     }}>
@@ -1775,7 +1773,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           flex: 1,
                           background: currentCol?.color || "#3b82f6",
                           border: "none",
-                          borderRadius: 8,
+                          borderRadius: theme.radii.default,
                           padding: "10px 16px",
                           color: "white",
                           ...cardFont,
@@ -1795,11 +1793,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                           }
                         }}
                         style={{
-                          background: "#fee2e2",
-                          border: "1px solid #fecaca",
-                          borderRadius: 8,
+                          background: theme.colors.dangerBg,
+                          border: `1px solid ${theme.colors.dangerBorder}`,
+                          borderRadius: theme.radii.default,
                           padding: "10px 16px",
-                          color: "#dc2626",
+                          color: theme.colors.dangerText,
                           ...cardFont,
                           fontWeight: 600,
                           fontSize: 14,
@@ -1811,11 +1809,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                       <button
                         onClick={() => setModalOpen(false)}
                         style={{
-                          background: "white",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: 8,
+                          background: theme.colors.cardBg,
+                          border: `1px solid ${theme.colors.inputBorder}`,
+                          borderRadius: theme.radii.default,
                           padding: "10px 16px",
-                          color: "#6b7280",
+                          color: theme.colors.muted,
                           ...cardFont,
                           fontWeight: 600,
                           fontSize: 14,
@@ -1845,7 +1843,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
               {isCreateMode && (
                 <button
                   onClick={() => { setImportingCol(modalCol); setImportUrl(""); setImportError(""); setImportData(null); }}
-                  style={{ background: "none", border: "1px solid #ede9e3", borderRadius: 8, padding: "6px 10px", fontSize: 13, color: "#6b7280", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}
+                  style={{ background: "none", border: `1px solid ${theme.colors.border}`, borderRadius: theme.radii.default, padding: "6px 10px", fontSize: 13, color: theme.colors.muted, cursor: "pointer", fontFamily: theme.fonts.ui, fontWeight: 600 }}
                 >
                   Import from URL
                 </button>
@@ -1854,7 +1852,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
 
             {/* Import panel (only visible when importing for this modal column) */}
             {isCreateMode && importingCol === modalCol && (
-              <div style={{ marginTop: 10, background: "#fff", padding: 12, borderRadius: 10, border: "1.5px solid #93c5fd" }}>
+              <div style={{ marginTop: 10, background: theme.colors.cardBg, padding: 12, borderRadius: theme.radii.default, border: "1.5px solid #93c5fd" }}>
                 {!importData ? (
                   <>
                     <input
@@ -1863,25 +1861,25 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                       onKeyDown={(e) => { if (e.key === 'Enter') handleImportFetch(); if (e.key === 'Escape') clearImportState(); }}
                       autoFocus
                       placeholder="Paste job posting URL…"
-                      style={{ width: '100%', border: 'none', outline: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, marginBottom: 8 }}
+                      style={{ width: '100%', border: 'none', outline: 'none', fontFamily: theme.fonts.ui, fontSize: 13, marginBottom: 8 }}
                     />
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={handleImportFetch} disabled={importLoading || !importUrl.trim()} style={{ background: '#2563eb', border: 'none', borderRadius: 8, padding: '6px 12px', color: 'white', fontWeight: 600, fontSize: 13, cursor: importLoading ? 'wait' : 'pointer' }}>{importLoading ? 'Fetching…' : 'Fetch'}</button>
-                      <button onClick={() => { clearImportState(); }} style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: '#6b7280', cursor: 'pointer' }}>Cancel</button>
+                      <button onClick={handleImportFetch} disabled={importLoading || !importUrl.trim()} style={{ background: '#2563eb', border: 'none', borderRadius: theme.radii.default, padding: '6px 12px', color: 'white', fontWeight: 600, fontSize: 13, cursor: importLoading ? 'wait' : 'pointer' }}>{importLoading ? 'Fetching…' : 'Fetch'}</button>
+                      <button onClick={() => { clearImportState(); }} style={{ background: 'none', border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: '6px 10px', fontSize: 13, color: theme.colors.muted, cursor: 'pointer' }}>Cancel</button>
                     </div>
                     {importError && <div style={{ fontSize: 11, color: '#dc2626', marginTop: 8 }}>{importError}</div>}
                   </>
                 ) : (
                   <>
                     <div style={{ fontSize: 12, color: '#16a34a', fontWeight: 700, marginBottom: 8 }}>✓ Extracted from {importData.source || 'page'}</div>
-                    <input value={importCompany} onChange={(e) => setImportCompany(e.target.value)} placeholder="Company" style={{ width: '100%', border: '1px solid #ede9e3', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }} />
-                    <input value={importTitle} onChange={(e) => setImportTitle(e.target.value)} placeholder="Job Title" style={{ width: '100%', border: '1px solid #ede9e3', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }} />
-                    <input value={importLocation} onChange={(e) => setImportLocation(e.target.value)} placeholder="Location" style={{ width: '100%', border: '1px solid #ede9e3', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }} />
-                    <textarea value={importDescription} onChange={(e) => setImportDescription(e.target.value)} placeholder="Description" style={{ width: '100%', border: '1px solid #ede9e3', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", minHeight: 80, resize: 'vertical', boxSizing: 'border-box', marginTop: 6 }} />
+                    <input value={importCompany} onChange={(e) => setImportCompany(e.target.value)} placeholder="Company" style={{ width: '100%', border: `1px solid ${theme.colors.border}`, borderRadius: theme.radii.default, padding: '6px 8px', fontSize: 13, fontFamily: theme.fonts.ui, marginBottom: 8 }} />
+                    <input value={importTitle} onChange={(e) => setImportTitle(e.target.value)} placeholder="Job Title" style={{ width: '100%', border: `1px solid ${theme.colors.border}`, borderRadius: theme.radii.default, padding: '6px 8px', fontSize: 13, fontFamily: theme.fonts.ui, marginBottom: 8 }} />
+                    <input value={importLocation} onChange={(e) => setImportLocation(e.target.value)} placeholder="Location" style={{ width: '100%', border: `1px solid ${theme.colors.border}`, borderRadius: theme.radii.default, padding: '6px 8px', fontSize: 13, fontFamily: theme.fonts.ui, marginBottom: 8 }} />
+                    <textarea value={importDescription} onChange={(e) => setImportDescription(e.target.value)} placeholder="Description" style={{ width: '100%', border: `1px solid ${theme.colors.border}`, borderRadius: theme.radii.default, padding: '6px 8px', fontSize: 13, fontFamily: theme.fonts.ui, minHeight: 80, resize: 'vertical', boxSizing: 'border-box', marginTop: 6 }} />
                     <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                      <button onClick={saveImportedCard} disabled={!((importCompany || '').trim() || (importTitle || '').trim())} style={{ background: '#16a34a', border: 'none', borderRadius: 8, padding: '8px 14px', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Save</button>
-                      <button onClick={() => setImportData(null)} style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 12px', fontSize: 13, color: '#6b7280', cursor: 'pointer' }}>Edit URL</button>
-                      <button onClick={() => { clearImportState(); }} style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 12px', fontSize: 13, color: '#6b7280', cursor: 'pointer' }}>Cancel</button>
+                      <button onClick={saveImportedCard} disabled={!((importCompany || '').trim() || (importTitle || '').trim())} style={{ background: '#16a34a', border: 'none', borderRadius: theme.radii.default, padding: '8px 14px', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Save</button>
+                      <button onClick={() => setImportData(null)} style={{ background: 'none', border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: '8px 12px', fontSize: 13, color: theme.colors.muted, cursor: 'pointer' }}>Edit URL</button>
+                      <button onClick={() => { clearImportState(); }} style={{ background: 'none', border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: '8px 12px', fontSize: 13, color: theme.colors.muted, cursor: 'pointer' }}>Cancel</button>
                     </div>
                   </>
                 )}
@@ -1894,7 +1892,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 ...cardFont,
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#374151",
+                color: theme.colors.text,
                 display: "block",
                 marginBottom: 4,
               }}>
@@ -1911,8 +1909,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 placeholder="e.g., Acme Corp"
                 style={{
                   width: "100%",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 8,
+                  border: `1px solid ${theme.colors.inputBorder}`,
+                  borderRadius: theme.radii.default,
                   padding: "8px 12px",
                   ...cardFont,
                   fontSize: 13,
@@ -1925,8 +1923,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                   style={{
                     margin: "4px 0 0",
                     fontSize: 12,
-                    color: "#dc2626",
-                    fontFamily: "Plus Jakarta Sans",
+                    color: theme.colors.dangerText,
+                    fontFamily: theme.fonts.ui,
                   }}
                 >
                   {validation.company}
@@ -1940,7 +1938,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 ...cardFont,
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#374151",
+                color: theme.colors.text,
                 display: "block",
                 marginBottom: 4,
               }}>
@@ -1957,8 +1955,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 placeholder="e.g., Senior Frontend Engineer"
                 style={{
                   width: "100%",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 8,
+                  border: `1px solid ${theme.colors.inputBorder}`,
+                  borderRadius: theme.radii.default,
                   padding: "8px 12px",
                   ...cardFont,
                   fontSize: 13,
@@ -1971,8 +1969,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                   style={{
                     margin: "4px 0 0",
                     fontSize: 12,
-                    color: "#dc2626",
-                    fontFamily: "Plus Jakarta Sans",
+                    color: theme.colors.dangerText,
+                    fontFamily: theme.fonts.ui,
                   }}
                 >
                   {validation.title}
@@ -1986,7 +1984,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 ...cardFont,
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#374151",
+                color: theme.colors.text,
                 display: "block",
                 marginBottom: 4,
               }}>
@@ -1998,8 +1996,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 placeholder="e.g., Portland, ME or Remote"
                 style={{
                   width: "100%",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 8,
+                  border: `1px solid ${theme.colors.inputBorder}`,
+                  borderRadius: theme.radii.default,
                   padding: "8px 12px",
                   ...cardFont,
                   fontSize: 13,
@@ -2015,7 +2013,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 ...cardFont,
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#374151",
+                color: theme.colors.text,
                 display: "block",
                 marginBottom: 4,
               }}>
@@ -2027,8 +2025,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 dangerouslySetInnerHTML={{ __html: formData.description }}
                 style={{
                   width: "100%",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 8,
+                  border: `1px solid ${theme.colors.inputBorder}`,
+                  borderRadius: theme.radii.default,
                   padding: "8px 12px",
                   ...cardFont,
                   fontSize: 13,
@@ -2038,14 +2036,14 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                   maxHeight: 300,
                   overflowY: "auto",
                   lineHeight: 1.5,
-                  background: "white",
+                  background: theme.colors.cardBg,
                 }}
                 data-placeholder="Paste job description here (formatting will be preserved)..."
               />
               <style>{`
                 [contentEditable][data-placeholder]:empty:before {
                   content: attr(data-placeholder);
-                  color: #9ca3af;
+                  color: ${theme.colors.muted};
                   pointer-events: none;
                 }
               `}</style>
@@ -2057,7 +2055,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 ...cardFont,
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#374151",
+                color: theme.colors.text,
                 display: "block",
                 marginBottom: 4,
               }}>
@@ -2069,8 +2067,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 placeholder="https://linkedin.com/jobs/..."
                 style={{
                   width: "100%",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 8,
+                  border: `1px solid ${theme.colors.inputBorder}`,
+                  borderRadius: theme.radii.default,
                   padding: "8px 12px",
                   ...cardFont,
                   fontSize: 13,
@@ -2086,7 +2084,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 ...cardFont,
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#374151",
+                color: theme.colors.text,
                 display: "block",
                 marginBottom: 4,
               }}>
@@ -2099,8 +2097,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 rows={2}
                 style={{
                   width: "100%",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 8,
+                  border: `1px solid ${theme.colors.inputBorder}`,
+                  borderRadius: theme.radii.default,
                   padding: "8px 12px",
                   ...cardFont,
                   fontSize: 13,
@@ -2117,7 +2115,7 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 ...cardFont,
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#374151",
+                color: theme.colors.text,
                 display: "block",
                 marginBottom: 8,
               }}>
@@ -2130,10 +2128,10 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                     onClick={() => setModalCol(col.id)}
                     style={{
                       padding: "6px 12px",
-                      borderRadius: 20,
-                      border: `2px solid ${modalCol === col.id ? col.color : "#e5e7eb"}`,
-                      background: modalCol === col.id ? col.bg : "white",
-                      color: modalCol === col.id ? col.color : "#6b7280",
+                      borderRadius: theme.radii.card,
+                      border: `2px solid ${modalCol === col.id ? col.color : theme.colors.inputBorder}`,
+                      background: modalCol === col.id ? col.bg : theme.colors.cardBg,
+                      color: modalCol === col.id ? col.color : theme.colors.muted,
                       ...cardFont,
                       fontSize: 12,
                       fontWeight: 600,
@@ -2153,11 +2151,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 <button
                   onClick={switchToViewMode}
                   style={{
-                    background: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
+                    background: theme.colors.cardBg,
+                    border: `1px solid ${theme.colors.inputBorder}`,
+                    borderRadius: theme.radii.default,
                     padding: "8px 16px",
-                    color: "#6b7280",
+                    color: theme.colors.muted,
                     ...cardFont,
                     fontWeight: 600,
                     fontSize: 13,
@@ -2189,11 +2187,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                   onClick={() => setModalOpen(false)}
                   style={{
                     flex: 1,
-                    background: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
+                    background: theme.colors.cardBg,
+                    border: `1px solid ${theme.colors.inputBorder}`,
+                    borderRadius: theme.radii.default,
                     padding: "8px 16px",
-                    color: "#6b7280",
+                    color: theme.colors.muted,
                     ...cardFont,
                     fontWeight: 600,
                     fontSize: 13,

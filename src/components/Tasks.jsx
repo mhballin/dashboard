@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Plus, X, Check } from "lucide-react";
+import { theme } from "../styles/theme";
 
 const lbl = {
-  fontFamily: "'Plus Jakarta Sans',sans-serif",
+  fontFamily: theme.fonts.ui,
   fontSize: 11,
   fontWeight: 700,
   letterSpacing: "0.08em",
   textTransform: "uppercase",
-  color: "#9ca3af",
+  color: theme.colors.muted,
 };
 
 export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate, onTaskDelete }) {
@@ -139,13 +140,13 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
           onClick={() => setAdding(true)}
           style={{
             background: "none",
-            border: "1px solid #e5e7eb",
-            borderRadius: 8,
+            border: `1px solid ${theme.colors.inputBorder}`,
+            borderRadius: theme.radii.default,
             padding: "4px 10px",
             fontSize: 12,
-            color: "#6b7280",
+            color: theme.colors.muted,
             cursor: "pointer",
-            fontFamily: "'Plus Jakarta Sans',sans-serif",
+            fontFamily: theme.fonts.ui,
             display: "flex",
             alignItems: "center",
             gap: 4,
@@ -184,7 +185,7 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
                 height: 22,
                 borderRadius: 6,
                 flexShrink: 0,
-                border: "2px solid #d1d5db",
+                border: `2px solid ${theme.colors.inputBorder}`,
                 background: "white",
                 display: "flex",
                 alignItems: "center",
@@ -195,10 +196,10 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
             />
             <span
               style={{
-                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontFamily: theme.fonts.ui,
                 fontSize: 13,
                 fontWeight: isTopThree ? 500 : 400,
-                color: "#1a1a1a",
+                color: theme.colors.text,
                 flex: 1,
               }}
             >
@@ -206,7 +207,7 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
             </span>
             <button
               onClick={() => remove(task.id)}
-              style={{ background: "none", border: "none", cursor: "pointer", color: "#d1d5db", display: "flex", padding: 0 }}
+              style={{ background: "none", border: "none", cursor: "pointer", color: theme.colors.border, display: "flex", padding: 0 }}
             >
               <X size={13} />
             </button>
@@ -239,9 +240,9 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
               padding: "5px 12px",
               lineHeight: "26px",
               borderRadius: 13,
-              border: "1.5px solid #d1fae5",
+              border: `1.5px solid ${theme.colors.primary}33`,
               outline: "none",
-              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontFamily: theme.fonts.ui,
               fontSize: 13,
               background: "#f0fdf4",
               resize: "none",
@@ -254,9 +255,9 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
             data-testid="tasks-add-confirm"
             onClick={addTask}
             style={{
-              background: "#16a34a",
+              background: theme.colors.primary,
               border: "none",
-              borderRadius: 8,
+              borderRadius: theme.radii.default,
               padding: "5px 12px",
               color: "white",
               cursor: "pointer",
@@ -286,7 +287,6 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
               width: "100%",
               textAlign: "left",
               gap: 8,
-              fontFamily: "'Plus Jakarta Sans',sans-serif",
             }}
           >
             <span>Done ({done.length})</span>

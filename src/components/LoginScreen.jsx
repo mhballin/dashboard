@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ErrorBoundary from "./ErrorBoundary";
+import { theme, cardStyle as themeCardStyle } from "../styles/theme";
 
 export default function LoginScreen({ onLogin, onRegister }) {
   const [email, setEmail] = useState("");
@@ -35,18 +36,14 @@ export default function LoginScreen({ onLogin, onRegister }) {
     <ErrorBoundary>
       <div style={{
         minHeight: "100vh",
-        background: "#f7f5f0",
+        background: theme.colors.bg,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontFamily: theme.fonts.ui,
       }}>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         <div style={{
-          background: "#ffffff",
-          borderRadius: 20,
-          border: "1px solid #ede9e3",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
+          ...themeCardStyle(),
           padding: "40px 36px",
           width: "100%",
           maxWidth: 380,
@@ -54,7 +51,7 @@ export default function LoginScreen({ onLogin, onRegister }) {
           <div style={{ fontWeight: 800, fontSize: 22, color: "#1a1a1a", marginBottom: 4 }}>
             Job Search HQ
           </div>
-          <div style={{ fontSize: 13, color: "#9ca3af", marginBottom: 28 }}>
+          <div style={{ fontSize: 13, color: theme.colors.muted, marginBottom: 28 }}>
             {mode === "register" ? "Create an account" : "Sign in to continue"}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -67,10 +64,10 @@ export default function LoginScreen({ onLogin, onRegister }) {
                 onKeyDown={e => e.key === "Enter" && handleSubmit(e)}
                 style={{
                   padding: "10px 14px",
-                  borderRadius: 8,
-                  border: "1px solid #e5e7eb",
+                  borderRadius: theme.radii.default,
+                  border: `1px solid ${theme.colors.inputBorder}`,
                   fontSize: 14,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: theme.fonts.ui,
                   outline: "none",
                 }}
               />
@@ -82,10 +79,10 @@ export default function LoginScreen({ onLogin, onRegister }) {
               onChange={e => setEmail(e.target.value)}
               style={{
                 padding: "10px 14px",
-                borderRadius: 8,
-                border: "1px solid #e5e7eb",
+                borderRadius: theme.radii.default,
+                border: `1px solid ${theme.colors.inputBorder}`,
                 fontSize: 14,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: theme.fonts.ui,
                 outline: "none",
               }}
             />
@@ -97,15 +94,15 @@ export default function LoginScreen({ onLogin, onRegister }) {
               onKeyDown={e => e.key === "Enter" && handleSubmit(e)}
               style={{
                 padding: "10px 14px",
-                borderRadius: 8,
-                border: "1px solid #e5e7eb",
+                borderRadius: theme.radii.default,
+                border: `1px solid ${theme.colors.inputBorder}`,
                 fontSize: 14,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: theme.fonts.ui,
                 outline: "none",
               }}
             />
             {mode === "register" && (
-              <div style={{ fontSize: 12, color: "#6b7280", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <div style={{ fontSize: 12, color: theme.colors.muted, fontFamily: theme.fonts.ui }}>
                 Password must be at least 8 characters.
               </div>
             )}
@@ -117,11 +114,11 @@ export default function LoginScreen({ onLogin, onRegister }) {
               disabled={loading}
               style={{
                 padding: "11px 0",
-                borderRadius: 8,
+                borderRadius: theme.radii.default,
                 border: "none",
-                background: loading ? "#9ca3af" : "#16a34a",
+                background: loading ? theme.colors.muted : theme.colors.primary,
                 color: "#ffffff",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: theme.fonts.ui,
                 fontWeight: 700,
                 fontSize: 14,
                 cursor: loading ? "not-allowed" : "pointer",
@@ -138,7 +135,7 @@ export default function LoginScreen({ onLogin, onRegister }) {
                 }}
                 style={{
                   fontSize: 13,
-                  color: "#6b7280",
+                  color: theme.colors.muted,
                   cursor: "pointer",
                   background: "none",
                   border: "none",

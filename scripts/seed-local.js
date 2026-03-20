@@ -1,10 +1,10 @@
-/* eslint-disable no-console */
+ 
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-const PB_URL = process.env.PB_URL || 'http://127.0.0.1:8090'
-const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL || ''
-const PB_ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD || ''
+const PB_URL = (globalThis.process?.env?.PB_URL) || 'http://127.0.0.1:8090'
+const PB_ADMIN_EMAIL = (globalThis.process?.env?.PB_ADMIN_EMAIL) || ''
+const PB_ADMIN_PASSWORD = (globalThis.process?.env?.PB_ADMIN_PASSWORD) || ''
 
 async function parseJsonResponse(res) {
   const text = await res.text()
@@ -52,7 +52,7 @@ async function ensureAndSeed(baseUrl, token, collection, records) {
 async function run() {
   const baseUrl = PB_URL.replace(/\/+$/, '')
   console.log('Seeding local PocketBase at', baseUrl)
-  const seedPath = path.resolve(process.cwd(), 'data/sampleSeed.json')
+  const seedPath = path.resolve(globalThis.process.cwd(), 'data/sampleSeed.json')
   const content = JSON.parse(await fs.readFile(seedPath, 'utf8'))
   const token = await authAdmin(baseUrl)
 
@@ -72,5 +72,5 @@ async function run() {
 
 run().catch(err => {
   console.error(err instanceof Error ? err.message : err)
-  process.exitCode = 1
+  globalThis.process.exitCode = 1
 })

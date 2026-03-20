@@ -10,6 +10,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import LoginScreen from "./components/LoginScreen";
 import AppHeader from "./components/AppHeader";
+import { theme, cardStyle as themeCardStyle } from "./styles/theme";
 import { useAppData } from "./utils/useAppData";
 
 const readAuthState = () => ({
@@ -18,12 +19,7 @@ const readAuthState = () => ({
   email: localStorage.getItem("pb_email"),
 });
 
-const cardStyle = {
-  background: "#ffffff",
-  borderRadius: 20,
-  boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
-  border: "1px solid #ede9e3",
-};
+const cardStyle = themeCardStyle();
 
 function App() {
   const [authState, setAuthState] = useState(readAuthState);
@@ -125,12 +121,12 @@ function App() {
         <div
           style={{
             minHeight: "100vh",
-            background: "#f7f5f0",
+            background: theme.colors.bg,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontFamily: "'Plus Jakarta Sans',sans-serif",
-            color: "#9ca3af",
+            fontFamily: theme.fonts.ui,
+            color: theme.colors.muted,
           }}
         >
           Loading…
@@ -141,11 +137,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div style={{ minHeight: "100vh", background: "#f7f5f0", paddingBottom: 60 }}>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
+      <div style={{ minHeight: "100vh", background: theme.colors.bg, paddingBottom: 60 }}>
 
         {/* Header */}
         <AppHeader userName={userSettings.userName} weekKey={weekKey} cumulative={cumulative} tab={tab} setTab={setTab} onLogout={handleLogout} />
@@ -153,26 +145,26 @@ function App() {
         <div style={{ padding: "24px 28px", maxWidth: tab === "applications" ? 1500 : 1100, margin: "0 auto" }}>
           {loaded && bootError && dismissedBootError !== bootError && (
             <div
-              style={{
-                background: "#fef2f2",
-                border: "1px solid #e8d4d4",
-                color: "#92400e",
+                style={{
+                background: theme.colors.dangerBg,
+                border: `1px solid ${theme.colors.dangerBorder}`,
+                color: theme.colors.dangerText,
                 padding: "12px 16px",
-                borderRadius: 8,
-                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                borderRadius: theme.radii.default,
+                fontFamily: theme.fonts.ui,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: 12,
               }}
             >
-              <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13 }}>
+              <span style={{ fontFamily: theme.fonts.ui, fontSize: 13 }}>
                 Some data failed to load. Try refreshing.
               </span>
               <button
                 onClick={() => setDismissedBootError(bootError)}
                 style={{
-                  fontFamily: "'Plus Jakarta Sans',sans-serif",
+                  fontFamily: theme.fonts.ui,
                   border: "none",
                   background: "transparent",
                   color: "#92400e",

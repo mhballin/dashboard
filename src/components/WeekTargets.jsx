@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { todayStr } from "../utils/dates";
 import { AutoResizeQuickNote } from "./AutoResizeQuickNote";
+import { theme, cardStyle as themeCardStyle } from "../styles/theme";
 
 const lbl = {
-  fontFamily: "'Plus Jakarta Sans',sans-serif",
+  fontFamily: theme.fonts.ui,
   fontSize: 11,
   fontWeight: 700,
   letterSpacing: "0.08em",
   textTransform: "uppercase",
-  color: "#9ca3af",
+  color: theme.colors.muted,
 };
 
 export function WeekTargets({
@@ -67,10 +68,10 @@ export function WeekTargets({
         <span style={lbl}>This Week</span>
         <span
           style={{
-            fontFamily: "'Plus Jakarta Sans',sans-serif",
+            fontFamily: theme.fonts.ui,
             fontSize: 13,
             fontWeight: 700,
-            color: done === targetArray.length ? "#16a34a" : "#f59e0b",
+            color: done === targetArray.length ? theme.colors.primary : theme.colors.accent,
           }}
         >
           {done}/{targetArray.length} targets
@@ -86,10 +87,10 @@ export function WeekTargets({
               <span style={{ fontSize: 14 }}>{icon}</span>
               <span
                 style={{
-                  fontFamily: "'Plus Jakarta Sans',sans-serif",
+                  fontFamily: theme.fonts.ui,
                   fontSize: 13,
                   fontWeight: 500,
-                  color: "#374151",
+                  color: theme.colors.text,
                   flex: 1,
                 }}
               >
@@ -102,14 +103,14 @@ export function WeekTargets({
                     width: 22,
                     height: 22,
                     borderRadius: 6,
-                    border: "1px solid #e5e7eb",
+                    border: `1px solid ${theme.colors.inputBorder}`,
                     background: "white",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 13,
-                    color: "#9ca3af",
+                    color: theme.colors.muted,
                   }}
                 >
                   −
@@ -119,10 +120,10 @@ export function WeekTargets({
               )}
               <span
                 style={{
-                  fontFamily: "'Plus Jakarta Sans',sans-serif",
+                  fontFamily: theme.fonts.ui,
                   fontWeight: 700,
                   fontSize: 14,
-                  color: hit ? "#16a34a" : "#1a1a1a",
+                  color: hit ? theme.colors.primary : theme.colors.text,
                   minWidth: 36,
                   textAlign: "center",
                 }}
@@ -144,14 +145,14 @@ export function WeekTargets({
                     width: 22,
                     height: 22,
                     borderRadius: 6,
-                    border: "1px solid #e5e7eb",
+                    border: `1px solid ${theme.colors.inputBorder}`,
                     background: hit ? "#dcfce7" : "white",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 13,
-                    color: hit ? "#16a34a" : "#374151",
+                    color: hit ? theme.colors.primary : theme.colors.text,
                   }}
                 >
                   +
@@ -160,12 +161,12 @@ export function WeekTargets({
                 <div style={{ width: 22, height: 22 }} />
               )}
             </div>
-            <div style={{ height: 5, background: "#f3f4f6", borderRadius: 99 }}>
+            <div style={{ height: 5, background: theme.colors.subtle, borderRadius: 99 }}>
               <div
                 style={{
                   width: `${pct}%`,
                   height: "100%",
-                  background: hit ? "#16a34a" : (METRIC_COLORS[key] || "#f59e0b"),
+                  background: hit ? theme.colors.primary : (METRIC_COLORS[key] || theme.colors.accent),
                   borderRadius: 99,
                   transition: "width 0.3s ease",
                 }}
@@ -173,79 +174,79 @@ export function WeekTargets({
             </div>
             {LOGGED_KEYS.includes(key) && promptKey === key && (
               <div
-                style={{
-                  marginTop: 10,
-                  background: "#f0fdf4",
-                  border: "1px solid #d1fae5",
-                  borderRadius: 10,
-                  padding: 12,
-                }}
-              >
-                <div style={{ ...lbl, marginBottom: 8 }}>Add a note</div>
-                <textarea
-                  rows={1}
-                  value={promptText}
-                  onChange={(e) => setPromptText(e.target.value)}
-                  onInput={(e) => {
-                    e.target.style.height = "auto";
-                    e.target.style.height = e.target.scrollHeight + "px";
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") savePrompt(key);
-                    if (e.key === "Escape") cancelPrompt();
-                  }}
-                  placeholder="What did you do?"
                   style={{
-                    width: "100%",
-                    padding: "9px 13px",
+                    marginTop: 10,
+                    background: "#f0fdf4",
+                    border: `1px solid ${theme.colors.inputBorder}`,
                     borderRadius: 10,
-                    border: "1px solid #d1fae5",
-                    outline: "none",
-                    fontFamily: "'Plus Jakarta Sans',sans-serif",
-                    fontSize: 13,
-                    background: "white",
-                    boxSizing: "border-box",
-                    resize: "none",
-                    overflow: "hidden",
-                    minHeight: 40,
-                    display: "block",
+                    padding: 12,
                   }}
-                />
-                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                  <button
-                    onClick={() => savePrompt(key)}
+                >
+                  <div style={{ ...lbl, marginBottom: 8 }}>Add a note</div>
+                  <textarea
+                    rows={1}
+                    value={promptText}
+                    onChange={(e) => setPromptText(e.target.value)}
+                    onInput={(e) => {
+                      e.target.style.height = "auto";
+                      e.target.style.height = e.target.scrollHeight + "px";
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") savePrompt(key);
+                      if (e.key === "Escape") cancelPrompt();
+                    }}
+                    placeholder="What did you do?"
                     style={{
-                      background: "#16a34a",
-                      border: "none",
+                      width: "100%",
+                      padding: "9px 13px",
                       borderRadius: 10,
-                      padding: "7px 12px",
-                      color: "white",
-                      cursor: "pointer",
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
-                      fontSize: 12,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={cancelPrompt}
-                    style={{
+                      border: `1px solid ${theme.colors.inputBorder}`,
+                      outline: "none",
+                      fontFamily: theme.fonts.ui,
+                      fontSize: 13,
                       background: "white",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: 8,
-                      padding: "7px 12px",
-                      color: "#6b7280",
-                      cursor: "pointer",
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
-                      fontSize: 12,
-                      fontWeight: 600,
+                      boxSizing: "border-box",
+                      resize: "none",
+                      overflow: "hidden",
+                      minHeight: 40,
+                      display: "block",
                     }}
-                  >
-                    Cancel
-                  </button>
+                  />
+                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                    <button
+                      onClick={() => savePrompt(key)}
+                      style={{
+                        background: theme.colors.primary,
+                        border: "none",
+                        borderRadius: 10,
+                        padding: "7px 12px",
+                        color: "white",
+                        cursor: "pointer",
+                        fontFamily: theme.fonts.ui,
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={cancelPrompt}
+                      style={{
+                        background: "white",
+                        border: `1px solid ${theme.colors.border}`,
+                        borderRadius: theme.radii.default,
+                        padding: "7px 12px",
+                        color: theme.colors.muted,
+                        cursor: "pointer",
+                        fontFamily: theme.fonts.ui,
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
             )}
           </div>
         );
@@ -282,58 +283,57 @@ export function WeekTargets({
                     : "Saved";
                   return (
                     <div
-                      key={note.id}
-                      style={{
-                        background: "#ffffff",
-                        border: "1px solid #ede9e3",
-                        borderRadius: 10,
-                        padding: "9px 11px",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                        <div
+                          key={note.id}
                           style={{
-                            fontFamily: "'Plus Jakarta Sans',sans-serif",
-                            fontSize: 13,
-                            color: "#374151",
-                            lineHeight: 1.45,
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-word",
-                            flex: 1,
+                            ...themeCardStyle(),
+                            borderRadius: 10,
+                            padding: "9px 11px",
+                            marginBottom: 8,
                           }}
                         >
-                          {note.text || note.content}
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                            <div
+                              style={{
+                                fontFamily: theme.fonts.ui,
+                                fontSize: 13,
+                                color: "#374151",
+                                lineHeight: 1.45,
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-word",
+                                flex: 1,
+                              }}
+                            >
+                              {note.text || note.content}
+                            </div>
+                            <button
+                              onClick={() => onQuickNoteDelete && onQuickNoteDelete(note)}
+                              aria-label="Delete note"
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: theme.colors.border,
+                                cursor: "pointer",
+                                fontFamily: theme.fonts.ui,
+                                fontSize: 12,
+                                lineHeight: 1,
+                                padding: 0,
+                                marginTop: 1,
+                              }}
+                            >
+                              X
+                            </button>
+                          </div>
+                          <div
+                            style={{
+                              fontFamily: theme.fonts.ui,
+                              fontSize: 11,
+                              color: theme.colors.muted,
+                              marginTop: 6,
+                            }}
+                          >
+                            {stamp}
+                          </div>
                         </div>
-                        <button
-                          onClick={() => onQuickNoteDelete && onQuickNoteDelete(note)}
-                          aria-label="Delete note"
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "#d1d5db",
-                            cursor: "pointer",
-                            fontFamily: "'Plus Jakarta Sans',sans-serif",
-                            fontSize: 12,
-                            lineHeight: 1,
-                            padding: 0,
-                            marginTop: 1,
-                          }}
-                        >
-                          X
-                        </button>
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: "'Plus Jakarta Sans',sans-serif",
-                          fontSize: 11,
-                          color: "#9ca3af",
-                          marginTop: 6,
-                        }}
-                      >
-                        {stamp}
-                      </div>
-                    </div>
                   );
                 })
               )}

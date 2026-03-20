@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { theme, cardStyle as themeCardStyle } from "../styles/theme";
 
 function Section({ title, helper, valueProp, initial, onSave }) {
   const isControlled = valueProp !== undefined;
@@ -41,8 +42,7 @@ function Section({ title, helper, valueProp, initial, onSave }) {
   };
 
   const card = {
-    background: "#ffffff",
-    border: "1px solid #ede9e3",
+    ...themeCardStyle(),
     borderRadius: 12,
     padding: "20px 22px",
     marginBottom: 16,
@@ -50,18 +50,18 @@ function Section({ title, helper, valueProp, initial, onSave }) {
   };
 
   const lbl = {
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontFamily: theme.fonts.ui,
     fontSize: 11,
     fontWeight: 700,
     letterSpacing: "0.08em",
     textTransform: "uppercase",
-    color: "#9ca3af",
+    color: theme.colors.muted,
   };
 
   const helperStyle = {
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontFamily: theme.fonts.ui,
     fontSize: 12,
-    color: "#9ca3af",
+    color: theme.colors.muted,
     marginTop: 6,
   };
 
@@ -70,18 +70,18 @@ function Section({ title, helper, valueProp, initial, onSave }) {
     color: "#374151",
     fontSize: 14,
     lineHeight: 1.7,
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontFamily: theme.fonts.ui,
     whiteSpace: "pre-wrap",
   };
 
   const btnBase = {
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontFamily: theme.fonts.ui,
     fontSize: 13,
     padding: "6px 10px",
-    borderRadius: 8,
-    border: "1px solid #e5e7eb",
+    borderRadius: theme.radii.default,
+    border: `1px solid ${theme.colors.inputBorder}`,
     background: "white",
-    color: "#6b7280",
+    color: theme.colors.muted,
     cursor: "pointer",
   };
 
@@ -90,7 +90,7 @@ function Section({ title, helper, valueProp, initial, onSave }) {
     fontSize: 13,
     background: "none",
     border: "none",
-    color: "#6b7280",
+    color: theme.colors.muted,
     cursor: "pointer",
     padding: 6,
   };
@@ -125,10 +125,10 @@ function Section({ title, helper, valueProp, initial, onSave }) {
               style={{
                 width: "100%",
                 minHeight: 120,
-                border: "1px solid #e5e7eb",
+                border: `1px solid ${theme.colors.inputBorder}`,
                 borderRadius: 10,
                 padding: 12,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: theme.fonts.ui,
                 fontSize: 14,
                 lineHeight: 1.7,
                 color: "#374151",
@@ -141,8 +141,8 @@ function Section({ title, helper, valueProp, initial, onSave }) {
               <button
                 onClick={handleSave}
                 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  background: "#16a34a",
+                  fontFamily: theme.fonts.ui,
+                  background: theme.colors.primary,
                   color: "white",
                   border: "none",
                   borderRadius: 10,
@@ -156,10 +156,10 @@ function Section({ title, helper, valueProp, initial, onSave }) {
               <button
                 onClick={handleCancel}
                 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: theme.fonts.ui,
                   background: "none",
                   border: "none",
-                  color: "#6b7280",
+                  color: theme.colors.muted,
                   padding: "8px 12px",
                   cursor: "pointer",
                 }}

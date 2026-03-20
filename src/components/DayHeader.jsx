@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { todayStr } from "../utils/dates";
+import { theme } from "../styles/theme";
 
 const WMO = {
   0: "☀️ Sunny",
@@ -93,24 +94,24 @@ export function DayHeader({ streak, lastActive, tempUnit = "F", locationOverride
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontFamily: theme.fonts.ui,
       }}
     >
       <div>
         <div style={{ marginBottom: 4 }}>
-          <span style={{ color: "#9ca3af", fontWeight: 400, fontSize: 24 }}>
+          <span style={{ color: theme.colors.muted, fontWeight: 400, fontSize: 24 }}>
             Today is{" "}
           </span>
-          <span style={{ color: "#1a1a1a", fontWeight: 800, fontSize: 24 }}>
+          <span style={{ color: theme.colors.text, fontWeight: 800, fontSize: 24 }}>
             {dateStr}
           </span>
         </div>
         {weather && (
-          <div style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: theme.colors.text, fontFamily: theme.fonts.ui }}>
             <span style={{ fontFamily: "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif" }}>{weather.emoji}</span>{" "}
             {tempUnit === "C" ? Math.round((weather.temp - 32) * (5 / 9)) : weather.temp}°{tempUnit}{" "}
             {location && (
-              <span style={{ color: "#9ca3af", fontWeight: 400 }}>
+              <span style={{ color: theme.colors.muted, fontWeight: 400 }}>
                 in {location}
               </span>
             )}
@@ -118,28 +119,28 @@ export function DayHeader({ streak, lastActive, tempUnit = "F", locationOverride
         )}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div
-          style={{
-            width: 52,
-            height: 52,
-            borderRadius: 15,
-            background: streak > 0 ? "linear-gradient(135deg,#fef3c7,#fde68a)" : "#f3f4f6",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 24,
-            boxShadow: streak > 0 ? "0 2px 10px rgba(245,158,11,0.3)" : "none",
-            flexShrink: 0,
-          }}
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 15,
+              background: streak > 0 ? theme.gradients.streak(theme.colors.streakGradientStart, theme.colors.streakGradientEnd) : theme.colors.subtle,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 24,
+              boxShadow: streak > 0 ? theme.shadows.streak : "none",
+              flexShrink: 0,
+            }}
         >
           🔥
         </div>
         <div>
           <div
-            style={{
+              style={{
               fontSize: 22,
               fontWeight: 800,
-              color: streak > 0 ? "#d97706" : "#9ca3af",
+              color: streak > 0 ? theme.colors.accent : theme.colors.muted,
               lineHeight: 1,
             }}
           >

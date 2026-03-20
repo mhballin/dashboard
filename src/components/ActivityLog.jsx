@@ -1,43 +1,44 @@
 import { parseDateToLocalMidnight, dateToMillis } from "../utils/dates";
+import { theme, cardStyle as themeCardStyle } from "../styles/theme";
 
 const TYPE_META = {
   meetings: {
     label: "Meeting",
     background: "#ccfbf1",
-    color: "#0d9488",
+    color: theme.colors.text,
   },
   outreach: {
     label: "Outreach",
     background: "#fce7f3",
-    color: "#be185d",
+    color: theme.colors.text,
   },
   applied: {
     label: "Applied",
     background: "#dbeafe",
-    color: "#1d4ed8",
+    color: theme.colors.text,
   },
   interviewing: {
     label: "Interviewing",
-    background: "#fef3c7",
-    color: "#d97706",
+    background: theme.colors.streakGradientStart,
+    color: theme.colors.accent,
   },
   closed: {
     label: "Closed",
     background: "#f9fafb",
-    color: "#6b7280",
+    color: theme.colors.muted,
   },
   note: {
     label: "Note",
-    background: "#f7f5f0",
-    color: "#6b7280",
+    background: theme.colors.bg,
+    color: theme.colors.muted,
   },
 };
 
 const dateLabelStyle = {
-  fontFamily: "'Plus Jakarta Sans',sans-serif",
+  fontFamily: theme.fonts.ui,
   fontSize: 12,
   fontWeight: 700,
-  color: "#9ca3af",
+  color: theme.colors.muted,
   textTransform: "uppercase",
   letterSpacing: "0.08em",
   marginBottom: 8,
@@ -69,10 +70,10 @@ export function ActivityLog({ entries = [], onDelete }) {
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "0 4px" }}>
       <div
         style={{
-          fontFamily: "'Plus Jakarta Sans',sans-serif",
+          fontFamily: theme.fonts.ui,
           fontWeight: 800,
           fontSize: 18,
-          color: "#1a1a1a",
+          color: theme.colors.text,
           marginBottom: 20,
         }}
       >
@@ -87,9 +88,9 @@ export function ActivityLog({ entries = [], onDelete }) {
             alignItems: "center",
             justifyContent: "center",
             textAlign: "center",
-            fontFamily: "'Plus Jakarta Sans',sans-serif",
+            fontFamily: theme.fonts.ui,
             fontSize: 13,
-            color: "#9ca3af",
+            color: theme.colors.muted,
             padding: "0 14px",
           }}
         >
@@ -118,9 +119,8 @@ export function ActivityLog({ entries = [], onDelete }) {
                 <div
                   key={entry.id}
                   style={{
-                    background: "white",
+                    ...themeCardStyle(),
                     borderRadius: 12,
-                    border: "1px solid #ede9e3",
                     padding: "14px 18px",
                     marginBottom: 6,
                     display: "flex",
@@ -138,7 +138,7 @@ export function ActivityLog({ entries = [], onDelete }) {
                       background: "none",
                       border: "none",
                       cursor: "pointer",
-                      color: "#9ca3af",
+                      color: theme.colors.muted,
                       fontSize: 16,
                       lineHeight: 1,
                     }}
@@ -147,7 +147,7 @@ export function ActivityLog({ entries = [], onDelete }) {
                   </button>
                   <div
                     style={{
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
+                      fontFamily: theme.fonts.ui,
                       fontSize: 11,
                       fontWeight: 700,
                       padding: "3px 9px",
@@ -162,7 +162,7 @@ export function ActivityLog({ entries = [], onDelete }) {
                   </div>
                   <div
                     style={{
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
+                      fontFamily: theme.fonts.ui,
                       fontSize: 13,
                       color: "#374151",
                       lineHeight: 1.6,

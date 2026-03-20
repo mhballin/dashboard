@@ -1,4 +1,5 @@
 import React from "react";
+import { theme } from "../styles/theme";
 
 const TABS = [
   { id: "dashboard", label: "Dashboard" },
@@ -11,7 +12,7 @@ const TABS = [
 
 export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, onLogout }) {
   return (
-    <div style={{ background: "white", borderBottom: "1px solid #ede9e3", padding: "0 28px" }}>
+    <div style={{ background: theme.colors.cardBg, borderBottom: `1px solid ${theme.colors.border}`, padding: "0 28px" }}>
       <div
         style={{
           display: "flex",
@@ -22,10 +23,10 @@ export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, 
         }}
       >
         <div>
-          <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 20, color: "#1a1a1a" }}>
+          <div style={{ fontFamily: theme.fonts.ui, fontWeight: 800, fontSize: 20, color: theme.colors.text }}>
             Job Search HQ
           </div>
-          <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 12, color: "#9ca3af", marginTop: 2 }}>
+          <div style={{ fontFamily: theme.fonts.ui, fontSize: 12, color: theme.colors.muted, marginTop: 2 }}>
             {userName} · {weekKey}
           </div>
         </div>
@@ -37,12 +38,12 @@ export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, 
           ].map(({ icon, val, l }) => (
             <div key={l} style={{ textAlign: "center", padding: "6px 14px", background: "#f7f5f0", borderRadius: 10 }}>
               <div
-                style={{
-                  fontFamily: "'Plus Jakarta Sans',sans-serif",
-                  fontSize: 16,
-                  fontWeight: 800,
-                  color: "#1a1a1a",
-                }}
+                  style={{
+                    fontFamily: theme.fonts.ui,
+                    fontSize: 16,
+                    fontWeight: 800,
+                    color: theme.colors.text,
+                  }}
               >
                 {icon} {val}
               </div>
@@ -62,15 +63,15 @@ export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, 
           ))}
           <button
             onClick={onLogout}
-            style={{
+                style={{
               padding: "6px 14px",
-              borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              borderRadius: theme.radii.default,
+              border: `1px solid ${theme.colors.inputBorder}`,
               background: "transparent",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: theme.fonts.ui,
               fontWeight: 600,
               fontSize: 12,
-              color: "#9ca3af",
+              color: theme.colors.muted,
               cursor: "pointer",
             }}
           >
@@ -87,12 +88,12 @@ export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, 
               background: "none",
               border: "none",
               padding: "10px 18px",
-              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontFamily: theme.fonts.ui,
               fontWeight: 600,
               fontSize: 14,
-              color: tab === t.id ? "#1a1a1a" : "#9ca3af",
+              color: tab === t.id ? theme.colors.text : theme.colors.muted,
               cursor: "pointer",
-              borderBottom: `2.5px solid ${tab === t.id ? "#16a34a" : "transparent"}`,
+              borderBottom: `2.5px solid ${tab === t.id ? theme.colors.primary : "transparent"}`,
               transition: "all 0.15s",
               marginBottom: -1,
             }}

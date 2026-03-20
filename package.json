@@ -4,14 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:app": "npm --prefix server run dev & npm run dev",
+    "dev": "concurrently --names \"VITE,API,PB\" -c \"green,blue,yellow\" --kill-others \"npm:dev:vite\" \"npm:dev:api\" \"npm:dev:pb\"",
+    "dev:vite": "vite",
+    "dev:api": "npm --prefix server run dev",
+    "dev:pb": "./pocketbase/pocketbase serve --http=127.0.0.1:8090 --dir=./pocketbase/pb_data",
+    "dev:frontend": "vite",
+    "dev:no-pb": "concurrently --names \"VITE,API\" -c \"green,blue\" --kill-others \"npm:dev:vite\" \"npm:dev:api\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "migrate": "bash scripts/migrate.sh",
     "schema:export": "node scripts/export-pb-schema.js",
-    "seed:local": "node scripts/seed-local.js"
+    "seed:local": "node scripts/seed-local.js",
+    "prepare": "husky"
   },
   "dependencies": {
     "lucide-react": "^0.576.0",
@@ -23,11 +28,19 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "vite": "^8.0.0-beta.13"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "eslint --fix --max-warnings=0"
+    ]
   },
   "license": "MIT",
   "overrides": {

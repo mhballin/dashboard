@@ -98,6 +98,7 @@ export function logout() {
   localStorage.removeItem("pb_email");
 }
 
+// TODO: unused export — confirm or remove
 export function isLoggedIn() {
   return !!getToken();
 }

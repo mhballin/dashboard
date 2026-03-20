@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { Tasks } from "./components/Tasks";
-import { WeekTargets } from "./components/WeekTargets";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { JobBoardsTab } from "./components/JobBoardsTab";
 import { ActivityLog } from "./components/ActivityLog";
@@ -67,7 +65,6 @@ function App() {
     addLog,
     handleFullExport,
     handleFullImport,
-    handleBulkImportCards,
     handleCardCreate,
     handleCardUpdate,
     handleCardDelete,
@@ -266,7 +263,6 @@ function App() {
                 setNotesTtlHours={setNotesTtlHours}
                 weeklyEmailOptIn={weeklyEmailOptIn}
                 setWeeklyEmailOptIn={setWeeklyEmailOptIn}
-                handleBulkImportCards={handleBulkImportCards}
                 handleFullExport={handleFullExport}
                 handleFullImport={handleFullImport}
                 auth={authState}

@@ -16,6 +16,7 @@ export function todayStr() {
   ).padStart(2, '0')}`;
 }
 
+// TODO: unused export — confirm or remove
 // Get current local timestamp (YYYY-MM-DD HH:MM)
 export function nowTimestamp() {
   const d = new Date();

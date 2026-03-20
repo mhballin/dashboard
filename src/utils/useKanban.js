@@ -4,6 +4,7 @@ import { toDateMillis } from "./appDataUtils";
 import { THREE_DAYS_MS, CRM_STALE_THRESHOLD_DAYS, PRIORITY_REASON_SCORES } from "./appDataUtils";
 import { parseDateToLocalMidnight } from "./dates";
 
+// TODO: unused export — confirm or remove
 export function useKanban({ weekKey } = {}) {
   const [kanban, setKanban] = useState([]);
   const pendingCreates = useRef(new Map());
@@ -188,4 +189,5 @@ export function useKanban({ weekKey } = {}) {
   };
 }
 
+// TODO: unused export — confirm or remove
 export default useKanban;

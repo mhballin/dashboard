@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { getTasks, createTask, updateTask, deleteTask } from "./pb";
 import { DEFAULT_TASKS } from "../data/defaultContent";
 
+// TODO: unused export — confirm or remove
 export function useTasks({ isAuthReady, tasksAddRef } = {}) {
   const [tasks, setTasks] = useState(DEFAULT_TASKS);
   const pendingCreates = useRef(new Map());
@@ -89,4 +90,5 @@ export function useTasks({ isAuthReady, tasksAddRef } = {}) {
   };
 }
 
+// TODO: unused export — confirm or remove
 export default useTasks;

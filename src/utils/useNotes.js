@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { getNotes, createNote, deleteNote, createActivityEntry } from "./pb";
 import { todayStr } from "./dates";
 
+// TODO: unused export — confirm or remove
 export function useNotes({ isAuthReady, notesAddRef, notesTtlHoursInitial = 24, onAddActivity } = {}) {
   const [notes, setNotes] = useState([]);
   const [notesTtlHours, setNotesTtlHours] = useState(notesTtlHoursInitial);
@@ -110,4 +111,5 @@ export function useNotes({ isAuthReady, notesAddRef, notesTtlHoursInitial = 24, 
   };
 }
 
+// TODO: unused export — confirm or remove
 export default useNotes;

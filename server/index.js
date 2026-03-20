@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { initWeeklyRecapScheduler } from './email/weeklyRecapJob.js'
+import { scrapeJobPosting } from './scraper.js'
 
 const PB_URL = (globalThis.process?.env?.PB_URL || '').replace(/\/+$/, '')
 const PORT = globalThis.process?.env?.PORT || 3001
@@ -115,6 +116,29 @@ app.post('/auth/register', async (req, res) => {
   } catch (e) {
     logError(req, 'auth-register-failure', e)
     return sendUpstreamError(res, req.requestId)
+  }
+})
+
+// POST /scrape - return structured job posting data for a URL
+app.post('/scrape', async (req, res) => {
+  try {
+    const auth = req.headers.authorization
+    if (!auth) return res.status(401).json({ error: 'Unauthorized' })
+
+    const { url } = req.body || {}
+    if (!url || typeof url !== 'string') return res.status(400).json({ error: 'URL is required' })
+
+    try {
+      const result = await scrapeJobPosting(url)
+      console.log(`[${req.requestId}] [SCRAPE] ${url} → ${result.source}`)
+      return res.status(200).json(result)
+    } catch (e) {
+      console.error(`[${req.requestId}] scrape-failure`, e)
+      return res.status(500).json({ error: 'Scraping failed' })
+    }
+  } catch (e) {
+    console.error('scrape-route-failure', e)
+    return res.status(500).json({ error: 'Scraping failed' })
   }
 })
 

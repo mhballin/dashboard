@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { Plus, ExternalLink, Trash2, Globe } from "lucide-react";
 import { KANBAN_COLS } from "../data/kanbanCols";
 import { todayStr } from "../utils/dates";
+import { getAuthSnapshot } from "../utils/pb";
 
 const lbl = {
   fontFamily: "'Plus Jakarta Sans',sans-serif",
@@ -291,6 +292,17 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
   const [hoveredCardId, setHoveredCardId] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Import-from-URL state
+  const [importingCol, setImportingCol] = useState(null);
+  const [importUrl, setImportUrl] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState("");
+  const [importData, setImportData] = useState(null);
+  const [importCompany, setImportCompany] = useState("");
+  const [importTitle, setImportTitle] = useState("");
+  const [importDescription, setImportDescription] = useState("");
+  const [importLocation, setImportLocation] = useState("");
+
   const getDomainFromUrl = (url) => {
     if (!url) return null;
     try {
@@ -357,6 +369,110 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
       notes: "",
     });
     setModalOpen(true);
+    clearImportState();
+  };
+
+  const clearImportState = () => {
+    setImportingCol(null);
+    setImportUrl("");
+    setImportLoading(false);
+    setImportError("");
+    setImportData(null);
+    setImportCompany("");
+    setImportTitle("");
+    setImportDescription("");
+    setImportLocation("");
+  };
+
+  const handleImportFetch = async () => {
+    setImportLoading(true);
+    setImportError("");
+    try {
+      const CONFIGURED_BASE_URL = (import.meta.env.VITE_API_URL || '').trim();
+      const API_BASE = CONFIGURED_BASE_URL.replace(/\/+$/, '');
+      const endpoint = API_BASE ? `${API_BASE}/scrape` : '/scrape';
+      const token = (getAuthSnapshot && getAuthSnapshot().token) || localStorage.getItem('pb_token') || "";
+
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ url: importUrl.trim() }),
+      });
+
+      // Parse response body (gracefully handle non-JSON or text errors)
+      const raw = await resp.text().catch(() => null);
+      if (!raw) {
+        setImportError('Invalid response from server');
+        setImportData(null);
+        return;
+      }
+
+      let json = null;
+      try {
+        json = JSON.parse(raw);
+      } catch {
+        // server returned plain text or HTML; surface a short excerpt
+        const excerpt = String(raw).trim().slice(0, 500);
+        setImportError(excerpt || 'Invalid response from server');
+        setImportData(null);
+        return;
+      }
+
+      // If server responded with non-OK status, prefer any error message it provided
+      if (!resp.ok) {
+        setImportError(json.error || `Server returned HTTP ${resp.status}`);
+        setImportData(null);
+        return;
+      }
+
+      if (json.success) {
+        const d = json.data || {};
+        setImportData(d);
+        setImportCompany(d.company || "");
+        setImportTitle(d.title || "");
+        setImportDescription(d.description || "");
+        setImportLocation(d.location || "");
+        setImportError("");
+      } else {
+        setImportError(json.error || 'Could not extract job data');
+        setImportData(null);
+      }
+    } catch {
+      setImportError('Network error — is the server running?');
+      setImportData(null);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const saveImportedCard = () => {
+    const company = (importCompany || '').trim();
+    const title = (importTitle || '').trim();
+    if (!company && !title) return;
+
+    const today = todayStr();
+    const dates = { saved: today, applied: null, interviewing: null, closed: null };
+    const newCard = {
+      id: Date.now(),
+      col: importingCol,
+      company,
+      title,
+      location: (importLocation || '').trim(),
+      description: (importDescription || '').trim(),
+      url: (importUrl || '').trim(),
+      notes: "",
+      added: today,
+      dates,
+      isHighPriority: false,
+      priorityOrder: Date.now(),
+      isStarred: false,
+    };
+
+    setCards((p) => [...p, newCard]);
+    onCardCreate?.(newCard);
+    clearImportState();
+    setModalOpen(false);
+    setModalCol(null);
   };
 
   const openEditModal = (card) => {
@@ -631,10 +747,11 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                 >
                   <Plus size={15} />
                 </button>
+                {/* Import button removed from column header — now available in the Add modal */}
               </div>
 
               {/* Job Cards - Different rendering for saved column */}
-              {col.id === "saved" ? (
+                {col.id === "saved" ? (
                 <>
                   {/* Priority Label */}
                   <div style={{ fontSize: 10, color: "#a09a8f", letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "Plus Jakarta Sans", marginBottom: 8, marginLeft: 4 }}>
@@ -828,6 +945,8 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
                                 <Globe size={18} />
                               </div>
                             )}
+
+                          {/* Column-level import UI removed (import now in Add modal) */}
                           </div>
                           
                             {/* Company Name and Job Title Stack */}
@@ -1713,15 +1832,61 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
               {/* CREATE MODE or EDIT MODE - Form Layout */}
               {(isCreateMode || isEditMode) && (
                 <>
-            <h2 style={{
-              ...cardFont,
-              fontSize: 18,
-              fontWeight: 700,
-              marginBottom: 16,
-              color: "#1a1a1a",
-            }}>
-              {isEditMode ? "Edit Job Details" : "Add Job"}
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <h2 style={{
+                ...cardFont,
+                fontSize: 18,
+                fontWeight: 700,
+                marginBottom: 0,
+                color: "#1a1a1a",
+              }}>
+                {isEditMode ? "Edit Job Details" : "Add Job"}
+              </h2>
+              {isCreateMode && (
+                <button
+                  onClick={() => { setImportingCol(modalCol); setImportUrl(""); setImportError(""); setImportData(null); }}
+                  style={{ background: "none", border: "1px solid #ede9e3", borderRadius: 8, padding: "6px 10px", fontSize: 13, color: "#6b7280", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}
+                >
+                  Import from URL
+                </button>
+              )}
+            </div>
+
+            {/* Import panel (only visible when importing for this modal column) */}
+            {isCreateMode && importingCol === modalCol && (
+              <div style={{ marginTop: 10, background: "#fff", padding: 12, borderRadius: 10, border: "1.5px solid #93c5fd" }}>
+                {!importData ? (
+                  <>
+                    <input
+                      value={importUrl}
+                      onChange={(e) => setImportUrl(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleImportFetch(); if (e.key === 'Escape') clearImportState(); }}
+                      autoFocus
+                      placeholder="Paste job posting URL…"
+                      style={{ width: '100%', border: 'none', outline: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, marginBottom: 8 }}
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={handleImportFetch} disabled={importLoading || !importUrl.trim()} style={{ background: '#2563eb', border: 'none', borderRadius: 8, padding: '6px 12px', color: 'white', fontWeight: 600, fontSize: 13, cursor: importLoading ? 'wait' : 'pointer' }}>{importLoading ? 'Fetching…' : 'Fetch'}</button>
+                      <button onClick={() => { clearImportState(); }} style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: '#6b7280', cursor: 'pointer' }}>Cancel</button>
+                    </div>
+                    {importError && <div style={{ fontSize: 11, color: '#dc2626', marginTop: 8 }}>{importError}</div>}
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 12, color: '#16a34a', fontWeight: 700, marginBottom: 8 }}>✓ Extracted from {importData.source || 'page'}</div>
+                    <input value={importCompany} onChange={(e) => setImportCompany(e.target.value)} placeholder="Company" style={{ width: '100%', border: '1px solid #ede9e3', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }} />
+                    <input value={importTitle} onChange={(e) => setImportTitle(e.target.value)} placeholder="Job Title" style={{ width: '100%', border: '1px solid #ede9e3', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }} />
+                    <input value={importLocation} onChange={(e) => setImportLocation(e.target.value)} placeholder="Location" style={{ width: '100%', border: '1px solid #ede9e3', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }} />
+                    <textarea value={importDescription} onChange={(e) => setImportDescription(e.target.value)} placeholder="Description" style={{ width: '100%', border: '1px solid #ede9e3', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", minHeight: 80, resize: 'vertical', boxSizing: 'border-box', marginTop: 6 }} />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                      <button onClick={saveImportedCard} disabled={!((importCompany || '').trim() || (importTitle || '').trim())} style={{ background: '#16a34a', border: 'none', borderRadius: 8, padding: '8px 14px', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Save</button>
+                      <button onClick={() => setImportData(null)} style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 12px', fontSize: 13, color: '#6b7280', cursor: 'pointer' }}>Edit URL</button>
+                      <button onClick={() => { clearImportState(); }} style={{ background: 'none', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 12px', fontSize: 13, color: '#6b7280', cursor: 'pointer' }}>Cancel</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Company */}
             <div style={{ marginBottom: 16 }}>

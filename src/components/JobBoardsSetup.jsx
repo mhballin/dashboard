@@ -39,12 +39,14 @@ export function JobBoardsSetup({ onComplete }) {
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    padding: '12px 14px',
+    padding: '12px 18px',
     marginBottom: theme.space[2],
     borderRadius: theme.radii.default,
     border: `1px solid ${theme.colors.border}`,
     background: theme.colors.cardBg,
     color: theme.colors.text,
+    position: 'relative',
+    overflow: 'hidden',
     cursor: 'pointer',
     transition: 'box-shadow 150ms ease, transform 120ms ease',
     outline: 'none',
@@ -53,15 +55,20 @@ export function JobBoardsSetup({ onComplete }) {
   function getRoleRowStyle(role, idx) {
     const selected = selectedRole === role.id;
     const isHovered = hovered === idx;
+    const inset = selected ? 'inset 6px 0 0 rgba(22,163,74,0.12)' : '';
+    const hoverShadow = isHovered ? '0 6px 18px rgba(15,23,42,0.06)' : 'none';
+    const boxShadow = inset && hoverShadow !== 'none' ? `${inset}, ${hoverShadow}` : (inset || hoverShadow);
+
     return {
       ...roleRowBase,
       background: selected ? '#f0fdf4' : theme.colors.cardBg,
       border: selected ? `2px solid ${theme.colors.primary}` : `1px solid ${theme.colors.border}`,
+      // remove left border when selected to avoid double-border with the inset accent
+      borderLeft: selected ? 'none' : `1px solid ${theme.colors.border}`,
       color: selected ? theme.colors.primary : theme.colors.text,
-      boxShadow: isHovered ? '0 6px 18px rgba(15,23,42,0.06)' : 'none',
+      boxShadow,
       transform: isHovered ? 'translateY(-2px)' : 'none',
-      borderLeft: selected ? '6px solid rgba(22,163,74,0.12)' : '1px solid transparent',
-      paddingLeft: selected ? 12 : 14,
+      // Keep padding constant to avoid layout shifts
     };
   }
 
@@ -139,9 +146,13 @@ export function JobBoardsSetup({ onComplete }) {
               onMouseLeave={() => setHovered(null)}
               style={getRoleRowStyle(role, idx)}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: 2, background: selectedRole === role.id ? theme.colors.primary : 'transparent', border: selectedRole === role.id ? 'none' : '1px solid transparent' }} />
-                  <div style={{ fontSize: 15, fontFamily: theme.fonts.ui }}>{role.label}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
+                <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'transparent', border: `1.5px solid ${selectedRole === role.id ? theme.colors.primary : theme.colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {selectedRole === role.id && (
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.colors.primary }} />
+                  )}
+                </div>
+                <div style={{ fontSize: 15, fontFamily: theme.fonts.ui }}>{role.label}</div>
               </div>
             </div>
           );

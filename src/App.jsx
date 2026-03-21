@@ -79,6 +79,8 @@ function App() {
     handleSetProfileAsk,
     handleSetProfileLookingFor,
     handleSetProfileProofPoints,
+    jobBoardsInitialized,
+    handleJobBoardsSetupComplete,
     weeklyApplications,
     weekKey,
     handleDeleteActivity,
@@ -236,6 +238,8 @@ function App() {
               onSetSearchStrings={handleSetSearchStrings}
               keywords={keywords}
               onSetKeywords={handleSetKeywords}
+              isSetupComplete={jobBoardsInitialized}
+              onSetupComplete={handleJobBoardsSetupComplete}
             />
           )}
 

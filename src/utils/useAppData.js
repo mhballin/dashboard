@@ -116,6 +116,7 @@ export function useAppData(tab, authState) {
   const [keywords, setKeywords] = useState(
     Object.entries(KEYWORDS || {}).map(([section, words]) => ({ section, keywords: words }))
   );
+  const [jobBoardsInitialized, setJobBoardsInitialized] = useState(false);
   const [profileAsk, setProfileAsk] = useState("");
   const [profileLookingFor, setProfileLookingFor] = useState("");
   const [profileProofPoints, setProfileProofPoints] = useState("");
@@ -170,6 +171,7 @@ export function useAppData(tab, authState) {
           storedProfileLookingFor,
           storedProfileProof,
           storedWeeklyEmailOptIn,
+          storedJobBoardsInit,
         ] = await Promise.all([
           getSetting("job-dashboard-boards"),
           getSetting("job-dashboard-search-strings"),
@@ -178,6 +180,7 @@ export function useAppData(tab, authState) {
           getSetting("profile-looking"),
           getSetting("profile-proof"),
           getSetting("weekly_email_opt_in"),
+          getSetting("job-boards-initialized"),
         ]);
 
         if (cancelled) return;
@@ -192,6 +195,7 @@ export function useAppData(tab, authState) {
         setProfileLookingFor(typeof storedProfileLookingFor === "string" ? storedProfileLookingFor : "");
         setProfileProofPoints(typeof storedProfileProof === "string" ? storedProfileProof : "");
         setWeeklyEmailOptIn(storedWeeklyEmailOptIn === null ? true : Boolean(storedWeeklyEmailOptIn));
+        setJobBoardsInitialized(!!storedJobBoardsInit);
 
         const pbNotes = await getNotes();
 
@@ -847,6 +851,7 @@ export function useAppData(tab, authState) {
           ? settingsToRestore["job-dashboard-keywords"]
           : Object.entries(KEYWORDS || {}).map(([section, words]) => ({ section, keywords: words }))
       );
+      setJobBoardsInitialized(!!settingsToRestore["job-boards-initialized"]);
       setProfileAsk(typeof settingsToRestore["profile-ask"] === "string" ? settingsToRestore["profile-ask"] : "");
       setProfileLookingFor(typeof settingsToRestore["profile-looking"] === "string" ? settingsToRestore["profile-looking"] : "");
       setProfileProofPoints(typeof settingsToRestore["profile-proof"] === "string" ? settingsToRestore["profile-proof"] : "");
@@ -1047,6 +1052,45 @@ export function useAppData(tab, authState) {
     }
   };
 
+  const handleJobBoardsSetupComplete = async (roleId) => {
+    if (roleId === "__reset__") {
+      setJobBoardsInitialized(false);
+      try {
+        await setSetting("job-boards-initialized", false);
+      } catch (err) {
+        console.error("Failed to reset job boards setup:", err);
+      }
+      return;
+    }
+
+    try {
+      const { ROLE_TEMPLATES } = await import("../data/roleTemplates");
+      const template = ROLE_TEMPLATES?.[roleId];
+      if (template) {
+        await handleSetJobBoards(template.jobBoards || []);
+        await handleSetSearchStrings(template.searchStrings || []);
+        await handleSetKeywords(template.keywords || []);
+      } else {
+        await handleSetJobBoards([]);
+        await handleSetSearchStrings([]);
+        await handleSetKeywords([]);
+      }
+    } catch (err) {
+      console.error("Failed to apply role template:", err);
+      // fallback to empty
+      await handleSetJobBoards([]);
+      await handleSetSearchStrings([]);
+      await handleSetKeywords([]);
+    }
+
+    setJobBoardsInitialized(true);
+    try {
+      await setSetting("job-boards-initialized", true);
+    } catch (err) {
+      console.error("Failed to save job boards setup flag:", err);
+    }
+  };
+
   const handleSetProfileAsk = async (text) => {
     setProfileAsk(text);
     try {
@@ -1134,6 +1178,8 @@ export function useAppData(tab, authState) {
     handleSetJobBoards,
     handleSetSearchStrings,
     handleSetKeywords,
+    jobBoardsInitialized,
+    handleJobBoardsSetupComplete,
     handleSetProfileAsk,
     handleSetProfileLookingFor,
     handleSetProfileProofPoints,

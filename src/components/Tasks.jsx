@@ -99,6 +99,41 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
     dragId.current = taskId;
   };
 
+  const renderTaskText = (text) => {
+    if (!text) return null;
+    const urlRegex = /https?:\/\/[^\s]+/g;
+    const parts = [];
+    let lastIndex = 0;
+    let m;
+    while ((m = urlRegex.exec(text))) {
+      if (m.index > lastIndex) parts.push({ type: "text", text: text.slice(lastIndex, m.index) });
+      parts.push({ type: "link", text: m[0] });
+      lastIndex = urlRegex.lastIndex;
+    }
+    if (lastIndex < text.length) parts.push({ type: "text", text: text.slice(lastIndex) });
+
+    return parts.map((p, i) => {
+      if (p.type === "link") {
+        return (
+          <a
+            key={`link-${i}`}
+            href={p.text}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: theme.colors.primary, textDecoration: "underline", fontFamily: theme.fonts.ui }}
+          >
+            {p.text}
+          </a>
+        );
+      }
+      return (
+        <span key={`text-${i}`} style={{ userSelect: "text", fontFamily: theme.fonts.ui }}>
+          {p.text}
+        </span>
+      );
+    });
+  };
+
   const handleDragOver = (e) => {
     e.preventDefault();
   };
@@ -161,8 +196,6 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
         return (
           <div
             key={task.id}
-            draggable="true"
-            onDragStart={() => handleDragStart(task.id)}
             onDragOver={handleDragOver}
             onDrop={() => handleDrop(task)}
             style={{
@@ -175,7 +208,6 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
               border: isTopThree ? "1px solid #ede9e3" : "none",
               borderLeft: isTopThree ? "3px solid #16a34a" : "none",
               marginBottom: isTopThree ? 4 : 0,
-              cursor: "grab",
             }}
           >
             <div
@@ -194,6 +226,14 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
                 boxSizing: "border-box",
               }}
             />
+            <div
+              draggable="true"
+              onDragStart={() => handleDragStart(task.id)}
+              aria-label="drag-handle"
+              style={{ cursor: "grab", padding: "6px", userSelect: "none", flexShrink: 0 }}
+            >
+              ≡
+            </div>
             <span
               style={{
                 fontFamily: theme.fonts.ui,
@@ -201,9 +241,10 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
                 fontWeight: isTopThree ? 500 : 400,
                 color: theme.colors.text,
                 flex: 1,
+                userSelect: "text",
               }}
             >
-              {task.text}
+              {renderTaskText(task.text)}
             </span>
             <button
               onClick={() => remove(task.id)}

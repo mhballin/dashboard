@@ -77,6 +77,7 @@ export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, 
           >
             Sign out
           </button>
+          {/* Floating feature request button moved into App (bottom-right) */}
         </div>
       </div>
       <div style={{ display: "flex", gap: 2 }}>

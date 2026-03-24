@@ -470,6 +470,30 @@ export function useAppData(tab, authState) {
     }
   };
 
+  const submitFeatureRequest = async ({ title, description, attachments } = {}) => {
+    if (!title && !description) throw new Error('Title or description required')
+    try {
+      const body = {
+        title: title || '',
+        description: description || '',
+        attachments: Array.isArray(attachments) ? attachments : [],
+        userId: authUserId || null,
+        email: authState?.email || null,
+      }
+      const headers = { 'Content-Type': 'application/json' }
+      if (authToken) headers.Authorization = `Bearer ${authToken}`
+      const resp = await fetch('/feature-request', { method: 'POST', headers, body: JSON.stringify(body) })
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}))
+        throw new Error(err.error || err.message || 'Failed to submit feature request')
+      }
+      return await resp.json()
+    } catch (err) {
+      console.error('submitFeatureRequest failed:', err)
+      throw err
+    }
+  };
+
   const handleCardCreate = async (card) => {
     const tempId = card.id;
     const createPromise = createCard(card);
@@ -1162,6 +1186,7 @@ export function useAppData(tab, authState) {
     addLog,
     handleFullExport,
     handleFullImport,
+    submitFeatureRequest,
     handleCardCreate,
     handleCardUpdate,
     handleCardDelete,

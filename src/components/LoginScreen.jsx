@@ -9,6 +9,10 @@ export default function LoginScreen({ onLogin, onRegister }) {
   const [mode, setMode] = useState("login");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotStatus, setForgotStatus] = useState("idle"); // idle, sending, sent, error
+  const [forgotError, setForgotError] = useState("");
 
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -101,6 +105,53 @@ export default function LoginScreen({ onLogin, onRegister }) {
                 outline: "none",
               }}
             />
+            {mode === "login" && (
+              <div style={{ textAlign: "right", marginTop: 6 }}>
+                {!showForgot ? (
+                  <button
+                    onClick={() => { setShowForgot(true); setForgotEmail(email); setForgotError(""); setForgotStatus("idle") }}
+                    style={{ background: "none", border: "none", color: theme.colors.muted, cursor: "pointer", fontSize: 13, padding: 0 }}
+                  >
+                    Forgot password?
+                  </button>
+                ) : (
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 6 }}>
+                    <input
+                      type="email"
+                      placeholder="Your account email"
+                      value={forgotEmail}
+                      onChange={e => setForgotEmail(e.target.value)}
+                      style={{ padding: "8px 10px", borderRadius: theme.radii.small, border: `1px solid ${theme.colors.inputBorder}`, fontSize: 13, fontFamily: theme.fonts.ui, outline: "none", flex: 1 }}
+                    />
+                    <button
+                      onClick={async () => {
+                        setForgotError("");
+                        setForgotStatus("sending");
+                        try {
+                          const resp = await fetch('/auth/forgot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: forgotEmail || email }) })
+                          if (!resp.ok) throw new Error('Request failed')
+                          setForgotStatus('sent')
+                        } catch (err) {
+                          setForgotError(err?.message || 'Failed to send')
+                          setForgotStatus('error')
+                        }
+                      }}
+                      style={{ padding: "8px 12px", borderRadius: theme.radii.default, border: "none", background: theme.colors.primary, color: '#fff', cursor: 'pointer', fontSize: 13 }}
+                    >
+                      {forgotStatus === 'sending' ? 'Sending…' : 'Send'}
+                    </button>
+                    <button
+                      onClick={() => setShowForgot(false)}
+                      style={{ background: 'none', border: 'none', color: theme.colors.muted, cursor: 'pointer', fontSize: 13 }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+                {forgotStatus === 'sent' && <div style={{ fontSize: 13, color: theme.colors.muted, marginTop: 6 }}>If that email exists, a reset link has been sent.</div>}
+                {forgotError && <div style={{ fontSize: 13, color: '#dc2626', marginTop: 6 }}>{forgotError}</div>}
+              </div>
+            )}
             {mode === "register" && (
               <div style={{ fontSize: 12, color: theme.colors.muted, fontFamily: theme.fonts.ui }}>
                 Password must be at least 8 characters.

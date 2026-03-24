@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import pRetry, { AbortError } from 'p-retry';
 
-const resend = new Resend(globalThis.process?.env?.RESEND_API_KEY || '');
+const resend = globalThis.process?.env?.RESEND_API_KEY ? new Resend(globalThis.process?.env?.RESEND_API_KEY) : null;
 
 function statusFromError(error) {
   return error?.statusCode || error?.status || error?.response?.status || null;
@@ -15,6 +15,14 @@ function isRetryable(error) {
 }
 
 export async function sendRecapEmail({ to, subject, html }) {
+  // Local/dev helper: if DEV_NO_EMAIL=1, log email payload instead of sending
+  if (String(globalThis.process?.env?.DEV_NO_EMAIL) === '1') {
+    console.log('[DEV_NO_EMAIL] email payload:', { to, subject })
+    // keep exact html out of noisy logs but provide a preview
+    console.log(html?.slice?.(0, 500) || '')
+    return { success: true, messageId: null }
+  }
+
   if (!globalThis.process?.env?.RESEND_API_KEY) throw new Error('Missing RESEND_API_KEY');
   if (!globalThis.process?.env?.RECAP_FROM_EMAIL) throw new Error('Missing RECAP_FROM_EMAIL');
 

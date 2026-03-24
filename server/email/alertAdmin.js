@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(globalThis.process?.env?.RESEND_API_KEY || '');
+const resend = globalThis.process?.env?.RESEND_API_KEY ? new Resend(globalThis.process?.env?.RESEND_API_KEY) : null;
 
 export async function alertAdminOnFailure({ userId, error, weekKey }) {
   const adminEmail = globalThis.process?.env?.RECAP_ADMIN_ALERT_EMAIL;
@@ -16,6 +16,7 @@ export async function alertAdminOnFailure({ userId, error, weekKey }) {
   ].join('\n');
 
   try {
+    if (!resend) return
     await resend.emails.send({
       from: fromEmail,
       to: adminEmail,

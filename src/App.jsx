@@ -7,7 +7,10 @@ import { SettingsTab } from "./components/SettingsTab";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ProfileTab from "./components/ProfileTab";
 import LoginScreen from "./components/LoginScreen";
+import ResetPassword from "./components/ResetPassword";
 import AppHeader from "./components/AppHeader";
+import FeatureRequestModal from "./components/FeatureRequestModal";
+import FloatingFeatureButton from "./components/FloatingFeatureButton";
 import { theme, cardStyle as themeCardStyle } from "./styles/theme";
 import { useAppData } from "./utils/useAppData";
 
@@ -25,6 +28,7 @@ function App() {
   const [dismissedBootError, setDismissedBootError] = useState(null);
 
   const [tab, setTab] = useState("dashboard");
+  const [isFeatureOpen, setIsFeatureOpen] = useState(false);
   const data = useAppData(tab, authState);
   const {
     loaded,
@@ -65,6 +69,7 @@ function App() {
     addLog,
     handleFullExport,
     handleFullImport,
+    submitFeatureRequest,
     handleCardCreate,
     handleCardUpdate,
     handleCardDelete,
@@ -100,6 +105,11 @@ function App() {
   }
 
   if (!authed) {
+    // allow an unauthenticated reset-password page
+    if (window.location.pathname === '/reset-password') {
+      return <ResetPassword />
+    }
+
     return (
       <LoginScreen
         onLogin={async (email, password) => {
@@ -140,6 +150,21 @@ function App() {
 
         {/* Header */}
         <AppHeader userName={userSettings.userName} weekKey={weekKey} cumulative={cumulative} tab={tab} setTab={setTab} onLogout={handleLogout} />
+
+        <FeatureRequestModal
+          isOpen={isFeatureOpen}
+          onClose={() => setIsFeatureOpen(false)}
+          onSubmit={async (payload) => {
+            try {
+              await submitFeatureRequest(payload)
+              alert('Thanks — feature request sent.')
+            } catch {
+              // submitFeatureRequest already logs
+            }
+          }}
+        />
+
+        <FloatingFeatureButton onClick={() => setIsFeatureOpen(true)} />
 
         <div style={{ padding: "24px 28px", maxWidth: tab === "applications" ? 1500 : 1100, margin: "0 auto" }}>
           {loaded && bootError && dismissedBootError !== bootError && (

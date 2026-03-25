@@ -3,6 +3,8 @@ import ErrorBoundary from "./ErrorBoundary";
 import { theme, cardStyle as themeCardStyle } from "../styles/theme";
 
 export default function LoginScreen({ onLogin, onRegister }) {
+  const configuredBaseUrl = (import.meta.env.VITE_API_URL || "").trim();
+  const apiBaseUrl = configuredBaseUrl.replace(/\/+$/, "");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -128,7 +130,8 @@ export default function LoginScreen({ onLogin, onRegister }) {
                         setForgotError("");
                         setForgotStatus("sending");
                         try {
-                          const resp = await fetch('/auth/forgot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: forgotEmail || email }) })
+                          const forgotUrl = apiBaseUrl ? `${apiBaseUrl}/auth/forgot` : "/auth/forgot";
+                          const resp = await fetch(forgotUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: forgotEmail || email }) })
                           if (!resp.ok) throw new Error('Request failed')
                           setForgotStatus('sent')
                         } catch (err) {

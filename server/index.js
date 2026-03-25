@@ -196,9 +196,11 @@ app.post('/auth/forgot', async (req, res) => {
 
     const html = `<div style="font-family: 'Plus Jakarta Sans', sans-serif; color: #1a1a1a;">
       <p>Hello ${user.name || ''},</p>
-      <p>We received a request to reset the password for this account. Click the button below to set a new password. This link expires in 1 hour.</p>
-      <p><a href="${resetLink}" style="display:inline-block;padding:10px 16px;background:#16a34a;color:#fff;border-radius:8px;text-decoration:none;">Reset password</a></p>
-      <p>If you didn't request this, you can ignore this email.</p>
+      <p>We received a request to reset the password for this account. Click the link below to set a new password. This link expires in 1 hour.</p>
+      <p style="margin:18px 0;">
+        <a href="${resetLink}" style="color:#16a34a;font-weight:700;text-decoration:underline;">Reset password</a>
+      </p>
+      <p style="color:#6b7280;margin-top:8px;">If you didn't request this, you can ignore this email.</p>
     </div>`
 
     await sendRecapEmail({ to: user.email, subject: 'Reset your Job Dashboard password', html })

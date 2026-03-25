@@ -158,14 +158,7 @@ function App() {
         <FeatureRequestModal
           isOpen={isFeatureOpen}
           onClose={() => setIsFeatureOpen(false)}
-          onSubmit={async (payload) => {
-            try {
-              await submitFeatureRequest(payload)
-              alert('Thanks — feature request sent.')
-            } catch {
-              // submitFeatureRequest already logs
-            }
-          }}
+          onSubmit={submitFeatureRequest}
         />
 
         <FloatingFeatureButton onClick={() => setIsFeatureOpen(true)} />

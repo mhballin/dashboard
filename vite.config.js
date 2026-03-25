@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
         '/auth': apiProxyTarget,
         '/api': apiProxyTarget,
         '/health': apiProxyTarget,
+        '/feature-request': apiProxyTarget,
       },
     },
   }

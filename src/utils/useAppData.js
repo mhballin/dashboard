@@ -482,7 +482,8 @@ export function useAppData(tab, authState) {
       }
       const headers = { 'Content-Type': 'application/json' }
       if (authToken) headers.Authorization = `Bearer ${authToken}`
-      const resp = await fetch('/feature-request', { method: 'POST', headers, body: JSON.stringify(body) })
+      const apiBase = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '')
+      const resp = await fetch(`${apiBase}/feature-request`, { method: 'POST', headers, body: JSON.stringify(body) })
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}))
         throw new Error(err.error || err.message || 'Failed to submit feature request')

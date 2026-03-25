@@ -91,6 +91,10 @@ function App() {
     handleDeleteActivity,
   } = data;
 
+  const appVersion = import.meta.env.VITE_APP_VERSION
+    ? `v${import.meta.env.VITE_APP_VERSION}${import.meta.env.VITE_COMMIT ? ' (' + import.meta.env.VITE_COMMIT + ')' : ''}`
+    : (import.meta.env.VITE_COMMIT || 'dev');
+
   useEffect(() => {
     const syncAuthFromStorage = () => setAuthState(readAuthState());
     window.addEventListener("storage", syncAuthFromStorage);
@@ -149,7 +153,7 @@ function App() {
       <div style={{ minHeight: "100vh", background: theme.colors.bg, paddingBottom: 60 }}>
 
         {/* Header */}
-        <AppHeader userName={userSettings.userName} weekKey={weekKey} cumulative={cumulative} tab={tab} setTab={setTab} onLogout={handleLogout} />
+        <AppHeader userName={userSettings.userName} weekKey={weekKey} version={appVersion} cumulative={cumulative} tab={tab} setTab={setTab} onLogout={handleLogout} />
 
         <FeatureRequestModal
           isOpen={isFeatureOpen}

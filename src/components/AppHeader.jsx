@@ -10,7 +10,7 @@ const TABS = [
   { id: "settings", label: "Settings" },
 ];
 
-export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, onLogout }) {
+export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, onLogout, version }) {
   return (
     <div style={{ background: theme.colors.cardBg, borderBottom: `1px solid ${theme.colors.border}`, padding: "0 28px" }}>
       <div
@@ -28,6 +28,11 @@ export default function AppHeader({ userName, weekKey, cumulative, tab, setTab, 
           </div>
           <div style={{ fontFamily: theme.fonts.ui, fontSize: 12, color: theme.colors.muted, marginTop: 2 }}>
             {userName} · {weekKey}
+            {version ? (
+              <span style={{ marginLeft: 8, fontFamily: theme.fonts.ui, fontSize: 11, color: theme.colors.muted, opacity: 0.9 }}>
+                {version}
+              </span>
+            ) : null}
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>

@@ -10,7 +10,7 @@
     "dev:pb": "./pocketbase/pocketbase serve --http=127.0.0.1:8090 --dir=./pocketbase/pb_data",
     "dev:frontend": "vite",
     "dev:no-pb": "concurrently --names \"VITE,API\" -c \"green,blue\" --kill-others \"npm:dev:vite\" \"npm:dev:api\"",
-    "build": "vite build",
+    "build": "VITE_APP_VERSION=$(node -p \"require('./package.json').version\") VITE_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo) vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "migrate": "bash scripts/migrate.sh",

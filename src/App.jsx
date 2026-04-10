@@ -73,6 +73,9 @@ function App() {
     handleCardCreate,
     handleCardUpdate,
     handleCardDelete,
+    handleSetFollowUp,
+    handleSnoozeReminder,
+    handleCompleteFollowUp,
     handleTaskCreate,
     handleTaskUpdate,
     handleTaskDelete,
@@ -88,6 +91,7 @@ function App() {
     handleJobBoardsSetupComplete,
     weeklyApplications,
     weekKey,
+    
     handleDeleteActivity,
   } = data;
 
@@ -226,6 +230,7 @@ function App() {
               quickNoteAddRef={notesAddRef}
               activeNotes={activeQuickNotes}
               onQuickNoteDelete={handleQuickNoteDelete}
+              
             />
           )}
 
@@ -247,6 +252,9 @@ function App() {
                 onCardCreate={handleCardCreate}
                 onCardUpdate={handleCardUpdate}
                 onCardDelete={handleCardDelete}
+                onSetFollowUp={handleSetFollowUp}
+                onSnoozeReminder={handleSnoozeReminder}
+                onCompleteFollowUp={handleCompleteFollowUp}
               />
             </div>
           )}

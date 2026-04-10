@@ -33,6 +33,8 @@ export default function DashboardTab({
     border: "1px solid #ede9e3",
   };
 
+  
+
   return (
     <>
       <div style={{ marginBottom: 20 }}>
@@ -63,6 +65,8 @@ export default function DashboardTab({
           />
         </div>
       </div>
+
+      {/* Today Action Queue removed per user request */}
     </>
   );
 }

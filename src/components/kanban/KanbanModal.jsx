@@ -2,7 +2,9 @@ import React from "react";
 import { ExternalLink, Globe, Trash2 } from "lucide-react";
 import { DatePicker } from "../DatePicker";
 import { ImportFromUrlPanel } from "../ImportFromUrlPanel";
+import { AutoResizeQuickNote } from "../AutoResizeQuickNote";
 import { theme } from "../../styles/theme";
+import { todayStr } from "../../utils/dates";
 
 const cardFont = {
   fontFamily: theme.fonts.ui,
@@ -46,12 +48,16 @@ export default function KanbanModal({
   setEditingId,
   setModalCol,
   kanbanCols = [],
+  onSetFollowUp,
+  onSnoozeReminder,
+  onCompleteFollowUp,
 }) {
   const isViewMode = modalMode === "view";
   const isEditMode = modalMode === "edit";
   const isCreateMode = modalMode === "create";
 
   const currentCol = kanbanCols.find((c) => c.id === modalCol) || {};
+  const [timelineQuickNote, setTimelineQuickNote] = React.useState("");
 
   return (
     <div
@@ -105,6 +111,17 @@ export default function KanbanModal({
               isLast: index === arr.length - 1,
             }));
           const hasTimeline = timelineEntries.length > 0;
+          const reminderDate = currentCard?.followUpDate || null;
+          const deadlineDate = currentCard?.deadline || null;
+          const timelineNotes = Array.isArray(currentCard?.interviewNotes) ? currentCard.interviewNotes : [];
+          const tomorrowStr = (() => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const y = tomorrow.getFullYear();
+            const m = String(tomorrow.getMonth() + 1).padStart(2, "0");
+            const d = String(tomorrow.getDate()).padStart(2, "0");
+            return `${y}-${m}-${d}`;
+          })();
 
           return (
             <>
@@ -195,10 +212,90 @@ export default function KanbanModal({
                     </>
                   )}
 
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", textTransform: "uppercase", color: theme.colors.muted, fontFamily: theme.fonts.ui, marginBottom: 8 }}>REMINDERS</div>
+                    <div style={{ padding: 12, background: theme.colors.bg, borderRadius: theme.radii.default }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                        <div style={{ fontSize: 12, color: theme.colors.muted, fontFamily: theme.fonts.ui }}>Follow-up date</div>
+                        <DatePicker value={reminderDate} onChange={(val) => onSetFollowUp?.(editingId, val)} />
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                        <div style={{ fontSize: 12, color: theme.colors.muted, fontFamily: theme.fonts.ui }}>Deadline</div>
+                        <DatePicker
+                          value={deadlineDate}
+                          onChange={(val) => {
+                            setCards((prev) => prev.map((c) => (c.id === editingId ? { ...c, deadline: val } : c)));
+                            onCardUpdate?.(editingId, { deadline: val });
+                          }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => onSnoozeReminder?.(editingId, tomorrowStr)}
+                          style={{ background: "white", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "6px 10px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 12, cursor: "pointer" }}
+                        >
+                          Snooze 1 day
+                        </button>
+                        <button
+                          onClick={() => onSnoozeReminder?.(editingId, null)}
+                          style={{ background: "white", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "6px 10px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 12, cursor: "pointer" }}
+                        >
+                          Unsnooze
+                        </button>
+                        <button
+                          onClick={() => onCompleteFollowUp?.(editingId)}
+                          style={{ background: "#16a34a", border: "none", borderRadius: theme.radii.default, padding: "6px 10px", color: "white", ...cardFont, fontWeight: 600, fontSize: 12, cursor: "pointer" }}
+                        >
+                          Mark done
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", textTransform: "uppercase", color: theme.colors.muted, fontFamily: theme.fonts.ui, marginBottom: 8 }}>TIMELINE NOTES</div>
+                      <div style={{ padding: 12, background: theme.colors.bg, borderRadius: theme.radii.default }}>
+                      <AutoResizeQuickNote
+                        quickNote={timelineQuickNote}
+                        setQuickNote={setTimelineQuickNote}
+                        onQuickNoteAdd={(v) => {
+                          const trimmed = v ? v.trim() : "";
+                          if (!trimmed) return;
+                          const entry = { id: Date.now(), date: todayStr(), note: trimmed, type: "manual" };
+                          const nextNotes = [entry, ...timelineNotes];
+                          setCards((prev) => prev.map((c) => (c.id === editingId ? { ...c, interviewNotes: nextNotes } : c)));
+                          onCardUpdate?.(editingId, { interviewNotes: nextNotes });
+                          setTimelineQuickNote("");
+                        }}
+                        saveOnBlur={true}
+                        clearAfterSave={true}
+                      />
+                      {timelineNotes.length === 0 ? (
+                        <div style={{ fontFamily: theme.fonts.ui, fontSize: 12, color: theme.colors.muted }}>No timeline notes yet.</div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {timelineNotes.slice(0, 8).map((entry, idx) => (
+                            <div key={entry.id || idx} style={{ border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.small, padding: "8px 10px", background: "white" }}>
+                              <div style={{ fontFamily: theme.fonts.ui, fontSize: 11, color: theme.colors.muted, marginBottom: 2 }}>{entry.date || ""}</div>
+                              <div style={{ fontFamily: theme.fonts.ui, fontSize: 12, color: theme.colors.text, lineHeight: 1.5 }}>{entry.note || ""}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", textTransform: "uppercase", color: theme.colors.muted, fontFamily: theme.fonts.ui, marginBottom: 8 }}>YOUR NOTES</div>
-                    <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Add your thoughts or interview prep notes..." rows={10} style={{ width: "100%", border: `2px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: 12, ...cardFont, fontSize: 14, boxSizing: "border-box", outline: "none", resize: "vertical", lineHeight: 1.5, whiteSpace: "pre-wrap", marginBottom: 12 }} />
-                    <button onClick={updateNotes} style={{ width: "100%", background: currentCol?.color || "#3b82f6", border: "none", borderRadius: theme.radii.default, padding: "8px 12px", color: "white", ...cardFont, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Update Notes</button>
+                    <AutoResizeQuickNote
+                      quickNote={formData.notes || ""}
+                      setQuickNote={(v) => setFormData({ ...formData, notes: v })}
+                      onQuickNoteAdd={() => {
+                        updateNotes?.();
+                      }}
+                      saveOnBlur={true}
+                      clearAfterSave={false}
+                    />
                   </div>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { todayStr } from "../utils/dates";
 
-export function AutoResizeQuickNote({ quickNote, setQuickNote, onLog, onQuickNoteAdd, quickNoteAddRef }) {
+export function AutoResizeQuickNote({ quickNote, setQuickNote, onLog, onQuickNoteAdd, quickNoteAddRef, saveOnBlur = false, clearAfterSave = true }) {
   const ref = useRef(null);
 
   const adjust = () => {
@@ -30,14 +30,14 @@ export function AutoResizeQuickNote({ quickNote, setQuickNote, onLog, onQuickNot
   }, [quickNoteAddRef]);
 
   const saveQuickNote = () => {
-    const v = quickNote.trim();
+    const v = (quickNote || "").trim();
     if (!v) return;
     if (onQuickNoteAdd) {
       onQuickNoteAdd(v);
     } else {
       onLog({ date: todayStr(), type: "note", note: v });
     }
-    setQuickNote("");
+    if (clearAfterSave) setQuickNote("");
   };
 
   const handleKeyDown = (e) => {
@@ -56,6 +56,7 @@ export function AutoResizeQuickNote({ quickNote, setQuickNote, onLog, onQuickNot
       onChange={(e) => setQuickNote(e.target.value)}
       onInput={adjust}
       onKeyDown={handleKeyDown}
+      onBlur={() => { if (saveOnBlur) saveQuickNote(); }}
       style={{
         width: "100%",
         minHeight: 40,

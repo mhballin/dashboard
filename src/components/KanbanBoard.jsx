@@ -67,7 +67,17 @@ const isStaleCard = (card) => {
   return diffMs > STALE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000;
 };
 
-export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate, onCardDelete }) {
+export function KanbanBoard({
+  cards,
+  setCards,
+  onLog,
+  onCardCreate,
+  onCardUpdate,
+  onCardDelete,
+  onSetFollowUp,
+  onSnoozeReminder,
+  onCompleteFollowUp,
+}) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalCol, setModalCol] = useState(null);
   const [modalMode, setModalMode] = useState('create'); // 'create', 'view', 'edit'
@@ -176,6 +186,17 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
       isHighPriority: false,
       priorityOrder: Date.now(),
       isStarred: false,
+      starred: false,
+      followUpDate: null,
+      deadline: null,
+      reminderSnoozedUntil: null,
+      contactName: "",
+      contactRole: "",
+      contactEmail: "",
+      contactLinkedIn: "",
+      contactLastDate: null,
+      contactNextStep: "",
+      interviewNotes: [],
     };
 
     setCards((p) => [...p, newCard]);
@@ -302,6 +323,17 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
         isHighPriority: false,
         priorityOrder: Date.now(),
         isStarred: false,
+        starred: false,
+        followUpDate: null,
+        deadline: null,
+        reminderSnoozedUntil: null,
+        contactName: "",
+        contactRole: "",
+        contactEmail: "",
+        contactLinkedIn: "",
+        contactLastDate: null,
+        contactNextStep: "",
+        interviewNotes: [],
       };
       setCards((p) => [
         ...p,
@@ -1114,6 +1146,9 @@ export function KanbanBoard({ cards, setCards, onLog, onCardCreate, onCardUpdate
           setEditingId={setEditingId}
           setModalCol={setModalCol}
           kanbanCols={KANBAN_COLS}
+          onSetFollowUp={onSetFollowUp}
+          onSnoozeReminder={onSnoozeReminder}
+          onCompleteFollowUp={onCompleteFollowUp}
         />
       )}
     </div>

@@ -86,6 +86,32 @@ function getCardLabel(card) {
   return [company, title].filter(Boolean).join(" - ") || "Unknown role";
 }
 
+function normalizeCard(card) {
+  const normalizedDates = typeof card?.dates === "string"
+    ? JSON.parse(card.dates)
+    : (card?.dates || {});
+
+  return {
+    ...card,
+    isHighPriority: card?.isHighPriority !== undefined ? card.isHighPriority : false,
+    priorityOrder: card?.priorityOrder !== undefined ? card.priorityOrder : 0,
+    isStarred: card?.isStarred !== undefined ? card.isStarred : !!card?.starred,
+    starred: card?.starred !== undefined ? card.starred : !!card?.isStarred,
+    dates: normalizedDates,
+    added: card?.added || todayStr(),
+    followUpDate: card?.followUpDate || null,
+    deadline: card?.deadline || null,
+    reminderSnoozedUntil: card?.reminderSnoozedUntil || null,
+    contactName: card?.contactName || "",
+    contactRole: card?.contactRole || "",
+    contactEmail: card?.contactEmail || "",
+    contactLinkedIn: card?.contactLinkedIn || "",
+    contactLastDate: card?.contactLastDate || null,
+    contactNextStep: card?.contactNextStep || "",
+    interviewNotes: Array.isArray(card?.interviewNotes) ? card.interviewNotes : [],
+  };
+}
+
 export function useAppData(tab, authState) {
   const authToken = authState?.token || null;
   const authUserId = authState?.userId || null;
@@ -276,14 +302,7 @@ export function useAppData(tab, authState) {
         const k = await getCards();
         if (cancelled) return;
         if (k && k.length) {
-          const migratedKanban = k.map((card) => ({
-            ...card,
-            isHighPriority: card.isHighPriority !== undefined ? card.isHighPriority : false,
-            priorityOrder: card.priorityOrder !== undefined ? card.priorityOrder : 0,
-            isStarred: card.isStarred !== undefined ? card.isStarred : false,
-            dates: typeof card.dates === 'string' ? JSON.parse(card.dates) : (card.dates || {}), // Parse dates if they are strings
-            added: card.added || todayStr(), // Ensure added has a default value
-          }));
+          const migratedKanban = k.map((card) => normalizeCard(card));
           setKanban(migratedKanban);
           setCumulative((prev) => buildCumulative(pbActivity || [], migratedKanban, all.cumulative || prev));
         } else {
@@ -557,12 +576,26 @@ export function useAppData(tab, authState) {
     }
   };
 
+  const appendTimelineEvent = async (cardId, noteText) => {
+    const target = kanban.find((card) => card.id === cardId);
+    if (!target) return;
+    const existing = Array.isArray(target.interviewNotes) ? target.interviewNotes : [];
+    const entry = {
+      id: Date.now(),
+      date: todayStr(),
+      note: noteText,
+      type: "event",
+    };
+    await handleUpdateInterviewNotes(cardId, [entry, ...existing]);
+  };
+
   const handleSetFollowUp = async (cardId, date) => {
     const card = kanban.find((c) => c.id === cardId);
     const cardLabel = getCardLabel(card);
     await handleUpdateCardField(cardId, "followUpDate", date || null);
     await handleUpdateCardField(cardId, "reminderSnoozedUntil", null);
     if (date) {
+      await appendTimelineEvent(cardId, `Follow-up set for ${date}`);
       await addLog({
         type: "note",
         note: `Set follow-up for ${cardLabel} on ${date}`,
@@ -575,11 +608,26 @@ export function useAppData(tab, authState) {
     const cardLabel = getCardLabel(card);
     await handleUpdateCardField(cardId, "reminderSnoozedUntil", snoozeUntilDate || null);
     if (snoozeUntilDate) {
+      await appendTimelineEvent(cardId, `Reminder snoozed until ${snoozeUntilDate}`);
       await addLog({
         type: "note",
         note: `Snoozed reminder for ${cardLabel} until ${snoozeUntilDate}`,
       });
+    } else {
+      await appendTimelineEvent(cardId, "Reminder unsnoozed");
     }
+  };
+
+  const handleCompleteFollowUp = async (cardId) => {
+    const card = kanban.find((c) => c.id === cardId);
+    const cardLabel = getCardLabel(card);
+    await handleUpdateCardField(cardId, "followUpDate", null);
+    await handleUpdateCardField(cardId, "reminderSnoozedUntil", null);
+    await appendTimelineEvent(cardId, "Follow-up completed");
+    await addLog({
+      type: "note",
+      note: `Completed follow-up for ${cardLabel}`,
+    });
   };
 
   const handleToggleStarred = async (cardId) => {
@@ -819,14 +867,7 @@ export function useAppData(tab, authState) {
         doneAt: t.updated || null,
       })));
 
-      const migratedKanban = restoredCards.map((card) => ({
-        ...card,
-        isHighPriority: card.isHighPriority !== undefined ? card.isHighPriority : false,
-        priorityOrder: card.priorityOrder !== undefined ? card.priorityOrder : 0,
-        isStarred: card.isStarred !== undefined ? card.isStarred : false,
-        dates: typeof card.dates === "string" ? JSON.parse(card.dates) : (card.dates || {}),
-        added: card.added || todayStr(),
-      }));
+      const migratedKanban = restoredCards.map((card) => normalizeCard(card));
       setKanban(migratedKanban);
 
       setActivityLog(activityWithRestore.map((e) => ({
@@ -1195,6 +1236,7 @@ export function useAppData(tab, authState) {
     handleUpdateInterviewNotes,
     handleSetFollowUp,
     handleSnoozeReminder,
+    handleCompleteFollowUp,
     handleToggleStarred,
     handleTaskCreate,
     handleTaskUpdate,

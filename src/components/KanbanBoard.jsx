@@ -394,6 +394,11 @@ export function KanbanBoard({
   const handleDragStart = (e, cardId) => {
     setDragging(cardId);
     setIsDragging(true);
+    try {
+      e.dataTransfer.setData("text/plain", String(cardId));
+    } catch (err) {
+      void err;
+    }
     e.dataTransfer.effectAllowed = "move";
   };
 
@@ -454,7 +459,9 @@ export function KanbanBoard({
               }}
               onDrop={(e) => {
                 e.preventDefault();
-                if (dragging !== null) move(dragging, col.id);
+                const transferId = e.dataTransfer && e.dataTransfer.getData ? e.dataTransfer.getData("text/plain") : null;
+                const draggedCard = cards.find((card) => String(card.id) === String(transferId || dragging));
+                if (draggedCard) move(draggedCard.id, col.id);
                 setDragging(null);
                 setDragOver(null);
                 setIsDragging(false);
@@ -510,18 +517,31 @@ export function KanbanBoard({
                     onDrop={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      if (dragging !== null) {
-                        const draggedCard = cards.find((card) => card.id === dragging);
-                        if (draggedCard && draggedCard.col === "saved" && draggedCard.isHighPriority !== true) {
+                      const transferId = e.dataTransfer && e.dataTransfer.getData ? e.dataTransfer.getData("text/plain") : null;
+                      const draggedCard = cards.find((card) => String(card.id) === String(transferId || dragging));
+                      if (draggedCard) {
+                        if (draggedCard.col !== "saved") {
+                          // Move into saved and promote to high priority
+                          move(draggedCard.id, "saved");
                           const po = Date.now();
                           setCards((p) =>
                             p.map((card) =>
-                              card.id === dragging
+                              card.id === draggedCard.id
                                 ? { ...card, isHighPriority: true, priorityOrder: po }
                                 : card
                             )
                           );
-                          onCardUpdate?.(dragging, { isHighPriority: true, priorityOrder: po });
+                          onCardUpdate?.(draggedCard.id, { isHighPriority: true, priorityOrder: po });
+                        } else if (draggedCard.isHighPriority !== true) {
+                          const po = Date.now();
+                          setCards((p) =>
+                            p.map((card) =>
+                              card.id === draggedCard.id
+                                ? { ...card, isHighPriority: true, priorityOrder: po }
+                                : card
+                            )
+                          );
+                          onCardUpdate?.(draggedCard.id, { isHighPriority: true, priorityOrder: po });
                         }
                       }
                       setDragging(null);
@@ -544,38 +564,54 @@ export function KanbanBoard({
                             onDrop={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              if (dragging !== null) {
-                                const draggedCard = cards.find((card) => card.id === dragging);
-                                if (draggedCard && draggedCard.col !== "saved") {
-                                  move(dragging, "saved");
-                                } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
-                                  if (draggedCard.isHighPriority === true) {
-                                    const draggedOrder = draggedCard.priorityOrder;
-                                    const targetOrder = c.priorityOrder;
-                                    setCards((p) =>
-                                      p.map((card) => {
-                                        if (card.id === dragging) {
-                                          return { ...card, priorityOrder: targetOrder };
-                                        }
-                                        if (card.id === c.id) {
-                                          return { ...card, priorityOrder: draggedOrder };
-                                        }
-                                        return card;
-                                      })
-                                    );
-                                    onCardUpdate?.(dragging, { priorityOrder: targetOrder });
-                                    onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
-                                  } else {
-                                    const po = Date.now();
-                                    setCards((p) =>
-                                      p.map((card) =>
-                                        card.id === dragging
-                                          ? { ...card, isHighPriority: false, priorityOrder: po }
-                                          : card
-                                      )
-                                    );
-                                    onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
-                                  }
+                              const transferId = e.dataTransfer && e.dataTransfer.getData ? e.dataTransfer.getData("text/plain") : null;
+                              const draggedCard = cards.find((card) => String(card.id) === String(transferId || dragging));
+                              if (!draggedCard) {
+                                setDragging(null);
+                                setDragOver(null);
+                                setIsDragging(false);
+                                return;
+                              }
+
+                              if (draggedCard.col !== "saved") {
+                                // Move into saved and promote to high priority before target
+                                move(draggedCard.id, "saved");
+                                const po = typeof c.priorityOrder === "number" ? c.priorityOrder - 1 : Date.now();
+                                setCards((p) =>
+                                  p.map((card) =>
+                                    card.id === draggedCard.id ? { ...card, isHighPriority: true, priorityOrder: po } : card
+                                  )
+                                );
+                                onCardUpdate?.(draggedCard.id, { isHighPriority: true, priorityOrder: po });
+                              } else if (draggedCard.id !== c.id) {
+                                if (draggedCard.isHighPriority === true) {
+                                  const draggedOrder = draggedCard.priorityOrder;
+                                  const targetOrder = c.priorityOrder;
+                                  setCards((p) =>
+                                    p.map((card) => {
+                                      if (card.id === draggedCard.id) {
+                                        return { ...card, priorityOrder: targetOrder };
+                                      }
+                                      if (card.id === c.id) {
+                                        return { ...card, priorityOrder: draggedOrder };
+                                      }
+                                      return card;
+                                    })
+                                  );
+                                  onCardUpdate?.(draggedCard.id, { priorityOrder: targetOrder });
+                                  onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
+                                } else {
+                                  // Promote dragged card to high priority and insert before target
+                                  const targetOrder = c.priorityOrder ?? Date.now();
+                                  const po = typeof targetOrder === "number" ? targetOrder - 1 : Date.now();
+                                  setCards((p) =>
+                                    p.map((card) =>
+                                      card.id === draggedCard.id
+                                        ? { ...card, isHighPriority: true, priorityOrder: po }
+                                        : card
+                                    )
+                                  );
+                                  onCardUpdate?.(draggedCard.id, { isHighPriority: true, priorityOrder: po });
                                 }
                               }
                               setDragging(null);
@@ -777,38 +813,43 @@ export function KanbanBoard({
                             onDrop={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              if (dragging !== null) {
-                                const draggedCard = cards.find((card) => card.id === dragging);
-                                if (draggedCard && draggedCard.col !== "saved") {
-                                  move(dragging, "saved");
-                                } else if (draggedCard && draggedCard.col === "saved" && dragging !== c.id) {
-                                  if (draggedCard.isHighPriority !== true) {
-                                    const draggedOrder = draggedCard.priorityOrder;
-                                    const targetOrder = c.priorityOrder;
-                                    setCards((p) =>
-                                      p.map((card) => {
-                                        if (card.id === dragging) {
-                                          return { ...card, priorityOrder: targetOrder };
-                                        }
-                                        if (card.id === c.id) {
-                                          return { ...card, priorityOrder: draggedOrder };
-                                        }
-                                        return card;
-                                      })
-                                    );
-                                    onCardUpdate?.(dragging, { priorityOrder: targetOrder });
-                                    onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
-                                  } else {
-                                    const po = Date.now();
-                                    setCards((p) =>
-                                      p.map((card) =>
-                                        card.id === dragging
-                                          ? { ...card, isHighPriority: false, priorityOrder: po }
-                                          : card
-                                      )
-                                    );
-                                    onCardUpdate?.(dragging, { isHighPriority: false, priorityOrder: po });
-                                  }
+                              const transferId = e.dataTransfer && e.dataTransfer.getData ? e.dataTransfer.getData("text/plain") : null;
+                              const draggedCard = cards.find((card) => String(card.id) === String(transferId || dragging));
+                              if (!draggedCard) {
+                                setDragging(null);
+                                setDragOver(null);
+                                setIsDragging(false);
+                                return;
+                              }
+                              if (draggedCard.col !== "saved") {
+                                move(draggedCard.id, "saved");
+                              } else if (draggedCard.id !== c.id) {
+                                if (draggedCard.isHighPriority !== true) {
+                                  const draggedOrder = draggedCard.priorityOrder;
+                                  const targetOrder = c.priorityOrder;
+                                  setCards((p) =>
+                                    p.map((card) => {
+                                      if (card.id === draggedCard.id) {
+                                        return { ...card, priorityOrder: targetOrder };
+                                      }
+                                      if (card.id === c.id) {
+                                        return { ...card, priorityOrder: draggedOrder };
+                                      }
+                                      return card;
+                                    })
+                                  );
+                                  onCardUpdate?.(draggedCard.id, { priorityOrder: targetOrder });
+                                  onCardUpdate?.(c.id, { priorityOrder: draggedOrder });
+                                } else {
+                                  const po = Date.now();
+                                  setCards((p) =>
+                                    p.map((card) =>
+                                      card.id === draggedCard.id
+                                        ? { ...card, isHighPriority: false, priorityOrder: po }
+                                        : card
+                                    )
+                                  );
+                                  onCardUpdate?.(draggedCard.id, { isHighPriority: false, priorityOrder: po });
                                 }
                               }
                               setDragging(null);

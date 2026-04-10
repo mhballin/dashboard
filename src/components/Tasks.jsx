@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, X, Check } from "lucide-react";
+import { Plus, X, Check, Star } from "lucide-react";
 import { theme } from "../styles/theme";
 
 const lbl = {
@@ -93,6 +93,13 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
   const uncheck = (id) => {
     setTasks((p) => p.map((t) => (t.id === id ? { ...t, done: false, doneAt: null } : t)));
     if (onTaskUpdate) onTaskUpdate(id, { done: false });
+  };
+
+  const togglePinned = (id) => {
+    const current = tasks.find((t) => t.id === id);
+    const newPinned = !current?.pinned;
+    setTasks((p) => p.map((t) => (t.id === id ? { ...t, pinned: newPinned } : t)));
+    if (onTaskUpdate) onTaskUpdate(id, { pinned: newPinned });
   };
 
   const handleDragStart = (taskId) => {
@@ -191,8 +198,8 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
         </button>
       </div>
 
-      {notDone.map((task, idx) => {
-        const isTopThree = idx < 3;
+      {notDone.map((task) => {
+        const isPinned = !!task.pinned;
         return (
           <div
             key={task.id}
@@ -203,11 +210,11 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
               alignItems: "center",
               gap: 12,
               padding: "9px 13px",
-              background: isTopThree ? "#fafaf8" : "transparent",
-              borderRadius: isTopThree ? 10 : 0,
-              border: isTopThree ? "1px solid #ede9e3" : "none",
-              borderLeft: isTopThree ? "3px solid #16a34a" : "none",
-              marginBottom: isTopThree ? 4 : 0,
+              background: isPinned ? "#fafaf8" : "transparent",
+              borderRadius: isPinned ? 10 : 0,
+              border: isPinned ? "1px solid #ede9e3" : "none",
+              borderLeft: isPinned ? "3px solid #16a34a" : "none",
+              marginBottom: isPinned ? 4 : 0,
             }}
           >
             <div
@@ -238,7 +245,7 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
               style={{
                 fontFamily: theme.fonts.ui,
                 fontSize: 13,
-                fontWeight: isTopThree ? 500 : 400,
+                fontWeight: isPinned ? 500 : 400,
                 color: theme.colors.text,
                 flex: 1,
                 userSelect: "text",
@@ -246,6 +253,13 @@ export function Tasks({ tasks, setTasks, taskAddRef, onTaskCreate, onTaskUpdate,
             >
               {renderTaskText(task.text)}
             </span>
+            <button
+              onClick={() => togglePinned(task.id)}
+              aria-label={task.pinned ? "Unpin task" : "Pin task"}
+              style={{ background: "none", border: "none", cursor: "pointer", color: task.pinned ? theme.colors.primary : theme.colors.border, display: "flex", alignItems: "center", padding: 0, marginRight: 6 }}
+            >
+              <Star size={13} color={task.pinned ? theme.colors.primary : theme.colors.border} />
+            </button>
             <button
               onClick={() => remove(task.id)}
               style={{ background: "none", border: "none", cursor: "pointer", color: theme.colors.border, display: "flex", padding: 0 }}

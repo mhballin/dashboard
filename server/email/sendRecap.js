@@ -3,6 +3,17 @@ import pRetry, { AbortError } from 'p-retry';
 
 const resend = globalThis.process?.env?.RESEND_API_KEY ? new Resend(globalThis.process?.env?.RESEND_API_KEY) : null;
 
+function htmlToPlainText(html) {
+  return String(html || '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<\/(h\d|p|div|li|tr|td)>/gi, '\n')
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function statusFromError(error) {
   return error?.statusCode || error?.status || error?.response?.status || null;
 }
@@ -26,6 +37,8 @@ export async function sendRecapEmail({ to, subject, html }) {
   if (!globalThis.process?.env?.RESEND_API_KEY) throw new Error('Missing RESEND_API_KEY');
   if (!globalThis.process?.env?.RECAP_FROM_EMAIL) throw new Error('Missing RECAP_FROM_EMAIL');
 
+  const text = htmlToPlainText(html);
+
   const result = await pRetry(async () => {
     try {
       const response = await resend.emails.send({
@@ -33,6 +46,7 @@ export async function sendRecapEmail({ to, subject, html }) {
         to,
         subject,
         html,
+        text,
       });
       return response;
     } catch (error) {

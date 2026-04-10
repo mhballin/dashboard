@@ -1,73 +1,91 @@
 <mjml>
   <mj-head>
+    <mj-font name="Plus Jakarta Sans" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" />
     <mj-preview>Your weekly Job Search HQ recap is ready.</mj-preview>
     <mj-attributes>
-      <mj-all font-family="Arial, Helvetica, sans-serif" color="#1a1a1a" />
-      <mj-text font-size="14px" line-height="1.5" />
-      <mj-section padding="0" />
-      <mj-column padding="0" />
+      <mj-all font-family="'Plus Jakarta Sans', Arial, sans-serif" color="#1a1a1a" />
+      <mj-text font-size="14px" line-height="1.45" />
+      <mj-button border-radius="8px" />
     </mj-attributes>
+    <mj-style inline="inline">
+      .card { border:1px solid #ede9e3; border-radius:14px; background:#ffffff; box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04); }
+      .muted { color:#6b7280; font-size:12px; }
+      .section-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#9ca3af; }
+      .stat-box { background:#fafaf8; border-radius:10px; padding:12px; text-align:center; }
+      .stat-value { font-size:22px; font-weight:700; color:#16a34a; }
+      .stat-label { color:#6b7280; font-size:12px; margin-top:4px; }
+      .entry { color:#374151; font-size:14px; margin:6px 0; }
+      .small-muted { color:#9ca3af; font-size:11px; }
+    </mj-style>
   </mj-head>
-  <mj-body background-color="#f7f5f0" width="600px">
-    <mj-section padding="24px 16px" background-color="#f7f5f0">
-      <mj-column background-color="#ffffff" border="1px solid #ede9e3" border-radius="8px" padding="20px 20px 12px">
-        <mj-text font-size="12px" color="#6b7280" text-transform="uppercase" letter-spacing="1px" font-weight="700">Job Search HQ</mj-text>
-        <mj-text font-size="28px" font-weight="700" padding-top="8px">Your Week in Review</mj-text>
-        <mj-text color="#6b7280" padding-top="2px">{{weekLabel}}</mj-text>
+
+  <mj-body background-color="#f7f5f0">
+    <mj-section padding="24px 16px">
+      <mj-column css-class="card" padding="20px">
+        <mj-text css-class="muted section-label">Job Search HQ</mj-text>
+        <mj-text font-size="26px" font-weight="700" padding-top="8px">Your Week in Review</mj-text>
+        <mj-text css-class="muted" padding-top="2px">{{weekLabel}}</mj-text>
 
         {{#if stats.isEmpty}}
-          <mj-text color="#374151" padding-top="12px">Every job search has quiet weeks. This Monday is a fresh start - pick one thing and go.</mj-text>
+          <mj-text color="#374151" padding-top="12px">Every job search has quiet weeks — pick one focused win for this week.</mj-text>
         {{else}}
-          <mj-table padding-top="12px">
+          <mj-table padding-top="16px" padding-bottom="12px">
             <tr>
-              <td style="padding:8px;border:1px solid #ede9e3;border-radius:8px;background:#fafaf8;">
-                <div style="font-size:24px;font-weight:700;color:#16a34a;">{{stats.applications}}</div>
-                <div style="font-size:12px;color:#6b7280;">Applications</div>
+              <td style="padding:8px;vertical-align:top;">
+                <table role="presentation" style="width:100%;background:#fafaf8;border:1px solid #ede9e3;border-radius:10px;">
+                  <tr><td style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#16a34a">{{stats.applications}}</div><div style="font-size:12px;color:#6b7280;margin-top:6px">Applications</div></td></tr>
+                </table>
               </td>
-              <td style="padding:8px;border:1px solid #ede9e3;border-radius:8px;background:#fafaf8;">
-                <div style="font-size:24px;font-weight:700;color:#16a34a;">{{stats.meetings}}</div>
-                <div style="font-size:12px;color:#6b7280;">Meetings</div>
+              <td style="padding:8px;vertical-align:top;">
+                <table role="presentation" style="width:100%;background:#fafaf8;border:1px solid #ede9e3;border-radius:10px;">
+                  <tr><td style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#16a34a">{{stats.meetings}}</div><div style="font-size:12px;color:#6b7280;margin-top:6px">Meetings</div></td></tr>
+                </table>
               </td>
             </tr>
             <tr>
-              <td style="padding:8px;border:1px solid #ede9e3;border-radius:8px;background:#fafaf8;">
-                <div style="font-size:24px;font-weight:700;color:#16a34a;">{{stats.outreach}}</div>
-                <div style="font-size:12px;color:#6b7280;">Outreach</div>
+              <td style="padding:8px;vertical-align:top;">
+                <table role="presentation" style="width:100%;background:#fafaf8;border:1px solid #ede9e3;border-radius:10px;">
+                  <tr><td style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#16a34a">{{stats.outreach}}</div><div style="font-size:12px;color:#6b7280;margin-top:6px">Outreach</div></td></tr>
+                </table>
               </td>
-              <td style="padding:8px;border:1px solid #ede9e3;border-radius:8px;background:#fafaf8;">
-                <div style="font-size:24px;font-weight:700;color:#16a34a;">{{stats.followups}}</div>
-                <div style="font-size:12px;color:#6b7280;">Follow-ups</div>
+              <td style="padding:8px;vertical-align:top;">
+                <table role="presentation" style="width:100%;background:#fafaf8;border:1px solid #ede9e3;border-radius:10px;">
+                  <tr><td style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#16a34a">{{stats.followups}}</div><div style="font-size:12px;color:#6b7280;margin-top:6px">Follow-ups</div></td></tr>
+                </table>
               </td>
             </tr>
           </mj-table>
         {{/if}}
 
         {{#if hasActivityLog}}
-          <mj-text font-size="16px" font-weight="700" padding-top="18px">Activity Log</mj-text>
+          <mj-text font-size="16px" font-weight="700" padding-top="12px">Activity Highlights</mj-text>
           {{#each activityLog}}
-            <mj-text color="#6b7280" font-size="12px" font-weight="700" text-transform="uppercase" padding-top="8px">{{dateLabel}}</mj-text>
+            <mj-text css-class="small-muted" padding-top="8px">{{dateLabel}}</mj-text>
             {{#each entries}}
-              <mj-text padding-top="4px">{{typeEmoji type}} {{titleCase type}} - {{note}}</mj-text>
+              <mj-text css-class="entry">{{typeEmoji type}} {{titleCase type}} — {{note}}</mj-text>
             {{/each}}
           {{/each}}
+          <mj-text css-class="muted" padding-top="8px">See full activity on your dashboard.</mj-text>
         {{/if}}
 
-        <mj-text font-size="16px" font-weight="700" padding-top="18px">Your Pipeline</mj-text>
-        <mj-text padding-top="8px">Saved ({{pipeline.saved.count}}): {{cardList pipeline.saved.cards}}</mj-text>
+        <mj-divider border-color="#ede9e3" padding-top="12px" />
+
+        <mj-text font-size="16px" font-weight="700" padding-top="12px">Your Pipeline</mj-text>
+        <mj-text padding-top="6px">Saved ({{pipeline.saved.count}}): {{cardList pipeline.saved.cards}}</mj-text>
         <mj-text>Applied ({{pipeline.applied.count}}): {{cardList pipeline.applied.cards}}</mj-text>
         <mj-text>Interviewing ({{pipeline.interviewing.count}}): {{cardList pipeline.interviewing.cards}}</mj-text>
         <mj-text>Closed this week ({{pipeline.closedThisWeek.count}}): {{cardList pipeline.closedThisWeek.cards}}</mj-text>
 
         {{#if hasStaleCards}}
-          <mj-text font-size="16px" font-weight="700" padding-top="18px">Worth a follow-up?</mj-text>
+          <mj-text font-size="16px" font-weight="700" padding-top="12px">Worth a follow-up?</mj-text>
           {{#each staleCards}}
-            <mj-text padding-top="4px">{{company}} - {{titleCase col}} {{daysStale}} days ago</mj-text>
+            <mj-text padding-top="4px">{{company}} — {{titleCase col}} ({{daysStale}} days)</mj-text>
           {{/each}}
         {{/if}}
 
-        <mj-text font-size="16px" font-weight="700" padding-top="18px">Your Focus This Week</mj-text>
+        <mj-text font-size="16px" font-weight="700" padding-top="12px">Your Focus This Week</mj-text>
         {{#if tasks.isEmpty}}
-          <mj-text>No tasks queued up - head to your dashboard to plan the week.</mj-text>
+          <mj-text>No tasks queued — open your dashboard to plan the week.</mj-text>
         {{else}}
           {{#each tasks.pinned}}
             <mj-text>📌 {{text}}</mj-text>
@@ -77,13 +95,10 @@
           {{/each}}
         {{/if}}
 
-        <mj-button padding-top="20px" href="https://dashboard.michaelballin.com" background-color="#16a34a" color="#ffffff" border-radius="8px">View your full dashboard</mj-button>
-        <mj-text font-size="12px" color="#6b7280" align="center" padding-top="12px">
-          Manage email preferences in your dashboard Settings.
-        </mj-text>
-        <mj-text font-size="11px" color="#9ca3af" align="center" padding-top="4px">
-          Job Search HQ - Sent from {{fromEmail}}
-        </mj-text>
+        <mj-button href="https://dashboard.michaelballin.com" background-color="#16a34a" color="#ffffff" padding-top="18px">View your full dashboard</mj-button>
+
+        <mj-text css-class="muted" align="center" padding-top="12px">Manage email preferences in your <a href="https://dashboard.michaelballin.com/settings">Settings</a>.</mj-text>
+        <mj-text css-class="small-muted" align="center" padding-top="6px">Job Search HQ — Sent from {{fromEmail}}</mj-text>
       </mj-column>
     </mj-section>
   </mj-body>

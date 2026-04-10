@@ -1,0 +1,22 @@
+{
+  "weekLabel": "Mar 30 - Apr 5, 2026",
+  "stats": { "applications": 5, "meetings": 2, "outreach": 4, "followups": 1 },
+  "hasActivityLog": true,
+  "activityLog": [
+    {
+      "date": "2026-04-05",
+      "dateLabel": "Mon, Apr 5",
+      "entries": [ { "type": "meeting", "note": "Intro call with Acme" } ]
+    }
+  ],
+  "pipeline": {
+    "saved": { "count": 2, "cards": [ { "company": "Acme" } ] },
+    "applied": { "count": 1, "cards": [ { "company": "Globex" } ] },
+    "interviewing": { "count": 0, "cards": [] },
+    "closedThisWeek": { "count": 0, "cards": [] }
+  },
+  "hasStaleCards": false,
+  "staleCards": [],
+  "tasks": { "isEmpty": false, "pinned": [ { "text": "Update resume" } ], "unpinned": [ { "text": "Follow up with recruiter" } ] },
+  "user": { "email": "you@example.com" }
+}

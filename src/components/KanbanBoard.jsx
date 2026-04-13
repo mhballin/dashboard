@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Trash2, Globe } from "lucide-react";
+import ConfirmBar from "./ConfirmBar";
 import { KANBAN_COLS } from "../data/kanbanCols";
 import { todayStr } from "../utils/dates";
 import { theme, cardStyle as themeCardStyle } from "../styles/theme";
@@ -97,6 +98,7 @@ export function KanbanBoard({
   const [isDragging, setIsDragging] = useState(false);
 
   const [isImportPanelOpen, setIsImportPanelOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const getDomainFromUrl = (url) => {
     if (!url) return null;
@@ -1130,9 +1132,7 @@ export function KanbanBoard({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm("Remove this job?")) {
-                            remove(c.id);
-                          }
+                          setConfirmDeleteId(c.id);
                         }}
                         style={{
                           background: "none",
@@ -1192,6 +1192,20 @@ export function KanbanBoard({
           onCompleteFollowUp={onCompleteFollowUp}
         />
       )}
+      <ConfirmBar
+        open={!!confirmDeleteId}
+        message={"Remove this job?"}
+        primaryLabel={"Remove"}
+        onPrimary={() => {
+          if (confirmDeleteId !== null) {
+            remove(confirmDeleteId);
+          }
+          setConfirmDeleteId(null);
+        }}
+        secondaryLabel={"Cancel"}
+        onSecondary={() => setConfirmDeleteId(null)}
+        variant="danger"
+      />
     </div>
   );
 }

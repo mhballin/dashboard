@@ -58,6 +58,48 @@ export default function KanbanModal({
 
   const currentCol = kanbanCols.find((c) => c.id === modalCol) || {};
   const [timelineQuickNote, setTimelineQuickNote] = React.useState("");
+  const [confirmType, setConfirmType] = React.useState(null); // 'discard' | 'delete' | null
+
+  const stripHtml = (html) => (html ? String(html).replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() : "");
+
+  const isFormDirty = () => {
+    if (isCreateMode) {
+      const company = (formData.company || "").trim();
+      const title = (formData.title || "").trim();
+      const location = (formData.location || "").trim();
+      const url = (formData.url || "").trim();
+      const notes = (formData.notes || "").trim();
+      const description = stripHtml(formData.description || "");
+      return !!(company || title || location || url || notes || description);
+    }
+    if (isEditMode) {
+      const orig = cards.find((c) => c.id === editingId) || {};
+      const companyChanged = (orig.company || "") !== (formData.company || "");
+      const titleChanged = (orig.title || "") !== (formData.title || "");
+      const locationChanged = (orig.location || "") !== (formData.location || "");
+      const urlChanged = (orig.url || "") !== (formData.url || "");
+      const notesChanged = (orig.notes || "") !== (formData.notes || "");
+      const origDesc = stripHtml(orig.description || "");
+      const newDesc = stripHtml(formData.description || "");
+      const descriptionChanged = origDesc !== newDesc;
+      return companyChanged || titleChanged || locationChanged || urlChanged || notesChanged || descriptionChanged;
+    }
+    return false;
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingId(null);
+    setModalCol(null);
+  };
+
+  const confirmAndClose = () => {
+    if ((isCreateMode || isEditMode) && isFormDirty()) {
+      setConfirmType("discard");
+      return;
+    }
+    closeModal();
+  };
 
   return (
     <div
@@ -73,7 +115,7 @@ export default function KanbanModal({
         justifyContent: "center",
         zIndex: 1000,
       }}
-      onClick={() => setModalOpen(false)}
+      onClick={confirmAndClose}
     >
       <div
         style={{
@@ -82,7 +124,7 @@ export default function KanbanModal({
           padding: isViewMode ? 32 : 24,
           boxShadow: "0 20px 25px rgba(0,0,0,0.15)",
           border: `1px solid ${theme.colors.border}`,
-          maxWidth: isViewMode ? 1200 : 450,
+          maxWidth: isViewMode ? 1200 : 780,
           width: "90%",
           maxHeight: "90vh",
           overflowY: "auto",
@@ -300,74 +342,95 @@ export default function KanbanModal({
                 </div>
               </div>
 
-              <div style={{ position: "sticky", bottom: 0, background: theme.colors.cardBg, paddingTop: 16, marginTop: 24, borderTop: `1px solid ${theme.colors.border}`, display: "flex", gap: 12 }}>
-                <button onClick={switchToEditMode} style={{ flex: 1, background: currentCol?.color || "#3b82f6", border: "none", borderRadius: theme.radii.default, padding: "10px 16px", color: "white", ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Edit Job Details</button>
-                <button onClick={() => { if (window.confirm("Delete this job?")) { remove(editingId); setModalOpen(false); setEditingId(null); } }} style={{ background: theme.colors.dangerBg, border: `1px solid ${theme.colors.dangerBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.dangerText, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Delete</button>
-                <button onClick={() => setModalOpen(false)} style={{ background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Close</button>
-              </div>
+              {confirmType === "delete" ? (
+                <div style={{ position: "sticky", bottom: 0, background: "#fff5f5", paddingTop: 16, marginTop: 24, borderTop: `1px solid ${theme.colors.dangerBorder}`, display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ ...cardFont, fontSize: 13, color: theme.colors.dangerText, flex: 1 }}>Delete this job? This can't be undone.</span>
+                  <button onClick={() => { remove(editingId); setConfirmType(null); setModalOpen(false); setEditingId(null); setModalCol(null); }} style={{ background: theme.colors.dangerBg, border: `1px solid ${theme.colors.dangerBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.dangerText, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Delete</button>
+                  <button onClick={() => setConfirmType(null)} style={{ background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Cancel</button>
+                </div>
+              ) : (
+                <div style={{ position: "sticky", bottom: 0, background: theme.colors.cardBg, paddingTop: 16, marginTop: 24, borderTop: `1px solid ${theme.colors.border}`, display: "flex", gap: 12 }}>
+                  <button onClick={switchToEditMode} style={{ flex: 1, background: currentCol?.color || "#3b82f6", border: "none", borderRadius: theme.radii.default, padding: "10px 16px", color: "white", ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Edit Job Details</button>
+                  <button onClick={() => setConfirmType("delete")} style={{ background: theme.colors.dangerBg, border: `1px solid ${theme.colors.dangerBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.dangerText, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Delete</button>
+                  <button onClick={confirmAndClose} style={{ background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Close</button>
+                </div>
+              )}
             </>
           );
         })()}
 
         {(isCreateMode || isEditMode) && (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h2 style={{ ...cardFont, fontSize: 18, fontWeight: 700, marginBottom: 0, color: "#1a1a1a" }}>{isEditMode ? "Edit Job Details" : "Add Job"}</h2>
               {isCreateMode && (<button onClick={() => setIsImportPanelOpen(true)} style={{ background: "none", border: `1px solid ${theme.colors.border}`, borderRadius: theme.radii.default, padding: "6px 10px", fontSize: 13, color: theme.colors.muted, cursor: "pointer", fontFamily: theme.fonts.ui, fontWeight: 600 }}>Import from URL</button>)}
             </div>
 
             {isCreateMode && (<ImportFromUrlPanel isOpen={isImportPanelOpen} onClose={() => setIsImportPanelOpen(false)} onSave={saveImportedCard} />)}
 
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Company *</label>
-              <input value={formData.company} onChange={(e) => setFormData({ ...formData, company: e.target.value })} placeholder="e.g., Acme Corp" style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none" }} />
-              {validation.company && <p style={{ margin: "4px 0 0", fontSize: 12, color: theme.colors.dangerText, fontFamily: theme.fonts.ui }}>{validation.company}</p>}
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Job Title *</label>
-              <input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="e.g., Senior Frontend Engineer" style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none" }} />
-              {validation.title && <p style={{ margin: "4px 0 0", fontSize: 12, color: theme.colors.dangerText, fontFamily: theme.fonts.ui }}>{validation.title}</p>}
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Location (optional)</label>
-              <input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="e.g., Portland, ME or Remote" style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none" }} />
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Job Description</label>
-              <div contentEditable onInput={(e) => setFormData({ ...formData, description: e.currentTarget.innerHTML })} dangerouslySetInnerHTML={{ __html: formData.description }} style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none", minHeight: 150, maxHeight: 300, overflowY: "auto", lineHeight: 1.5, background: theme.colors.cardBg }} data-placeholder="Paste job description here (formatting will be preserved)..." />
-              <style>{`[contentEditable][data-placeholder]:empty:before { content: attr(data-placeholder); color: ${theme.colors.muted}; pointer-events: none; }`}</style>
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Job Posting URL</label>
-              <input value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://linkedin.com/jobs/..." style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none" }} />
-            </div>
-
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Notes</label>
-              <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Quick thoughts or reminders..." rows={2} style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none", resize: "vertical" }} />
-            </div>
-
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 8 }}>Column</label>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {kanbanCols.map((col) => (
-                  <button key={col.id} onClick={() => setModalCol(col.id)} style={{ padding: "6px 12px", borderRadius: theme.radii.card, border: `2px solid ${modalCol === col.id ? col.color : theme.colors.inputBorder}`, background: modalCol === col.id ? col.bg : theme.colors.cardBg, color: modalCol === col.id ? col.color : theme.colors.muted, ...cardFont, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" }}>{col.label}</button>
-                ))}
+            {/* Two-column form */}
+            <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+              {/* Left column: basic fields */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+                <div>
+                  <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Company *</label>
+                  <input value={formData.company} onChange={(e) => setFormData({ ...formData, company: e.target.value })} placeholder="e.g., Acme Corp" style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none" }} />
+                  {validation.company && <p style={{ margin: "4px 0 0", fontSize: 12, color: theme.colors.dangerText, fontFamily: theme.fonts.ui }}>{validation.company}</p>}
+                </div>
+                <div>
+                  <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Job Title *</label>
+                  <input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="e.g., Senior Frontend Engineer" style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none" }} />
+                  {validation.title && <p style={{ margin: "4px 0 0", fontSize: 12, color: theme.colors.dangerText, fontFamily: theme.fonts.ui }}>{validation.title}</p>}
+                </div>
+                <div>
+                  <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Location</label>
+                  <input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="e.g., Portland, ME or Remote" style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none" }} />
+                </div>
+                <div>
+                  <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Job Posting URL</label>
+                  <input value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://linkedin.com/jobs/..." style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none" }} />
+                </div>
+                <div>
+                  <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Notes</label>
+                  <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Quick thoughts or reminders..." rows={3} style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none", resize: "vertical" }} />
+                </div>
+              </div>
+              {/* Right column: description + column selector */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+                <div>
+                  <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 4 }}>Job Description</label>
+                  <div contentEditable onInput={(e) => setFormData({ ...formData, description: e.currentTarget.innerHTML })} dangerouslySetInnerHTML={{ __html: formData.description }} style={{ width: "100%", border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 12px", ...cardFont, fontSize: 13, boxSizing: "border-box", outline: "none", minHeight: 240, maxHeight: 380, overflowY: "auto", lineHeight: 1.5, background: theme.colors.cardBg }} data-placeholder="Paste job description here..." />
+                  <style>{`[contentEditable][data-placeholder]:empty:before { content: attr(data-placeholder); color: ${theme.colors.muted}; pointer-events: none; }`}</style>
+                </div>
+                <div>
+                  <label style={{ ...cardFont, fontSize: 12, fontWeight: 600, color: theme.colors.text, display: "block", marginBottom: 8 }}>Column</label>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {kanbanCols.map((col) => (
+                      <button key={col.id} onClick={() => setModalCol(col.id)} style={{ padding: "6px 12px", borderRadius: theme.radii.card, border: `2px solid ${modalCol === col.id ? col.color : theme.colors.inputBorder}`, background: modalCol === col.id ? col.bg : theme.colors.cardBg, color: modalCol === col.id ? col.color : theme.colors.muted, ...cardFont, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" }}>{col.label}</button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 8 }}>
+            {/* Inline unsaved-changes banner — appears when user tries to click away */}
+            {confirmType === "discard" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 12, background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 10, padding: "10px 14px", marginTop: 16 }}>
+                <span style={{ ...cardFont, fontSize: 13, color: "#92400e", flex: 1 }}>
+                  You have unsaved changes. Use Save Job or Discard below.
+                </span>
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
               {isEditMode && (<button onClick={switchToViewMode} style={{ background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>← Back to View</button>)}
               <button onClick={saveJob} style={{ flex: 1, background: currentCol?.color || "#16a34a", border: "none", borderRadius: 8, padding: "8px 16px", color: "white", ...cardFont, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>{isEditMode ? "Save Changes" : "Save Job"}</button>
-              {!isEditMode && (<button onClick={() => setModalOpen(false)} style={{ flex: 1, background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Discard</button>)}
+              {!isEditMode && (<button onClick={closeModal} style={{ flex: 1, background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Discard</button>)}
             </div>
           </>
         )}
       </div>
+
     </div>
   );
 }

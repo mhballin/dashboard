@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { theme } from '../styles/theme'
 
+const MAX_FILE_MB = 5
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024
+
 export default function FeatureRequestModal({ isOpen, onClose, onSubmit }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -8,6 +11,9 @@ export default function FeatureRequestModal({ isOpen, onClose, onSubmit }) {
   const [attachmentData, setAttachmentData] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [feedback, setFeedback] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [fileError, setFileError] = useState(null)
+  const fileInputRef = useRef(null)
   const closeTimerRef = useRef(null)
 
   useEffect(() => {
@@ -26,6 +32,23 @@ export default function FeatureRequestModal({ isOpen, onClose, onSubmit }) {
     setAttachmentName(null)
     setAttachmentData(null)
     setFeedback(null)
+    setFileError(null)
+    setIsDragging(false)
+  }
+
+  const processFile = (f) => {
+    if (!f) return
+    setFileError(null)
+    if (f.size > MAX_FILE_BYTES) {
+      setFileError(`File is too large. Maximum size is ${MAX_FILE_MB} MB.`)
+      setAttachmentName(null)
+      setAttachmentData(null)
+      return
+    }
+    setAttachmentName(f.name)
+    const reader = new FileReader()
+    reader.onload = () => setAttachmentData(reader.result)
+    reader.readAsDataURL(f)
   }
 
   const handleClose = () => {
@@ -38,16 +61,35 @@ export default function FeatureRequestModal({ isOpen, onClose, onSubmit }) {
   }
 
   const handleFile = (e) => {
-    const f = e.target.files && e.target.files[0]
-    if (!f) {
-      setAttachmentName(null)
-      setAttachmentData(null)
-      return
-    }
-    setAttachmentName(f.name)
-    const reader = new FileReader()
-    reader.onload = () => setAttachmentData(reader.result)
-    reader.readAsDataURL(f)
+    processFile(e.target.files && e.target.files[0])
+    // reset so re-selecting the same file still fires onChange
+    e.target.value = ''
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    const f = e.dataTransfer.files && e.dataTransfer.files[0]
+    processFile(f)
+  }
+
+  const removeAttachment = () => {
+    setAttachmentName(null)
+    setAttachmentData(null)
+    setFileError(null)
   }
 
   const handleSubmit = async () => {
@@ -84,9 +126,63 @@ export default function FeatureRequestModal({ isOpen, onClose, onSubmit }) {
         </div>
 
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: theme.colors.muted, display: 'block', marginBottom: 6 }}>Attachment (optional)</label>
-          <input type="file" accept="image/*" onChange={handleFile} />
-          {attachmentName ? <div style={{ fontSize: 12, color: theme.colors.muted, marginTop: 6 }}>{attachmentName}</div> : null}
+          <div style={{ fontSize: 12, color: theme.colors.muted, marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Attachment (optional, max {MAX_FILE_MB} MB)</div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFile}
+            style={{ display: 'none' }}
+          />
+          {!attachmentName ? (
+            <div
+              onDragOver={handleDragOver}
+              onDragEnter={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              style={{
+                border: `2px dashed ${isDragging ? theme.colors.primary : theme.colors.inputBorder}`,
+                background: isDragging ? '#f0fdf4' : '#fafaf8',
+                borderRadius: 10,
+                padding: '20px 16px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'border-color 0.15s, background 0.15s',
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
+              <div style={{ fontSize: 22, marginBottom: 6, color: isDragging ? theme.colors.primary : theme.colors.muted }}>⬆</div>
+              <div style={{ fontSize: 13, color: isDragging ? theme.colors.primary : '#374151', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                {isDragging ? 'Drop to attach' : 'Drag & drop a screenshot here, or click to browse'}
+              </div>
+              {fileError && (
+                <div style={{ marginTop: 8, fontSize: 12, color: '#dc2626', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{fileError}</div>
+              )}
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 12px',
+              border: `1px solid ${theme.colors.inputBorder}`,
+              borderRadius: 10,
+              background: '#fafaf8',
+            }}>
+              {attachmentData && attachmentData.startsWith('data:image/') && (
+                <img src={attachmentData} alt="preview" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />
+              )}
+              <div style={{ flex: 1, fontSize: 13, color: '#374151', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {attachmentName}
+              </div>
+              <button
+                onClick={removeAttachment}
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: theme.colors.muted, fontSize: 16, lineHeight: 1, padding: 2 }}
+                aria-label="Remove attachment"
+              >×</button>
+            </div>
+          )}
         </div>
 
         {feedback ? (

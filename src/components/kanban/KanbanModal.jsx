@@ -121,13 +121,14 @@ export default function KanbanModal({
         style={{
           background: "white",
           borderRadius: 20,
-          padding: isViewMode ? 32 : 24,
           boxShadow: "0 20px 25px rgba(0,0,0,0.15)",
           border: `1px solid ${theme.colors.border}`,
           maxWidth: isViewMode ? 1200 : 780,
           width: "90%",
           maxHeight: "90vh",
-          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -167,6 +168,7 @@ export default function KanbanModal({
 
           return (
             <>
+              <div style={{ padding: 32, overflowY: "auto", flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, paddingBottom: 20, borderBottom: `3px solid ${currentCol?.color || theme.colors.inputBorder}` }}>
                 <div style={{ flexShrink: 0 }}>
                   {formData.company ? (
@@ -342,14 +344,15 @@ export default function KanbanModal({
                 </div>
               </div>
 
+              </div>
               {confirmType === "delete" ? (
-                <div style={{ position: "sticky", bottom: 0, background: "#fff5f5", paddingTop: 16, marginTop: 24, borderTop: `1px solid ${theme.colors.dangerBorder}`, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ flexShrink: 0, background: "#fff5f5", padding: "16px 32px", borderTop: `1px solid ${theme.colors.dangerBorder}`, display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ ...cardFont, fontSize: 13, color: theme.colors.dangerText, flex: 1 }}>Delete this job? This can't be undone.</span>
                   <button onClick={() => { remove(editingId); setConfirmType(null); setModalOpen(false); setEditingId(null); setModalCol(null); }} style={{ background: theme.colors.dangerBg, border: `1px solid ${theme.colors.dangerBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.dangerText, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Delete</button>
                   <button onClick={() => setConfirmType(null)} style={{ background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Cancel</button>
                 </div>
               ) : (
-                <div style={{ position: "sticky", bottom: 0, background: theme.colors.cardBg, paddingTop: 16, marginTop: 24, borderTop: `1px solid ${theme.colors.border}`, display: "flex", gap: 12 }}>
+                <div style={{ flexShrink: 0, background: theme.colors.cardBg, padding: "16px 32px", borderTop: `1px solid ${theme.colors.border}`, display: "flex", gap: 12 }}>
                   <button onClick={switchToEditMode} style={{ flex: 1, background: currentCol?.color || "#3b82f6", border: "none", borderRadius: theme.radii.default, padding: "10px 16px", color: "white", ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Edit Job Details</button>
                   <button onClick={() => setConfirmType("delete")} style={{ background: theme.colors.dangerBg, border: `1px solid ${theme.colors.dangerBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.dangerText, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Delete</button>
                   <button onClick={confirmAndClose} style={{ background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "10px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Close</button>
@@ -360,7 +363,7 @@ export default function KanbanModal({
         })()}
 
         {(isCreateMode || isEditMode) && (
-          <>
+          <div style={{ padding: 24, overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h2 style={{ ...cardFont, fontSize: 18, fontWeight: 700, marginBottom: 0, color: "#1a1a1a" }}>{isEditMode ? "Edit Job Details" : "Add Job"}</h2>
               {isCreateMode && (<button onClick={() => setIsImportPanelOpen(true)} style={{ background: "none", border: `1px solid ${theme.colors.border}`, borderRadius: theme.radii.default, padding: "6px 10px", fontSize: 13, color: theme.colors.muted, cursor: "pointer", fontFamily: theme.fonts.ui, fontWeight: 600 }}>Import from URL</button>)}
@@ -427,7 +430,7 @@ export default function KanbanModal({
               <button onClick={saveJob} style={{ flex: 1, background: currentCol?.color || "#16a34a", border: "none", borderRadius: 8, padding: "8px 16px", color: "white", ...cardFont, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>{isEditMode ? "Save Changes" : "Save Job"}</button>
               {!isEditMode && (<button onClick={closeModal} style={{ flex: 1, background: theme.colors.cardBg, border: `1px solid ${theme.colors.inputBorder}`, borderRadius: theme.radii.default, padding: "8px 16px", color: theme.colors.muted, ...cardFont, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Discard</button>)}
             </div>
-          </>
+          </div>
         )}
       </div>
 
